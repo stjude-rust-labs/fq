@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+import sys
+import logging
+import argparse
+import fqlib
+from fqlib import FastQFile, FastQRead, FastQValidationError
+
+EXIT_INDIVIDUAL_VALIDATION_ERROR = 1
+EXIT_MISMATCHING_READ_NAMES = 1 << 1
+
+def validate_read(read_r1: FastQRead, read_r2: FastQRead, readno: int):
+	"""Validate that a read is well formed across both files.
+	
+	Args:
+		read_r1(FastQRead): """
+
+	if read_r1.name.endswith('/1'):
+		read_r1.name = read_r1.name[:-2]
+
+	if read_r2.name.endswith('/2'):
+		read_r2.name = read_r2.name[:-2]
+
+	if read_r1.name != read_r2.name:
+		logging.error("Read names don't match!")
+		logging.error("---")
+		logging.error("R1 name: {}".format(read_r1.name))
+		logging.error("R2 name: {}".format(read_r2.name))
+		logging.error("Line numbers: {}-{}".format(readno * 4 - 3, readno * 4))
+		sys.exit(EXIT_MISMATCHING_READ_NAMES)
+
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description="Validate Illumina, paired-end FastQ files.")
+	parser.add_argument("read_one_file", help="FastQ file containing all R1 reads.")
+	parser.add_argument("read_two_file", help="FastQ file containing all R2 reads.")
+	parser.add_argument("--print-every",
+					    type=int,
+					    default=4*1000000,
+		                help="Alter how frequently updates are printed to the screen.")
+	parser.add_argument("-q",
+		                "--quiet",
+		                help="Do not output informational messages.",
+		                action="store_const",
+		                dest="loglevel",
+		                const=logging.WARNING,
+		                default=logging.DEBUG)
+	args = parser.parse_args()
+	logging.basicConfig(format="%(levelname)s: %(message)s", level=args.loglevel)
+
+	r1 = FastQFile(args.read_one_file, validation_level='high')
+	r2 = FastQFile(args.read_two_file, validation_level='high')
+
+	readno = 1
+	try:
+		for readno, (read_r1, read_r2) in enumerate(zip(r1, r2), 1):
+			validate_read(read_r1, read_r2, readno)
+			if readno % args.print_every == 0:
+				logging.info("Processed {:d} reads.".format(readno))			
+		logging.info("Finished. Processed {:d} reads.".format(readno))
+	except FastQValidationError as e:
+		logging.error(f'Error for read {e.readname}.')
+		logging.error(f'---')
+		logging.error(e.description)
+		sys.exit(EXIT_INDIVIDUAL_VALIDATION_ERROR)
+
+	r1.close()
+	r2.close()
