@@ -7,19 +7,36 @@ class ValidationLevel:
     LOW = 2
     HIGH = 3
 
+    @staticmethod
+    def resolve(value):
+        """Resolve an input to a ValidationLevel or throw an error.
+        
+        Args:
+            value(object): Any value that may be interpretted as a ValidationLevel.
+            
+        Throws:
+            ValueError: if the input cannot be parsed, a ValueError is thrown.
+
+        Return:
+            A validation level."""
+
+        if isinstance(value, ValidationLevel):
+            return value
+        elif isinstance(value, str):
+            if value.lower() == "high":
+                return ValidationLevel.HIGH
+            elif value.lower() == 'low':
+                return ValidationLevel.LOW
+            elif value.lower() == 'minimum' or not value:
+                return ValidationLevel.MINIMUM
+
+        raise ValueError(f"Unknown single read validation level: {value}.")
+
 
 class BaseSingleReadValidator:
     """Base validator for a single read, should not be called directly. This class
     is meant to be used as an abstract class for all single read FastQ validations.
-    
-    Args:
-        level(ValidationLevel): level at which to call the validator.
-        name(str): name of the error.
     """
-
-    def __init__(self, level: ValidationLevel, name: str):
-        self.level = level
-        self.name = name
 
     def validate(self, read):
         raise NotImplementedError(
@@ -29,9 +46,8 @@ class BaseSingleReadValidator:
 class PluslineValidator(BaseSingleReadValidator):
     """Validates that the plusline of the FastQ file is correctly set to '+'."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, level=ValidationLevel.MINIMUM, name="S001", **kwargs)
+    level = ValidationLevel.MINIMUM
+    code = "S001"
 
     def validate(self, read):
         if not read.plusline or read.plusline != '+':
@@ -44,9 +60,8 @@ class PluslineValidator(BaseSingleReadValidator):
 class AlphabetValidator(BaseSingleReadValidator):
     """Verifies that all reads are in the AGCTN dictionary."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, level=ValidationLevel.LOW, name="S002", **kwargs)
+    level = ValidationLevel.LOW
+    code = "S002"
 
     def validate(self, read):
         if re.search("[^ACGTNacgtn]", read.sequence):
@@ -59,9 +74,8 @@ class ReadnameValidator(BaseSingleReadValidator):
     """Validates that a readname is well-formed (locally, not globally) for
     errors like duplicate read names."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, level=ValidationLevel.HIGH, name="S003", **kwargs)
+    level = ValidationLevel.HIGH
+    code = "S003"
 
     def validate(self, read):
         if not read.name.startswith("@"):
@@ -73,15 +87,7 @@ class ReadnameValidator(BaseSingleReadValidator):
 class BasePairedReadValidator:
     """Base validator for paired reads, should not be called directly. This class
     is meant to be used as an abstract class for all paired read FastQ validations.
-    
-    Args:
-        level(ValidationLevel): level at which to call the validator.
-        name(str): name of the error.
     """
-
-    def __init__(self, level: ValidationLevel, name: str):
-        self.level = level
-        self.name = name
 
     def validate(self, readone, readtwo):
         raise NotImplementedError(
@@ -91,12 +97,11 @@ class BasePairedReadValidator:
 class PairedReadnameValidator(BasePairedReadValidator):
     """Validates that a pair of readnames are well-formed."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, level=ValidationLevel.LOW, name="P001", **kwargs)
+    level = ValidationLevel.LOW
+    code = "P001"
 
     def validate(self, readone, readtwo):
         if not readone.name == readtwo.name:
-            return False, 'Read names do not match!'
+            return False, 'Read names do not match.'
 
         return True, None
