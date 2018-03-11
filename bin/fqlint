@@ -8,25 +8,30 @@ EXIT_SINGLE_READ_VALIDATION_ERROR = 1
 EXIT_PAIRED_READ_VALIDATION_ERROR = 2
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="Lint Illumina generated, paired FastQ files.")
+
+    # yapf: disable
+    parser = argparse.ArgumentParser(description="Lint Illumina generated, paired FastQ files.")
     parser.add_argument(
-        "read_one_file", help="FastQ file containing all R1 reads.")
+        "read_one_file",
+        help="FastQ file containing all R1 reads.")
     parser.add_argument(
-        "read_two_file", help="FastQ file containing all R2 reads.")
+        "read_two_file",
+        help="FastQ file containing all R2 reads.")
     parser.add_argument(
         "--print-every",
         type=int,
         default=4 * 1000000,
         help="Alter how frequently updates are printed to the screen.")
+
     parser.add_argument(
-        "-q",
-        "--quiet",
+        "-q", "--quiet",
         help="Do not output informational messages.",
         action="store_const",
         dest="loglevel",
         const=logging.WARNING,
         default=logging.DEBUG)
+    # yapf: enable
+
     args = parser.parse_args()
     logging.basicConfig(
         format="%(levelname)s: %(message)s", level=args.loglevel)
