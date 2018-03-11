@@ -7,6 +7,7 @@ ValidationLevel = validators.ValidationLevel
 BaseSingleReadValidator = validators.BaseSingleReadValidator
 BasePairedReadValidator = validators.BasePairedReadValidator
 
+
 class FastQRead:
     __slots__ = ['name', 'sequence', 'plusline', 'quality', 'interleave']
 
@@ -40,7 +41,7 @@ class FastQFile:
 
     def __init__(self,
                  filename: str,
-                 validation_level: ValidationLevel=ValidationLevel.HIGH):
+                 validation_level: ValidationLevel = ValidationLevel.HIGH):
         self._filename = os.path.abspath(filename)
         self._handle = open(self._filename, 'r')
         self._lineno = 0
@@ -56,32 +57,33 @@ class FastQFile:
                 self._validation_level = ValidationLevel.MINIMUM
 
         if not self._validation_level:
-            raise ValueError(f"Unknown single read validation level: {validation_level}")
+            raise ValueError(
+                f"Unknown single read validation level: {validation_level}")
 
-        single_read_validators = [v() for (k, v) in validators.__dict__.items() if
-                                  not k.startswith("Base") and isinstance(v, type)
-                                  and issubclass(v, BaseSingleReadValidator)]
-    
-        self._validators = [v for v in single_read_validators if 
-                            v.level >= self._validation_level]
+        single_read_validators = [
+            v() for (k, v) in validators.__dict__.items()
+            if not k.startswith("Base") and isinstance(v, type)
+            and issubclass(v, BaseSingleReadValidator)
+        ]
 
+        self._validators = [
+            v for v in single_read_validators
+            if v.level >= self._validation_level
+        ]
 
     def __iter__(self):
         """Iterator methods."""
         return self
- 
 
     def __next__(self):
         """Iterator methods."""
         return self._next_read()
-
 
     def _next_line(self):
         """Read the next line from the file handle."""
         result = self._handle.readline().strip()
         self._lineno += 1
         return result
-
 
     def _next_read(self):
         """Naively read the FastQ read. If something goes awry, expect it to get caught
@@ -108,21 +110,22 @@ class FastQFile:
         if not read_name or not read_sequence or not read_plusline or not read_quality:
             raise StopIteration
 
-        read = FastQRead(name=read_name,
-                         sequence=read_sequence,
-                         plusline=read_plusline,
-                         quality=read_quality, 
-                         interleave=read_interleave)
+        read = FastQRead(
+            name=read_name,
+            sequence=read_sequence,
+            plusline=read_plusline,
+            quality=read_quality,
+            interleave=read_interleave)
 
         for validator in self._validators:
             result, err = validator.validate(read)
             if not result or err:
-                raise SingleReadValidationError(description=err,
-                                                readname=read.name,
-                                                filename=self._filename,
-                                                lineno=self._lineno)
+                raise SingleReadValidationError(
+                    description=err,
+                    readname=read.name,
+                    filename=self._filename,
+                    lineno=self._lineno)
         return read
-
 
     def close(self):
         """Closes the file handle."""
@@ -140,17 +143,22 @@ class PairedFastQFiles:
         paired_read_validation_level: Validation level for the paired read errors.
     """
 
-    def __init__(self, read_one_filename: str, read_two_filename: str,
-        single_read_validation_level="low", paired_read_validation_level="low"):
+    def __init__(self,
+                 read_one_filename: str,
+                 read_two_filename: str,
+                 single_read_validation_level="low",
+                 paired_read_validation_level="low"):
 
         self._read_one_filename = os.path.abspath(read_one_filename)
         self._read_two_filename = os.path.abspath(read_two_filename)
-        self._read_one_fastqfile = FastQFile(self._read_one_filename,
-                                            validation_level=single_read_validation_level)
-        self._read_two_fastqfile = FastQFile(self._read_two_filename,
-                                            validation_level=single_read_validation_level)
+        self._read_one_fastqfile = FastQFile(
+            self._read_one_filename,
+            validation_level=single_read_validation_level)
+        self._read_two_fastqfile = FastQFile(
+            self._read_two_filename,
+            validation_level=single_read_validation_level)
         self._readno = 0
-        
+
         if isinstance(paired_read_validation_level, ValidationLevel):
             self._validation_level = paired_read_validation_level
         elif isinstance(paired_read_validation_level, str):
@@ -158,24 +166,29 @@ class PairedFastQFiles:
                 self._validation_level = ValidationLevel.HIGH
             elif paired_read_validation_level.lower() == 'low':
                 self._validation_level = ValidationLevel.LOW
-            elif paired_read_validation_level.lower() == 'minimum' or not paired_read_validation_level:
+            elif paired_read_validation_level.lower(
+            ) == 'minimum' or not paired_read_validation_level:
                 self._validation_level = ValidationLevel.MINIMUM
 
         if not self._validation_level:
-            raise ValueError(f"Unknown single read validation level: {paired_read_validation_level}")
-        
-        paired_read_validators = [v() for (k, v) in validators.__dict__.items() if
-                                  not k.startswith("Base") and isinstance(v, type)
-                                  and issubclass(v, BasePairedReadValidator)]
+            raise ValueError(
+                f"Unknown single read validation level: {paired_read_validation_level}"
+            )
 
-        self._validators = [v for v in paired_read_validators if 
-                            v.level >= self._validation_level]
+        paired_read_validators = [
+            v() for (k, v) in validators.__dict__.items()
+            if not k.startswith("Base") and isinstance(v, type)
+            and issubclass(v, BasePairedReadValidator)
+        ]
 
+        self._validators = [
+            v for v in paired_read_validators
+            if v.level >= self._validation_level
+        ]
 
     def __iter__(self):
         """Iterator methods."""
         return self
- 
 
     def __next__(self):
         """Iterator methods."""
@@ -192,7 +205,7 @@ class PairedFastQFiles:
         Raises:
             Error: multiple errors may be thrown, especially FastQ validation errors
         """
-            
+
         read_one = self._read_one_fastqfile._next_read()
         read_two = self._read_two_fastqfile._next_read()
 
@@ -202,18 +215,18 @@ class PairedFastQFiles:
         for validator in self._validators:
             result, err = validator.validate(read_one, read_two)
             if not result or err:
-                raise PairedReadValidationError(description=err,
-                                                read_one=read_one,
-                                                read_two=read_two,
-                                                pairno=self._readno,
-                                                read_one_filename=self._read_one_filename,
-                                                read_two_filename=self._read_two_filename,
-                                                read_one_fastqfile=self._read_one_fastqfile,
-                                                read_two_fastqfile=self._read_two_fastqfile)
+                raise PairedReadValidationError(
+                    description=err,
+                    read_one=read_one,
+                    read_two=read_two,
+                    pairno=self._readno,
+                    read_one_filename=self._read_one_filename,
+                    read_two_filename=self._read_two_filename,
+                    read_one_fastqfile=self._read_one_fastqfile,
+                    read_two_fastqfile=self._read_two_fastqfile)
 
         return (read_one, read_two)
 
-            
     def close(self):
         """Close both FastQ files."""
         self._read_one_fastqfile.close()

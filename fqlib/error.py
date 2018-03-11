@@ -1,10 +1,9 @@
 class SingleReadValidationError(Exception):
-    
     def __init__(self, description, readname, filename=None, lineno=None):
         self.description = description
         self.readname = readname
         self.filename = filename
-        self.lineno = lineno 
+        self.lineno = lineno
 
     def __str__(self):
         res = ""
@@ -18,13 +17,20 @@ class SingleReadValidationError(Exception):
 
         return res.format(**self.__dict__)
 
+
 class PairedReadValidationError(Exception):
-    
-    def __init__(self, description, read_one, read_two, pairno, read_one_filename=None,
-        read_two_filename=None, read_one_fastqfile=None, read_two_fastqfile=None):
+    def __init__(self,
+                 description,
+                 read_one,
+                 read_two,
+                 pairno,
+                 read_one_filename=None,
+                 read_two_filename=None,
+                 read_one_fastqfile=None,
+                 read_two_fastqfile=None):
         self.description = description
-        self.read_one = read_one 
-        self.read_two = read_two 
+        self.read_one = read_one
+        self.read_two = read_two
         self.pairno = pairno
         self.read_one_filename = read_one_filename
         self.read_two_filename = read_two_filename
