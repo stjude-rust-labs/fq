@@ -1,3 +1,3 @@
 from .fastq import *
-from .validator import *
 from .error import *
+from .validators import *
