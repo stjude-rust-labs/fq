@@ -1,8 +1,13 @@
+"""All validation logic for fqlib."""
+
+__author__ = "Clay McLeod"
+
 import re
-from enum import Enum
 
 
 class ValidationLevel:
+    """Utility class containing the various validation levels."""
+
     MINIMUM = 1
     LOW = 2
     HIGH = 3
@@ -10,10 +15,10 @@ class ValidationLevel:
     @staticmethod
     def resolve(value):
         """Resolve an input to a ValidationLevel or throw an error.
-        
+
         Args:
             value(object): Any value that may be interpretted as a ValidationLevel.
-            
+
         Throws:
             ValueError: if the input cannot be parsed, a ValueError is thrown.
 
@@ -39,6 +44,7 @@ class BaseSingleReadValidator:
     """
 
     def validate(self, read):
+        """Abstract validation method for single read validators."""
         raise NotImplementedError(
             f"'validate' not implemented for {self.__class__.__name__}"
         )
@@ -52,8 +58,9 @@ class PluslineValidator(BaseSingleReadValidator):
 
     def validate(self, read):
         if not read.plusline or read.plusline != '+':
-            return False, f"The plusline is not formatted correctly. It's possible this is a " \
-                          f"FastA file or that the reads are not correctly formed."
+            return False, f"The plusline is not formatted correctly. " \
+                          f"It's possible this is a FastA file or that the reads "\
+                          f"are not correctly formed."
 
         return True, None
 
@@ -104,6 +111,7 @@ class BasePairedReadValidator:
     """
 
     def validate(self, readone, readtwo):
+        """Abstract validation method for paired read validators."""
         raise NotImplementedError(
             f"'validate' not implemented for {self.__class__.__name__}"
         )

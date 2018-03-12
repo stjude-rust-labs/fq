@@ -1,20 +1,43 @@
+"""All FastQ functionality for fqlib.
+
+This module includes all FastQ functionality. Included in the module are things
+such as utilities for reading/stepping-through FastQ files and reading/stepping-through
+a pair of FastQ files.
+"""
+
+__author__ = "Clay McLeod"
+
 import os
-import logging
-from collections import namedtuple, defaultdict
 
 from . import validators
 from .error import SingleReadValidationError, PairedReadValidationError
-ValidationLevel = validators.ValidationLevel
-BaseSingleReadValidator = validators.BaseSingleReadValidator
-BasePairedReadValidator = validators.BasePairedReadValidator
+from .validators import (
+    ValidationLevel, BaseSingleReadValidator, BasePairedReadValidator
+)
 
 POSSIBLE_INTERLEAVES = ["/1", "/2"]
 
 
 class FastQRead:
+    """Lightweight class for a FastQ read.
+
+    Attributes:
+        name (str): proper name of the read in the FastQ file.
+        sequence (str): sequence referred to in the read.
+        plusline (str): content of the 'plusline' in the read.
+        quality (str): corresponding quality of sequence in the read.
+        interleave (str or None): if applicable, interleave of the read.
+
+    Args:
+        name (str): proper name of the read in the FastQ file.
+        sequence (str): sequence referred to in the read.
+        plusline (str): content of the 'plusline' in the read.
+        quality (str): corresponding quality of sequence in the read.
+    """
+
     __slots__ = ['name', 'sequence', 'plusline', 'quality', 'interleave']
 
-    def __init__(self, name, sequence, plusline, quality):
+    def __init__(self, name: str, sequence: str, plusline: str, quality: str):
         self.name = name
         self.sequence = sequence
         self.plusline = plusline
@@ -36,44 +59,50 @@ class FastQRead:
 class _FileReader:
     """Abstraction class for a single file to be open and read. This is simply
     a convenience class.
-    
+
+    Attributes:
+        name (str): Filename to be used to open the file.
+        basename (str): Basename of the file name.
+        handle (File): Object of file opened using file name, readable only.
+        lineno (int): Current line of the file.
+
     Args:
         name(str): Filename to be used to open the file.
     """
 
-    __slots__ = ['name', 'basename', 'handle', '_lineno']
+    __slots__ = ['name', 'basename', 'handle', 'lineno']
 
     def __init__(self, name: str):
         self.name = os.path.abspath(name)
         self.basename = os.path.basename(self.name)
         self.handle = open(self.name, 'r')
-        self._lineno = 0
+        self.lineno = 0
 
     def getlines(self, num_lines: int = 1):
-        """Get `num_lines` number of lines from a file.
-        
+        """Get :obj:`num_lines` number of lines from a file.
+
         Todo:
             - Probably a cleaner way to do this.
-           
-        Return:
+
+        Returns:
             list: `num_lines` lines of a file, stripped of whitespace."""
 
-        _i = 0
+        lines_seen = 0
         results = []
 
-        while _i < num_lines:
+        while lines_seen < num_lines:
             try:
                 result = next(self.handle).strip()
             except StopIteration:
                 break
 
-            _i += 1
+            lines_seen += 1
             results.append(result)
-            self._lineno += 1
+            self.lineno += 1
 
-        while _i < num_lines:
+        while lines_seen < num_lines:
             results.append(None)
-            _i += 1
+            lines_seen += 1
 
         return results
 
@@ -85,10 +114,10 @@ class FastQFile:
     FastQ file.
 
     Args:
-        filename(str): Path to the FastQ file.
-        validation_level(validators.ValidationLevel): Degree to which the FastQ file
-                       should be validated.
-        lint_mode(str): Must be one of the lint modes supported 
+        filename (str): Path to the FastQ file.
+        validation_level (validators.ValidationLevel): Degree to which the FastQ file
+            should be validated.
+        lint_mode (str): Must be one of the lint modes supported
 
     Raises:
         FileNotFoundError, ValueError
@@ -105,7 +134,7 @@ class FastQFile:
         self.vlevel = ValidationLevel.resolve(validation_level)
         self.lint_mode = lint_mode
 
-        self._validators = [
+        self.validators = [
             v() for (k, v) in validators.__dict__.items()
             if not k.startswith("Base") and isinstance(v, type) and
             issubclass(v, BaseSingleReadValidator) and v.level <= self.vlevel
@@ -117,15 +146,15 @@ class FastQFile:
 
     def __next__(self):
         """Iterator methods."""
-        return self._next_read()
+        return self.next_read()
 
-    def _next_read(self):
+    def next_read(self):
         """Naively read the FastQ read. If something goes awry, expect it to get caught
         in the validators.
-        
+
         Returns:
             FastQRead: a read from the FastQ file
-            
+
         Raises:
             Error: multiple errors may be thrown, especially FastQ validation errors.
         """
@@ -144,7 +173,7 @@ class FastQFile:
             quality=rquality
         )
 
-        for validator in self._validators:
+        for validator in self.validators:
             result, description = validator.validate(read)
             if not result or description:
                 if self.lint_mode == "error":
@@ -152,11 +181,11 @@ class FastQFile:
                         description=description,
                         readname=read.name,
                         filename=self.file.basename,
-                        lineno=self.file._lineno
+                        lineno=self.file.lineno
                     )
                 elif self.lint_mode == "report":
                     print(
-                        f"{self.file.basename}:{validator.code}:{self.file._lineno}: " \
+                        f"{self.file.basename}:{validator.code}:{self.file.lineno}: " \
                         f"{description}"
                     )
                 else:
@@ -174,13 +203,13 @@ class FastQFile:
 class PairedFastQFiles:
     """A class that steps through two FastQFiles at the same time and validates them
     from a global perspective.
-    
+
     Args:
-        read_one_filename(str): Path to the read one file.
-        read_two_filename(str): Path to the read two file.
-        lint_mode(str): Linting in 'error' or 'report' mode.
-        single_read_validation_level: Validation level for the single read errors. 
-        paired_read_validation_level: Validation level for the paired read errors.
+        read_one_filename (str): Path to the read one file.
+        read_two_filename (str): Path to the read two file.
+        lint_mode (str): Linting in 'error' or 'report' mode.
+        single_read_validation_level (str): Validation level for the single read errors.
+        paired_read_validation_level (str): Validation level for the paired read errors.
     """
 
     def __init__(
@@ -205,7 +234,7 @@ class PairedFastQFiles:
         self.vlevel = ValidationLevel.resolve(paired_read_validation_level)
 
         self._readno = 0
-        self._validators = [
+        self.validators = [
             v() for (k, v) in validators.__dict__.items()
             if not k.startswith("Base") and isinstance(v, type) and
             issubclass(v, BasePairedReadValidator) and v.level <= self.vlevel
@@ -217,13 +246,13 @@ class PairedFastQFiles:
 
     def __next__(self):
         """Iterator methods."""
-        result = self._next_readpair()
+        result = self.next_readpair()
         self._readno += 1
         return result
 
-    def _next_readpair(self):
+    def next_readpair(self):
         """Get the next pair of reads from both files.
-        
+
         Returns:
             (FastQRead, FastQRead): tuple of both FastQRead objects, one from each file.
 
@@ -231,15 +260,15 @@ class PairedFastQFiles:
             Error: multiple errors may be thrown, especially FastQ validation errors
         """
 
-        read_one = self.read_one_fastqfile._next_read()
-        read_two = self.read_two_fastqfile._next_read()
+        read_one = self.read_one_fastqfile.next_read()
+        read_two = self.read_two_fastqfile.next_read()
 
         # Must be "and". If one is None and not the other, that's a mismatched FastQ
         # read in one of the files.
         if not read_one and not read_two:
             raise StopIteration
 
-        for validator in self._validators:
+        for validator in self.validators:
             result, description = validator.validate(read_one, read_two)
             if not result or description:
                 if self.lint_mode == "error":
@@ -271,10 +300,10 @@ class PairedFastQFiles:
         """Returns a tuple with (SingleReadValidators, PairedReadValidators)"""
         sr_validators = [
             (v.code, v.__class__.__name__)
-            for v in self.read_one_fastqfile._validators
+            for v in self.read_one_fastqfile.validators
         ]
         pr_validators = [
-            (v.code, v.__class__.__name__) for v in self._validators
+            (v.code, v.__class__.__name__) for v in self.validators
         ]
         return (sr_validators, pr_validators)
 

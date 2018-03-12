@@ -1,5 +1,13 @@
+"""Various error functionality for fqlib."""
+
+__author__ = "Clay McLeod"
+
+
 class SingleReadValidationError(Exception):
+    """Validation error resulting from a malformed single read."""
+
     def __init__(self, description, readname, filename=None, lineno=None):
+        super().__init__()
         self.description = description
         self.readname = readname
         self.filename = filename
@@ -19,6 +27,8 @@ class SingleReadValidationError(Exception):
 
 
 class PairedReadValidationError(Exception):
+    """Validation error resulting from a malformed pair of reads."""
+
     def __init__(
         self,
         description,
@@ -28,6 +38,7 @@ class PairedReadValidationError(Exception):
         read_one_fastqfile=None,
         read_two_fastqfile=None
     ):
+        super().__init__()
         self.description = description
         self.read_one = read_one
         self.read_two = read_two
@@ -40,14 +51,14 @@ class PairedReadValidationError(Exception):
         res += "Read 1\n"
         if self.read_one_fastqfile:
             res += "   - File: {read_one_fastqfile.file.basename}\n"
-            res += "   - Line Number: {read_one_fastqfile.file._lineno}\n"
+            res += "   - Line Number: {read_one_fastqfile.file.lineno}\n"
 
         res += "   - Readname: {read_one.name}\n"
         res += "Read 2\n"
 
         if self.read_two_fastqfile:
             res += "   - File: {read_two_fastqfile.file.basename}\n"
-            res += "   - Line Number: {read_two_fastqfile.file._lineno}\n"
+            res += "   - Line Number: {read_two_fastqfile.file.lineno}\n"
 
         res += "   - Readname: {read_two.name}\n"
         res += "---\n"
