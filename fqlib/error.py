@@ -1,7 +1,5 @@
 """Various error functionality for fqlib."""
 
-__author__ = "Clay McLeod"
-
 
 class SingleReadValidationError(Exception):
     """Validation error resulting from a malformed single read."""

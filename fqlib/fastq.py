@@ -5,8 +5,6 @@ such as utilities for reading/stepping-through FastQ files and reading/stepping-
 a pair of FastQ files.
 """
 
-__author__ = "Clay McLeod"
-
 import os
 
 from . import validators

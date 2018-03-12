@@ -1,7 +1,5 @@
 """All validation logic for fqlib."""
 
-__author__ = "Clay McLeod"
-
 import re
 
 
