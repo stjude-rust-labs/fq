@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "streetsidesoftware.code-spell-checker",
+    "eamodio.gitlens",
+    "magicstack.magicpython",
+    "bierner.markdown-preview-github-styles",
+    "ms-python.python",
+    "DavidAnson.vscode-markdownlint"
+  ]
+}

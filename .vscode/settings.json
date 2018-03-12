@@ -3,5 +3,14 @@
     "editor.insertSpaces": true,
     "editor.formatOnSave": true,
     "python.formatting.provider": "yapf",
-    "python.pythonPath": "/Users/cmcleod/anaconda/envs/python-3.6.4/bin/python"
+    "python.pythonPath": "/Users/cmcleod/anaconda/envs/python-3.6.4/bin/python",
+    "cSpell.words": [
+        "Fasta",
+        "Illumina",
+        "YAPF",
+        "fqlib",
+        "fqlint",
+        "pylint",
+        "pylintrc"
+    ]
 }
