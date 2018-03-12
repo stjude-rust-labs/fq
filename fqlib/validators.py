@@ -40,7 +40,8 @@ class BaseSingleReadValidator:
 
     def validate(self, read):
         raise NotImplementedError(
-            f"'validate' not implemented for {self.__class__.__name__}")
+            f"'validate' not implemented for {self.__class__.__name__}"
+        )
 
 
 class PluslineValidator(BaseSingleReadValidator):
@@ -104,7 +105,8 @@ class BasePairedReadValidator:
 
     def validate(self, readone, readtwo):
         raise NotImplementedError(
-            f"'validate' not implemented for {self.__class__.__name__}")
+            f"'validate' not implemented for {self.__class__.__name__}"
+        )
 
 
 class PairedReadnameValidator(BasePairedReadValidator):

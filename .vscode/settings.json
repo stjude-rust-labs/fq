@@ -2,5 +2,6 @@
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.formatOnSave": true,
-    "python.formatting.provider": "yapf"
+    "python.formatting.provider": "yapf",
+    "python.pythonPath": "/Users/cmcleod/anaconda/envs/python-3.6.4/bin/python"
 }

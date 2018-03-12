@@ -9,14 +9,15 @@ EXIT_PAIRED_READ_VALIDATION_ERROR = 2
 
 if __name__ == '__main__':
 
-    # yapf: disable
-    parser = argparse.ArgumentParser(description="Lint Illumina generated, paired FastQ files.")
+    parser = argparse.ArgumentParser(
+        description="Lint Illumina generated, paired FastQ files."
+    )
     parser.add_argument(
-        "read_one_file",
-        help="FastQ file containing all R1 reads.")
+        "read_one_file", help="FastQ file containing all R1 reads."
+    )
     parser.add_argument(
-        "read_two_file",
-        help="FastQ file containing all R2 reads.")
+        "read_two_file", help="FastQ file containing all R2 reads."
+    )
     parser.add_argument(
         "--lint-mode",
         help="Choose how to handle any errors that are linted in the file.",
@@ -24,13 +25,15 @@ if __name__ == '__main__':
         default="error"
     )
     parser.add_argument(
-        "-s", "--single-read-validation-level",
+        "-s",
+        "--single-read-validation-level",
         help="Validation level for single read errors.",
         choices=["minimum", "low", "high"],
         default="high"
     )
     parser.add_argument(
-        "-p", "--paired-read-validation-level",
+        "-p",
+        "--paired-read-validation-level",
         help="Validation level for paired read errors.",
         choices=["minimum", "low", "high"],
         default="high"
@@ -39,26 +42,30 @@ if __name__ == '__main__':
         "--print-every",
         type=int,
         default=4 * 1000000,
-        help="Alter how frequently updates are printed to the screen.")
+        help="Alter how frequently updates are printed to the screen."
+    )
     parser.add_argument(
-        "-q", "--quiet",
+        "-q",
+        "--quiet",
         help="Do not output informational messages.",
         action="store_const",
         dest="loglevel",
         const=logging.WARNING,
-        default=logging.DEBUG)
-    # yapf: enable
+        default=logging.DEBUG
+    )
 
     args = parser.parse_args()
     logging.basicConfig(
-        format="%(levelname)-5s: %(message)s", level=args.loglevel)
+        format="%(levelname)-5s: %(message)s", level=args.loglevel
+    )
 
     pair = PairedFastQFiles(
         args.read_one_file,
         args.read_two_file,
         lint_mode=args.lint_mode,
         single_read_validation_level=args.single_read_validation_level,
-        paired_read_validation_level=args.paired_read_validation_level)
+        paired_read_validation_level=args.paired_read_validation_level
+    )
 
     (sr_validators, pr_validators) = pair.get_validators()
     logging.info(f"Single Read Validators: {len(sr_validators)}")

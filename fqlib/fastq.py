@@ -94,10 +94,12 @@ class FastQFile:
         FileNotFoundError, ValueError
     """
 
-    def __init__(self,
-                 filename: str,
-                 validation_level: ValidationLevel = ValidationLevel.HIGH,
-                 lint_mode: str = "error"):
+    def __init__(
+        self,
+        filename: str,
+        validation_level: ValidationLevel = ValidationLevel.HIGH,
+        lint_mode: str = "error"
+    ):
 
         self.file = _FileReader(filename)
         self.vlevel = ValidationLevel.resolve(validation_level)
@@ -105,8 +107,8 @@ class FastQFile:
 
         self._validators = [
             v() for (k, v) in validators.__dict__.items()
-            if not k.startswith("Base") and isinstance(v, type) and issubclass(
-                v, BaseSingleReadValidator) and v.level <= self.vlevel
+            if not k.startswith("Base") and isinstance(v, type) and
+            issubclass(v, BaseSingleReadValidator) and v.level <= self.vlevel
         ]
 
     def __iter__(self):
@@ -139,7 +141,8 @@ class FastQFile:
             name=rname,
             sequence=rsequence,
             plusline=rplusline,
-            quality=rquality)
+            quality=rquality
+        )
 
         for validator in self._validators:
             result, description = validator.validate(read)
@@ -149,7 +152,8 @@ class FastQFile:
                         description=description,
                         readname=read.name,
                         filename=self.file.basename,
-                        lineno=self.file._lineno)
+                        lineno=self.file._lineno
+                    )
                 elif self.lint_mode == "report":
                     print(
                         f"{self.file.basename}:{validator.code}:{self.file._lineno}: " \
@@ -157,7 +161,8 @@ class FastQFile:
                     )
                 else:
                     raise NotImplementedError(
-                        f"Not implemented for lint mode: {self.lint_mode}")
+                        f"Not implemented for lint mode: {self.lint_mode}"
+                    )
 
         return read
 
@@ -178,28 +183,32 @@ class PairedFastQFiles:
         paired_read_validation_level: Validation level for the paired read errors.
     """
 
-    def __init__(self,
-                 read_one_filename: str,
-                 read_two_filename: str,
-                 lint_mode="error",
-                 single_read_validation_level="low",
-                 paired_read_validation_level="low"):
+    def __init__(
+        self,
+        read_one_filename: str,
+        read_two_filename: str,
+        lint_mode: str = "error",
+        single_read_validation_level: str = "low",
+        paired_read_validation_level: str = "low"
+    ):
         self.read_one_fastqfile = FastQFile(
             read_one_filename,
             validation_level=single_read_validation_level,
-            lint_mode=lint_mode)
+            lint_mode=lint_mode
+        )
         self.read_two_fastqfile = FastQFile(
             read_two_filename,
             validation_level=single_read_validation_level,
-            lint_mode=lint_mode)
+            lint_mode=lint_mode
+        )
         self.lint_mode = lint_mode
         self.vlevel = ValidationLevel.resolve(paired_read_validation_level)
 
         self._readno = 0
         self._validators = [
             v() for (k, v) in validators.__dict__.items()
-            if not k.startswith("Base") and isinstance(v, type) and issubclass(
-                v, BasePairedReadValidator) and v.level <= self.vlevel
+            if not k.startswith("Base") and isinstance(v, type) and
+            issubclass(v, BasePairedReadValidator) and v.level <= self.vlevel
         ]
 
     def __iter__(self):
@@ -240,7 +249,8 @@ class PairedFastQFiles:
                         read_two=read_two,
                         read_pairno=self._readno,
                         read_one_fastqfile=self.read_one_fastqfile,
-                        read_two_fastqfile=self.read_two_fastqfile)
+                        read_two_fastqfile=self.read_two_fastqfile
+                    )
                 elif self.lint_mode == "report":
                     print(
                         f"{self.read_one_fastqfile.file.basename}:{validator.code}:" \
@@ -252,16 +262,20 @@ class PairedFastQFiles:
                     )
                 else:
                     raise NotImplementedError(
-                        f"Not implemented for lint mode: {self.lint_mode}")
+                        f"Not implemented for lint mode: {self.lint_mode}"
+                    )
 
         return (read_one, read_two)
 
     def get_validators(self):
         """Returns a tuple with (SingleReadValidators, PairedReadValidators)"""
-        sr_validators = [(v.code, v.__class__.__name__)
-                         for v in self.read_one_fastqfile._validators]
-        pr_validators = [(v.code, v.__class__.__name__)
-                         for v in self._validators]
+        sr_validators = [
+            (v.code, v.__class__.__name__)
+            for v in self.read_one_fastqfile._validators
+        ]
+        pr_validators = [
+            (v.code, v.__class__.__name__) for v in self._validators
+        ]
         return (sr_validators, pr_validators)
 
     def close(self):

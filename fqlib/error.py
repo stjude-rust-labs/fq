@@ -19,13 +19,15 @@ class SingleReadValidationError(Exception):
 
 
 class PairedReadValidationError(Exception):
-    def __init__(self,
-                 description,
-                 read_one,
-                 read_two,
-                 read_pairno,
-                 read_one_fastqfile=None,
-                 read_two_fastqfile=None):
+    def __init__(
+        self,
+        description,
+        read_one,
+        read_two,
+        read_pairno,
+        read_one_fastqfile=None,
+        read_two_fastqfile=None
+    ):
         self.description = description
         self.read_one = read_one
         self.read_two = read_two
