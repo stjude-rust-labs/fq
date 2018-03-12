@@ -84,6 +84,19 @@ class ReadnameValidator(BaseSingleReadValidator):
         return True, None
 
 
+class CompleteReadValidator(BaseSingleReadValidator):
+    """Validates that the plusline of the FastQ file is correctly set to '+'."""
+
+    level = ValidationLevel.MINIMUM
+    code = "S004"
+
+    def validate(self, read):
+        if not read.name or not read.sequence or not read.plusline or not read.quality:
+            return False, f"Read is not complete."
+
+        return True, None
+
+
 class BasePairedReadValidator:
     """Base validator for paired reads, should not be called directly. This class
     is meant to be used as an abstract class for all paired read FastQ validations.
