@@ -1,4 +1,5 @@
 import os
+import logging
 from collections import namedtuple, defaultdict
 
 from . import validators
@@ -7,10 +8,11 @@ ValidationLevel = validators.ValidationLevel
 BaseSingleReadValidator = validators.BaseSingleReadValidator
 BasePairedReadValidator = validators.BasePairedReadValidator
 
+POSSIBLE_INTERLEAVES = ["/1", "/2"]
+
 
 class FastQRead:
     __slots__ = ['name', 'sequence', 'plusline', 'quality', 'interleave']
-    _possible_interleaves = ["/1", "/2"]
 
     def __init__(self, name, sequence, plusline, quality):
         self.name = name
@@ -20,7 +22,7 @@ class FastQRead:
         self.interleave = None
 
         # Search read name for interleave
-        for interleave in self._possible_interleaves:
+        for interleave in POSSIBLE_INTERLEAVES:
             if self.name.endswith(interleave):
                 self.name = self.name[:-len(interleave)]
                 self.interleave = interleave
@@ -60,9 +62,18 @@ class _FileReader:
         results = []
 
         while _i < num_lines:
+            try:
+                result = next(self.handle).strip()
+            except StopIteration:
+                break
+
             _i += 1
-            results.append(next(self.handle).strip())
+            results.append(result)
             self._lineno += 1
+
+        while _i < num_lines:
+            results.append(None)
+            _i += 1
 
         return results
 
@@ -137,11 +148,11 @@ class FastQFile:
                     raise SingleReadValidationError(
                         description=description,
                         readname=read.name,
-                        filename=self.file.name,
+                        filename=self.file.basename,
                         lineno=self.file._lineno)
                 elif self.lint_mode == "report":
                     print(
-                        f"{self.file.basename}:{validator.name}:{self.file._lineno}: " \
+                        f"{self.file.basename}:{validator.code}:{self.file._lineno}: " \
                         f"{description}"
                     )
                 else:
@@ -232,11 +243,11 @@ class PairedFastQFiles:
                         read_two_fastqfile=self.read_two_fastqfile)
                 elif self.lint_mode == "report":
                     print(
-                        f"{self.read_one_fastqfile.file.basename}:{validator.name}:" \
+                        f"{self.read_one_fastqfile.file.basename}:{validator.code}:" \
                         f"{self._readno}: {description}"
                     )
                     print(
-                        f"{self.read_two_fastqfile.file.basename}:{validator.name}:" \
+                        f"{self.read_two_fastqfile.file.basename}:{validator.code}:" \
                         f"{self._readno}: {description}"
                     )
                 else:
