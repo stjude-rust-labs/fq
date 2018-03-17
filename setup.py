@@ -1,6 +1,7 @@
 # pylint: disable=all
 # yapf: disable
 from setuptools import setup
+from Cython.Build import cythonize
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -17,6 +18,7 @@ setup(
     author_email="clay.mcleod@stjude.org",
     url="https://github.com/stjude/fqlib",
     packages=["fqlib"],
-    install_requires=[],
-    scripts=["bin/fqlint"]
+    install_requires=["cython"],
+    scripts=["bin/fqlint"],
+    ext_modules=cythonize("fqlib/*.pyx")
 )

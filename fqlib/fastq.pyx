@@ -6,6 +6,7 @@ a pair of FastQ files.
 """
 
 import os
+from mmap import mmap, PROT_READ
 
 from . import validators
 from .error import SingleReadValidationError, PairedReadValidationError
@@ -13,29 +14,37 @@ from .validators import (
     ValidationLevel, BaseSingleReadValidator, BasePairedReadValidator
 )
 
-POSSIBLE_INTERLEAVES = ["/1", "/2"]
+POSSIBLE_INTERLEAVES = [b"/1", b"/2"]
+
+# cdef FastQRead:
+#     """Lightweight class for a FastQ read.
+
+#     Attributes:
+#         name (str): proper name of the read in the FastQ file.
+#         sequence (str): sequence referred to in the read.
+#         plusline (str): content of the 'plusline' in the read.
+#         quality (str): corresponding quality of sequence in the read.
+#         interleave (str or None): if applicable, interleave of the read.
+
+#     Args:
+#         name (str): proper name of the read in the FastQ file.
+#         sequence (str): sequence referred to in the read.
+#         plusline (str): content of the 'plusline' in the read.
+#         quality (str): corresponding quality of sequence in the read.
+#     """
+
+#     char* name
+#     char* sequence
+#     char* plusline
+#     char* quality
+#     char* interleave
 
 
 class FastQRead:
-    """Lightweight class for a FastQ read.
-
-    Attributes:
-        name (str): proper name of the read in the FastQ file.
-        sequence (str): sequence referred to in the read.
-        plusline (str): content of the 'plusline' in the read.
-        quality (str): corresponding quality of sequence in the read.
-        interleave (str or None): if applicable, interleave of the read.
-
-    Args:
-        name (str): proper name of the read in the FastQ file.
-        sequence (str): sequence referred to in the read.
-        plusline (str): content of the 'plusline' in the read.
-        quality (str): corresponding quality of sequence in the read.
-    """
 
     __slots__ = ['name', 'sequence', 'plusline', 'quality', 'interleave']
 
-    def __init__(self, name: str, sequence: str, plusline: str, quality: str):
+    def __init__(self, name: bytes, sequence: bytes, plusline: bytes, quality: bytes):
         self.name = name
         self.sequence = sequence
         self.plusline = plusline
@@ -68,15 +77,16 @@ class _FileReader:
         name(str): Filename to be used to open the file.
     """
 
-    __slots__ = ['name', 'basename', 'handle', 'lineno']
+    __slots__ = ['name', 'basename', 'handle', 'lineno', 'mmap']
 
     def __init__(self, name: str):
         self.name = os.path.abspath(name)
         self.basename = os.path.basename(self.name)
-        self.handle = open(self.name, 'r')
+        self.handle = open(self.name, "r+b")
+        self.mmap = mmap(self.handle.fileno(), 0, prot=PROT_READ)
         self.lineno = 0
 
-    def getlines(self, num_lines: int = 1):
+    def get_four_lines(self):
         """Get :obj:`num_lines` number of lines from a file.
 
         Todo:
@@ -85,24 +95,12 @@ class _FileReader:
         Returns:
             list: `num_lines` lines of a file, stripped of whitespace."""
 
-        lines_seen = 0
-        results = []
-
-        while lines_seen < num_lines:
-            try:
-                result = next(self.handle).strip()
-            except StopIteration:
-                break
-
-            lines_seen += 1
-            results.append(result)
-            self.lineno += 1
-
-        while lines_seen < num_lines:
-            results.append(None)
-            lines_seen += 1
-
-        return results
+        return (
+            self.mmap.readline().strip(),
+            self.mmap.readline().strip(),
+            self.mmap.readline().strip(),
+            self.mmap.readline().strip(),
+        )
 
 
 class FastQFile:
@@ -157,7 +155,7 @@ class FastQFile:
             Error: multiple errors may be thrown, especially FastQ validation errors.
         """
 
-        [rname, rsequence, rplusline, rquality] = self.file.getlines(4)  # pylint: disable=E0632
+        (rname, rsequence, rplusline, rquality) = self.file.get_four_lines()  # pylint: disable=E0632
 
         # only check against read name because if any of the others are none, that
         # should signal an incomplete read, not running out of reads in the file.

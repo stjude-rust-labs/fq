@@ -55,7 +55,7 @@ class PluslineValidator(BaseSingleReadValidator):
     code = "S001"
 
     def validate(self, read):
-        if not read.plusline or read.plusline != '+':
+        if not read.plusline or read.plusline != b'+':
             return False, f"The plusline is not formatted correctly. " \
                           f"It's possible this is a FastA file or that the reads "\
                           f"are not correctly formed."
@@ -64,14 +64,22 @@ class PluslineValidator(BaseSingleReadValidator):
 
 
 class AlphabetValidator(BaseSingleReadValidator):
-    """Verifies that all reads are in the AGCTN dictionary."""
+    """Verifies that all reads are composed completely of valid characters. This method 
+    is optimized by compiling the alphabet into a set of valid ASCII codes and 
+    doing a bytes-wise comparison of the string at run-time."""
 
     level = ValidationLevel.LOW
     code = "S002"
 
+    def __init__(self, alphabet="ACGTNacgtn"):
+        self.alphabet_set = set()
+        for char in alphabet:
+            self.alphabet_set.add(ord(char))
+
     def validate(self, read):
-        if re.search("[^ACGTNacgtn]", read.sequence):
-            return False, f'Non-ACTGN base found in sequence {read.sequence}'
+        for char in read.sequence:
+            if not char in self.alphabet_set:
+                return False, f'Non-valid character found in sequence {read.sequence}'
 
         return True, None
 
@@ -84,7 +92,7 @@ class ReadnameValidator(BaseSingleReadValidator):
     code = "S003"
 
     def validate(self, read):
-        if not read.name.startswith("@"):
+        if not read.name.startswith(b"@"):
             return False, 'Read name must start with @'
 
         return True, None

@@ -42,9 +42,15 @@ if __name__ == '__main__':
         default="high"
     )
     parser.add_argument(
-        "--print-every",
+        "--stop-after-n-reads",
         type=int,
-        default=4 * 1000000,
+        default=-1,
+        help="Stop after processing `n` reads. If n < 0, no limit is set."
+    )
+    parser.add_argument(
+        "--print-every-n-reads",
+        type=int,
+        default=1000000,
         help="Alter how frequently updates are printed to the screen."
     )
     parser.add_argument(
@@ -80,8 +86,12 @@ if __name__ == '__main__':
 
     try:
         for readno, (read_r1, read_r2) in enumerate(pair, 1):
-            if readno % args.print_every == 0:
+            if readno % args.print_every_n_reads == 0:
                 logging.info("Processed {:d} reads.".format(readno))
+
+            if args.stop_after_n_reads > 0 and args.stop_after_n_reads <= readno:
+                break
+
         logging.info("Finished. Processed {:d} reads.".format(readno))  # pylint: disable=W0631
     except SingleReadValidationError as e:
         for line in str(e).split("\n"):
