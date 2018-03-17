@@ -1,23 +1,33 @@
 {
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "editor.formatOnSave": true,
-    "python.formatting.provider": "yapf",
-    "python.pythonPath": "/Users/cmcleod/anaconda/envs/python-3.6.4/bin/python",
-    "cSpell.words": [
-        "Cython",
-        "Fasta",
-        "Illumina",
-        "RDONLY",
-        "YAPF",
-        "cythonize",
-        "fastq",
-        "fileno",
-        "fqlib",
-        "fqlint",
-        "mmap",
-        "prot",
-        "pylint",
-        "pylintrc"
-    ]
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "yapf",
+  "python.pythonPath": "/Users/cmcleod/anaconda/envs/python-3.6.4/bin/python",
+  "cSpell.words": [
+    "Cython",
+    "Fasta",
+    "Illumina",
+    "RDONLY",
+    "YAPF",
+    "cythonize",
+    "fastq",
+    "fileno",
+    "fqlib",
+    "fqlint",
+    "mmap",
+    "prot",
+    "pylint",
+    "pylintrc"
+  ],
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.egg-info": true,
+    "**/*.so": true,
+    "**/*.c": true,
+    "build/": true,
+    ".gitflow": true,
+    ".mypy_cache": true,
+    "profiling/*.{cprof,fastq,bam}": true
+  }
 }

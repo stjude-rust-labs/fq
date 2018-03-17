@@ -5,6 +5,7 @@ import sys
 import logging
 import argparse
 from fqlib import PairedFastQFiles, SingleReadValidationError, PairedReadValidationError
+from fqlib.timer import Timer
 
 EXIT_SINGLE_READ_VALIDATION_ERROR = 1
 EXIT_PAIRED_READ_VALIDATION_ERROR = 2
@@ -85,12 +86,14 @@ if __name__ == '__main__':
         logging.debug(f"  - {code} => {name}")
 
     try:
-        for readno, (read_r1, read_r2) in enumerate(pair, 1):
-            if readno % args.print_every_n_reads == 0:
-                logging.info("Processed {:d} reads.".format(readno))
+        logging.info("Started reading from files...")
+        with Timer() as t:
+            for readno, (read_r1, read_r2) in enumerate(pair, 1):
+                if readno % args.print_every_n_reads == 0:
+                    t.update(args.print_every_n_reads)
 
-            if args.stop_after_n_reads > 0 and args.stop_after_n_reads <= readno:
-                break
+                if args.stop_after_n_reads > 0 and args.stop_after_n_reads <= readno:
+                    break
 
         logging.info("Finished. Processed {:d} reads.".format(readno))  # pylint: disable=W0631
     except SingleReadValidationError as e:
