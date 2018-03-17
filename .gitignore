@@ -1,8 +1,9 @@
 # Custom
 example/*.fastq
 example/*.fq
-whitespace
-whitespace/*
+profiling
+profiling/*
+fqlib/*.c
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

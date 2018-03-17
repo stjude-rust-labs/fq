@@ -5,11 +5,18 @@
     "python.formatting.provider": "yapf",
     "python.pythonPath": "/Users/cmcleod/anaconda/envs/python-3.6.4/bin/python",
     "cSpell.words": [
+        "Cython",
         "Fasta",
         "Illumina",
+        "RDONLY",
         "YAPF",
+        "cythonize",
+        "fastq",
+        "fileno",
         "fqlib",
         "fqlint",
+        "mmap",
+        "prot",
         "pylint",
         "pylintrc"
     ]
