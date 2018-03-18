@@ -33,6 +33,7 @@ To get a full install of `fqlib` on your machine, you can run the following comm
 ```bash
 git clone https://github.com/stjude/fqlib.git
 cd fqlib
+pip install -r requirements.txt
 python setup.py install
 ```
 

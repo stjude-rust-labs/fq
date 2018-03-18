@@ -1,7 +1,10 @@
 # pylint: disable=all
 # yapf: disable
 from setuptools import setup
-from Cython.Build import cythonize
+try:
+    from Cython.Build import cythonize
+except:
+    raise RuntimeError("You need Cython to build this package! Try 'pip install cython' first.")
 
 with open("README.md", "r") as f:
     long_description = f.read()
