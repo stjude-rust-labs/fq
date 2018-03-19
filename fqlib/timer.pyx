@@ -8,6 +8,9 @@ class Timer:
         self.total_reads = 0
         self.laps = [(self.start_time, 0)]
         return self
+    
+    def __exit__(self ,type, value, traceback):
+        return True
 
     def _lap(self):
         curr_lap = (time.clock(), self.total_reads)
@@ -19,6 +22,3 @@ class Timer:
         self.total_reads += read_count
         (t, r) = self._lap()
         logging.info(f"Processed {r} reads in {t:.2f} seconds ({r/t:.0f} reads/sec). Total: {self.total_reads} reads.")
-
-    def __exit__(self):
-        pass

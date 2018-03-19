@@ -40,9 +40,13 @@ POSSIBLE_INTERLEAVES = [b"/1", b"/2"]
 #     char* interleave
 
 
-class FastQRead:
+cdef class FastQRead:
 
-    __slots__ = ['name', 'sequence', 'plusline', 'quality', 'interleave']
+    cdef bytes name
+    cdef bytes sequence
+    cdef bytes plusline
+    cdef bytes quality
+    cdef bytes interleave
 
     def __init__(self, name: bytes, sequence: bytes, plusline: bytes, quality: bytes):
         self.name = name
@@ -56,6 +60,25 @@ class FastQRead:
             if self.name.endswith(interleave):
                 self.name = self.name[:-len(interleave)]
                 self.interleave = interleave
+    @property
+    def name(self):
+        return self.name
+
+    @property
+    def sequence(self):
+        return self.sequence
+
+    @property
+    def plusline(self):
+        return self.plusline
+
+    @property
+    def quality(self):
+        return self.quality
+
+    @property
+    def interleave(self):
+        return self.interleave
 
     def __repr__(self):
         return f"FastQRead(name={self.name}, sequence={self.sequence}, " \

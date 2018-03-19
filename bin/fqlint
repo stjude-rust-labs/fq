@@ -4,8 +4,10 @@
 import sys
 import logging
 import argparse
-from fqlib import PairedFastQFiles, SingleReadValidationError, PairedReadValidationError
-from fqlib.timer import Timer
+from fqlib import (
+    PairedFastQFiles, SingleReadValidationError, PairedReadValidationError,
+    Timer
+)
 
 EXIT_SINGLE_READ_VALIDATION_ERROR = 1
 EXIT_PAIRED_READ_VALIDATION_ERROR = 2

@@ -1,5 +1,5 @@
 # pylint: disable=all
-from .fastq import *
 from .error import *
+from .fastq import *
+from .timer import *
 from .validators import *
-from . import timer
