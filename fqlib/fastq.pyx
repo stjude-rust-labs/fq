@@ -5,6 +5,8 @@ such as utilities for reading/stepping-through FastQ files and reading/stepping-
 a pair of FastQ files.
 """
 
+#cython: infertypes=True
+
 import os
 from mmap import mmap, PROT_READ
 
@@ -60,6 +62,7 @@ cdef class FastQRead:
             if self.name.endswith(interleave):
                 self.name = self.name[:-len(interleave)]
                 self.interleave = interleave
+
     @property
     def name(self):
         return self.name

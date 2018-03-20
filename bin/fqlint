@@ -89,6 +89,7 @@ if __name__ == '__main__':
 
     try:
         logging.info("Started reading from files...")
+        readno = 0
         with Timer() as t:
             for readno, (read_r1, read_r2) in enumerate(pair, 1):
                 if readno % args.print_every_n_reads == 0:

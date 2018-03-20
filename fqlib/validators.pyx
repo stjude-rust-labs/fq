@@ -1,7 +1,8 @@
 """All validation logic for fqlib."""
 
-import re
+#cython: infertypes=True
 
+import re
 
 class ValidationLevel:
     """Utility class containing the various validation levels."""

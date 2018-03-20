@@ -10,7 +10,7 @@ class Timer:
         return self
     
     def __exit__(self ,type, value, traceback):
-        return True
+        return False
 
     def _lap(self):
         curr_lap = (time.clock(), self.total_reads)
