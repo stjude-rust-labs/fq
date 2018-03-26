@@ -5,10 +5,15 @@ such as utilities for reading/stepping-through FastQ files and reading/stepping-
 a pair of FastQ files.
 """
 
-#cython: infertypes=True
+# cython: infertypes=True
+# cython: language_level=3
+# cython: c_string_type=unicode
+# cython: c_string_encoding=utf8
+# distutils: language=c++
+
+from cpython cimport object
 
 import os
-from mmap import mmap, PROT_READ
 
 from . import validators
 from .error import SingleReadValidationError, PairedReadValidationError
@@ -16,120 +21,37 @@ from .validators import (
     ValidationLevel, BaseSingleReadValidator, BasePairedReadValidator
 )
 
-POSSIBLE_INTERLEAVES = [b"/1", b"/2"]
+cdef string[2] POSSIBLE_INTERLEAVES
+POSSIBLE_INTERLEAVES[:] = [<char*> "/1",<char*> "/2"]
 
-# cdef FastQRead:
-#     """Lightweight class for a FastQ read.
+cpdef FastQRead fqread_init(name: string, sequence: string, plusline: string, quality: string):
+    cdef FastQRead result
 
-#     Attributes:
-#         name (str): proper name of the read in the FastQ file.
-#         sequence (str): sequence referred to in the read.
-#         plusline (str): content of the 'plusline' in the read.
-#         quality (str): corresponding quality of sequence in the read.
-#         interleave (str or None): if applicable, interleave of the read.
+    result.name = name
+    result.sequence = sequence
+    result.plusline = plusline
+    result.quality = quality
+    result.interleave = <char*> ""
 
-#     Args:
-#         name (str): proper name of the read in the FastQ file.
-#         sequence (str): sequence referred to in the read.
-#         plusline (str): content of the 'plusline' in the read.
-#         quality (str): corresponding quality of sequence in the read.
-#     """
+    cdef int i = 0
 
-#     char* name
-#     char* sequence
-#     char* plusline
-#     char* quality
-#     char* interleave
+    for i in range(len(POSSIBLE_INTERLEAVES)):
+        interleave = POSSIBLE_INTERLEAVES[i]
+        if utils.ends_with(result.name, interleave):
+            result.name = result.name.substr(0, result.name.size() - 2)
+            result.interleave = result.name.substr(result.name.size() - 2, 2)
 
+    return result
 
-cdef class FastQRead:
-
-    cdef bytes name
-    cdef bytes sequence
-    cdef bytes plusline
-    cdef bytes quality
-    cdef bytes interleave
-
-    def __init__(self, name: bytes, sequence: bytes, plusline: bytes, quality: bytes):
-        self.name = name
-        self.sequence = sequence
-        self.plusline = plusline
-        self.quality = quality
-        self.interleave = None
-
-        # Search read name for interleave
-        for interleave in POSSIBLE_INTERLEAVES:
-            if self.name.endswith(interleave):
-                self.name = self.name[:-len(interleave)]
-                self.interleave = interleave
-
-    @property
-    def name(self):
-        return self.name
-
-    @property
-    def sequence(self):
-        return self.sequence
-
-    @property
-    def plusline(self):
-        return self.plusline
-
-    @property
-    def quality(self):
-        return self.quality
-
-    @property
-    def interleave(self):
-        return self.interleave
-
-    def __repr__(self):
-        return f"FastQRead(name={self.name}, sequence={self.sequence}, " \
-               f"plusline={self.plusline}, quality={self.quality}, " \
-               f"interleave={self.interleave})"
+cpdef str fqread_repr(FastQRead read):
+    return f"FastQRead(name='{read.name)}', "\
+            f"sequence='{read.sequence}', " \
+            f"plusline='{read.plusline}', " \
+            f"quality='{read.quality}', " \
+            f"interleave='{read.interleave}')"
 
 
-class _FileReader:
-    """Abstraction class for a single file to be open and read. This is simply
-    a convenience class.
-
-    Attributes:
-        name (str): Filename to be used to open the file.
-        basename (str): Basename of the file name.
-        handle (File): Object of file opened using file name, readable only.
-        lineno (int): Current line of the file.
-
-    Args:
-        name(str): Filename to be used to open the file.
-    """
-
-    __slots__ = ['name', 'basename', 'handle', 'lineno', 'mmap']
-
-    def __init__(self, name: str):
-        self.name = os.path.abspath(name)
-        self.basename = os.path.basename(self.name)
-        self.handle = open(self.name, "r+b")
-        self.mmap = mmap(self.handle.fileno(), 0, prot=PROT_READ)
-        self.lineno = 0
-
-    def get_four_lines(self):
-        """Get :obj:`num_lines` number of lines from a file.
-
-        Todo:
-            - Probably a cleaner way to do this.
-
-        Returns:
-            list: `num_lines` lines of a file, stripped of whitespace."""
-
-        return (
-            self.mmap.readline().strip(),
-            self.mmap.readline().strip(),
-            self.mmap.readline().strip(),
-            self.mmap.readline().strip(),
-        )
-
-
-class FastQFile:
+cdef class FastQFile:
     """Class used to iterate over records in a FastQ file. Validation will be
     performed based on the level of validation set in the constructor. Eventually,
     we will add functionality to efficiently unpack only the needed parts of the
@@ -145,6 +67,12 @@ class FastQFile:
         FileNotFoundError, ValueError
     """
 
+    cdef utils.CFileReader cfile_handle
+    cdef string filename
+    cdef string basename
+    cdef object vlevel
+    cdef str lint_mode
+
     def __init__(
         self,
         filename: str,
@@ -152,8 +80,11 @@ class FastQFile:
         lint_mode: str = "error"
     ):
 
-        self.file = _FileReader(filename)
+        self.filename = filename
+        self.basename = os.path.basename(self.filename)
+        self.cfile_handle = utils.CFileReader(filename)
         self.vlevel = ValidationLevel.resolve(validation_level)
+
         self.lint_mode = lint_mode
 
         self.validators = [
@@ -170,7 +101,7 @@ class FastQFile:
         """Iterator methods."""
         return self.next_read()
 
-    def next_read(self):
+    cdef next_read(self):
         """Naively read the FastQ read. If something goes awry, expect it to get caught
         in the validators.
 
@@ -181,19 +112,23 @@ class FastQFile:
             Error: multiple errors may be thrown, especially FastQ validation errors.
         """
 
-        (rname, rsequence, rplusline, rquality) = self.file.get_four_lines()  # pylint: disable=E0632
+        cdef string rname
+        cdef string rsequence
+        cdef string rplusline
+        cdef string rquality
+        cdef FastQRead read
+
+        rname = self.cfile_handle.read_line()
+        rsequence = self.cfile_handle.read_line()
+        rplusline = self.cfile_handle.read_line()
+        rquality = self.cfile_handle.read_line()
 
         # only check against read name because if any of the others are none, that
         # should signal an incomplete read, not running out of reads in the file.
-        if not rname:
+        if rname == <char*> "":
             raise StopIteration
 
-        read = FastQRead(
-            name=rname,
-            sequence=rsequence,
-            plusline=rplusline,
-            quality=rquality
-        )
+        read = fqread_init(rname, rsequence, rplusline, rquality)
 
         for validator in self.validators:
             result, description = validator.validate(read)
@@ -202,12 +137,12 @@ class FastQFile:
                     raise SingleReadValidationError(
                         description=description,
                         readname=read.name,
-                        filename=self.file.basename,
-                        lineno=self.file.lineno
+                        filename=self.basename,
+                        lineno=self.cfile_handle.lineno
                     )
                 elif self.lint_mode == "report":
                     print(
-                        f"{self.file.basename}:{validator.code}:{self.file.lineno}: " \
+                        f"{self.basename}:{validator.code}:{self.cfile_handle.lineno}: " \
                         f"{description}"
                     )
                 else:
@@ -219,7 +154,7 @@ class FastQFile:
 
     def close(self):
         """Closes the file handle."""
-        self.file.handle.close()
+        self.cfile_handle.close()
 
 
 class PairedFastQFiles:
@@ -304,11 +239,11 @@ class PairedFastQFiles:
                     )
                 elif self.lint_mode == "report":
                     print(
-                        f"{self.read_one_fastqfile.file.basename}:{validator.code}:" \
+                        f"{self.read_one_fastqfile.basename}:{validator.code}:" \
                         f"{self._readno}: {description}"
                     )
                     print(
-                        f"{self.read_two_fastqfile.file.basename}:{validator.code}:" \
+                        f"{self.read_two_fastqfile.basename}:{validator.code}:" \
                         f"{self._readno}: {description}"
                     )
                 else:

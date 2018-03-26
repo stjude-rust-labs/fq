@@ -1,6 +1,9 @@
 # pylint: disable=all
 # yapf: disable
+
+import os
 from setuptools import setup
+
 try:
     from Cython.Build import cythonize
 except:
@@ -8,6 +11,8 @@ except:
 
 with open("README.md", "r") as f:
     long_description = f.read()
+
+os.environ['CFLAGS'] = '-O3 -Wall -std=c++11 -stdlib=libc++'
 
 setup(
     name="fqlib",
@@ -21,7 +26,9 @@ setup(
     author_email="clay.mcleod@stjude.org",
     url="https://github.com/stjude/fqlib",
     packages=["fqlib"],
-    install_requires=["cython"],
     scripts=["bin/fqlint"],
-    ext_modules=cythonize("fqlib/*.pyx")
+    ext_modules=cythonize(
+        "fqlib/*.pyx",
+        language="c++"
+    )
 )

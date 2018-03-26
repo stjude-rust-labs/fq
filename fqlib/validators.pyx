@@ -1,10 +1,11 @@
 """All validation logic for fqlib."""
 
-#cython: infertypes=True
+# cython: infertypes=True, language_level=3
+# distutils: language=c++
 
 import re
 
-class ValidationLevel:
+cdef class ValidationLevel:
     """Utility class containing the various validation levels."""
 
     MINIMUM = 1

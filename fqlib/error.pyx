@@ -1,5 +1,8 @@
 """Various error functionality for fqlib."""
 
+# cython: infertypes=True, language_level=3
+# distutils: language=c++
+
 
 class SingleReadValidationError(Exception):
     """Validation error resulting from a malformed single read."""
@@ -48,14 +51,14 @@ class PairedReadValidationError(Exception):
         res = "Read Pair Number: {read_pairno}\n"
         res += "Read 1\n"
         if self.read_one_fastqfile:
-            res += "   - File: {read_one_fastqfile.file.basename}\n"
+            res += "   - File: {read_one_fastqfile.basename}\n"
             res += "   - Line Number: {read_one_fastqfile.file.lineno}\n"
 
         res += "   - Readname: {read_one.name}\n"
         res += "Read 2\n"
 
         if self.read_two_fastqfile:
-            res += "   - File: {read_two_fastqfile.file.basename}\n"
+            res += "   - File: {read_two_fastqfile.basename}\n"
             res += "   - Line Number: {read_two_fastqfile.file.lineno}\n"
 
         res += "   - Readname: {read_two.name}\n"
