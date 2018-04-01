@@ -1,11 +1,12 @@
-"""All validation logic for fqlib."""
-
-# cython: infertypes=True, language_level=3
+# cython: infertypes=True
+# cython: language_level=3
+# cython: c_string_type=unicode
+# cython: c_string_encoding=ascii
 # distutils: language=c++
 
 import re
 
-cdef class ValidationLevel:
+class ValidationLevel:
     """Utility class containing the various validation levels."""
 
     MINIMUM = 1
@@ -66,8 +67,8 @@ class PluslineValidator(BaseSingleReadValidator):
 
 
 class AlphabetValidator(BaseSingleReadValidator):
-    """Verifies that all reads are composed completely of valid characters. This method 
-    is optimized by compiling the alphabet into a set of valid ASCII codes and 
+    """Verifies that all reads are composed completely of valid characters. This method
+    is optimized by compiling the alphabet into a set of valid ASCII codes and
     doing a bytes-wise comparison of the string at run-time."""
 
     level = ValidationLevel.LOW

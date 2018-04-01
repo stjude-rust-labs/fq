@@ -2,7 +2,7 @@
 # yapf: disable
 
 import os
-from setuptools import setup
+from setuptools import setup, Extension
 
 try:
     from Cython.Build import cythonize
@@ -13,6 +13,14 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 os.environ['CFLAGS'] = '-O3 -Wall -std=c++11 -stdlib=libc++'
+extensions = [
+    Extension(
+        "fqlib.fastq",
+        ["fqlib/fastq.pyx"],
+        include_dirs=["."],
+        language="c++"
+    )
+]
 
 setup(
     name="fqlib",
@@ -26,9 +34,9 @@ setup(
     author_email="clay.mcleod@stjude.org",
     url="https://github.com/stjude/fqlib",
     packages=["fqlib"],
-    scripts=["bin/fqlint"],
-    ext_modules=cythonize(
-        "fqlib/*.pyx",
-        language="c++"
-    )
+    scripts=["bin/fqlint", "bin/fqgen"],
+    ext_modules=cythonize(extensions),
+#    package_data = {
+#        "fqlib/*.pxd"
+#    }
 )

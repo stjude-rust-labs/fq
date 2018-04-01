@@ -1,9 +1,3 @@
-"""Various error functionality for fqlib."""
-
-# cython: infertypes=True, language_level=3
-# distutils: language=c++
-
-
 class SingleReadValidationError(Exception):
     """Validation error resulting from a malformed single read."""
 

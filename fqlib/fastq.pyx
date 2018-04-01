@@ -1,17 +1,8 @@
-"""All FastQ functionality for fqlib.
-
-This module includes all FastQ functionality. Included in the module are things
-such as utilities for reading/stepping-through FastQ files and reading/stepping-through
-a pair of FastQ files.
-"""
-
 # cython: infertypes=True
 # cython: language_level=3
 # cython: c_string_type=unicode
-# cython: c_string_encoding=utf8
+# cython: c_string_encoding=ascii
 # distutils: language=c++
-
-from cpython cimport object
 
 import os
 
@@ -21,8 +12,10 @@ from .validators import (
     ValidationLevel, BaseSingleReadValidator, BasePairedReadValidator
 )
 
+
 cdef string[2] POSSIBLE_INTERLEAVES
 POSSIBLE_INTERLEAVES[:] = [<char*> "/1",<char*> "/2"]
+
 
 cpdef FastQRead fqread_init(name: string, sequence: string, plusline: string, quality: string):
     cdef FastQRead result
@@ -37,11 +30,34 @@ cpdef FastQRead fqread_init(name: string, sequence: string, plusline: string, qu
 
     for i in range(len(POSSIBLE_INTERLEAVES)):
         interleave = POSSIBLE_INTERLEAVES[i]
-        if utils.ends_with(result.name, interleave):
+        if ends_with(result.name, interleave):
             result.name = result.name.substr(0, result.name.size() - 2)
             result.interleave = result.name.substr(result.name.size() - 2, 2)
 
     return result
+
+
+cpdef FastQRead fqread_generate():
+    cdef FastQRead result
+
+    cdef instrument = "illumina1"
+    cdef run_number = "1"
+    cdef flowcell = "AABBCC"
+    cdef lane = "1"
+    cdef tile = "1"
+    cdef x_pos = "1"
+    cdef y_pos = "1"
+    cdef sequence = "AAAAAAAAAACCCCCCCCCGGGGGGGGGGTTTTTTTTTT"
+    cdef plusline = "+"
+    cdef quality =  "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
+
+    return fqread_init(
+        f"{instrument}:{run_number}:{flowcell}:{lane}:{tile}:{x_pos}:{y_pos}",
+        sequence,
+        plusline,
+        quality
+    )
+
 
 cpdef str fqread_repr(FastQRead read):
     return f"FastQRead(name='{read.name)}', "\
@@ -49,6 +65,34 @@ cpdef str fqread_repr(FastQRead read):
             f"plusline='{read.plusline}', " \
             f"quality='{read.quality}', " \
             f"interleave='{read.interleave}')"
+
+
+cdef class CFileReader:
+    """Utility class used internally to read files using the C API. This
+    class is meant to be used primarily as a building block for the
+    FastQFile python class."""
+
+    def __init__(self, filename: str):
+        self.filename = filename
+        self.handle = fopen(self.filename, "r")
+        self.lineno = 0
+        self.rlen = 0
+        self.line = NULL
+
+    cdef string read_line(self):
+        cdef string result
+        nread = getline(&self.line, &self.rlen, self.handle)
+        self.lineno = self.lineno + 1
+        if nread == -1:
+            return result
+        result = string(self.line)
+        result = result.substr(0, result.size() - 1) # remove newline
+        return result
+
+    cdef void close(self):
+        if self.handle:
+            fclose(self.handle)
+            self.handle = NULL
 
 
 cdef class FastQFile:
@@ -67,7 +111,7 @@ cdef class FastQFile:
         FileNotFoundError, ValueError
     """
 
-    cdef utils.CFileReader cfile_handle
+    cdef CFileReader cfile_handle
     cdef string filename
     cdef string basename
     cdef object vlevel
@@ -82,7 +126,7 @@ cdef class FastQFile:
 
         self.filename = filename
         self.basename = os.path.basename(self.filename)
-        self.cfile_handle = utils.CFileReader(filename)
+        self.cfile_handle = CFileReader(filename)
         self.vlevel = ValidationLevel.resolve(validation_level)
 
         self.lint_mode = lint_mode
