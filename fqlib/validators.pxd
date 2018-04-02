@@ -5,7 +5,7 @@
 # distutils: language=c++
 
 
-from cpython cimport object
+from cpython cimport object, set
 from fqlib.fqread cimport FastQRead
 from libcpp cimport bool as cbool
 from libcpp.string cimport string

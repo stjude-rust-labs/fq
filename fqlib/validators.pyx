@@ -65,56 +65,58 @@ cdef class PluslineValidator(BaseSingleReadValidator):
 
         return True
 
-#
-#
-#class AlphabetValidator(BaseSingleReadValidator):
-#    """Verifies that all reads are composed completely of valid characters. This method
-#    is optimized by compiling the alphabet into a set of valid ASCII codes and
-#    doing a bytes-wise comparison of the string at run-time."""
-#
-#    level = ValidationLevel.LOW
-#    code = "S002"
-#
-#    def __init__(self, alphabet="ACGTNacgtn"):
-#        self.alphabet_set = set()
-#        for char in alphabet:
-#            self.alphabet_set.add(ord(char))
-#
-#    def validate(self, read):
-#        for char in read.sequence:
-#            if not char in self.alphabet_set:
-#                return False, f'Non-valid character found in sequence {read.sequence}'
-#
-#        return True, None
-#
-#
-#class ReadnameValidator(BaseSingleReadValidator):
-#    """Validates that a readname is well-formed (locally, not globally) for
-#    errors like duplicate read names."""
-#
-#    level = ValidationLevel.HIGH
-#    code = "S003"
-#
-#    def validate(self, read):
-#        if not read.name.startswith(b"@"):
-#            return False, 'Read name must start with @'
-#
-#        return True, None
-#
-#
-#class CompleteReadValidator(BaseSingleReadValidator):
-#    """Validates that the plusline of the FastQ file is correctly set to '+'."""
-#
-#    level = ValidationLevel.MINIMUM
-#    code = "S004"
-#
-#    def validate(self, read):
-#        if not read.name or not read.sequence or not read.plusline or not read.quality:
-#            return False, f"Read is not complete."
-#
-#        return True, None
+
+cdef class AlphabetValidator(BaseSingleReadValidator):
+    """Verifies that all reads are composed completely of valid characters. This method
+    is optimized by compiling the alphabet into a set of valid ASCII codes and
+    doing a bytes-wise comparison of the string at run-time."""
+
+    cdef public set alphabet_set
+
+    def __init__(self, alphabet="ACGTNacgtn"):
+        super().__init__("S002", "low")
+        self.alphabet_set = set()
+        for c in alphabet:
+            self.alphabet_set.add(ord(c))
+
+    cpdef public cbool validate(self, FastQRead &read):
+        cdef str read_sequence = <str> read.sequence
+        for c in read_sequence:
+            if not ord(c) in self.alphabet_set:
+                self.error = f'Non-valid character found in sequence {read.sequence}'
+                return False
+        return True
 
 
+cdef class ReadnameValidator(BaseSingleReadValidator):
+    """Validates that a readname is well-formed (locally, not globally) for
+    errors like duplicate read names."""
+
+    def __init__(self):
+        super().__init__("S003", "high")
+
+    cpdef public cbool validate(self, FastQRead &read):
+        cdef str read_name = <str> read.name
+        if not read_name.startswith("@"):
+            self.error = <char*> 'Read name must start with @'
+            return False
+
+        return True
+
+
+cdef class CompleteReadValidator(BaseSingleReadValidator):
+    """Validates that the plusline of the FastQ file is correctly set to '+'."""
+
+    def __init__(self):
+        super().__init__("S004", "minimum")
+
+    cpdef public cbool validate(self, FastQRead &read):
+        if read.name.empty() or read.sequence.empty() or read.plusline.empty() \
+           or read.quality.empty():
+            self.error = <char*> "Read is not complete." 
+            return False
+
+        return True
 
 cdef class PairedReadnameValidator(BasePairedReadValidator):
     """Validates that a pair of readnames are well-formed."""

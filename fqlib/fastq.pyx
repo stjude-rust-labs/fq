@@ -65,7 +65,7 @@ cdef class FastQFile:
         """Iterator methods."""
         return self.next_read()
 
-    cpdef FastQRead next_read(self):
+    cpdef FastQRead next_read(self) except *:
         """Naively read the FastQ read. If something goes awry, expect it to get caught
         in the validators.
 
@@ -89,7 +89,7 @@ cdef class FastQFile:
 
         # only check against read name because if any of the others are none, that
         # should signal an incomplete read, not running out of reads in the file.
-        if rname == <char*> "":
+        if rname.empty():
             raise StopIteration
 
         fqread_init(read, rname, rsequence, rplusline, rquality)
@@ -196,8 +196,8 @@ cdef class PairedFastQFiles:
 
         # Must be "and". If one is None and not the other, that's a mismatched FastQ
         # read in one of the files.
-        #if not read_one.rname and not read_two.rname:
-        #    raise StopIteration
+        if not read_one.get('name') and not read_two.get('name'):
+            raise StopIteration
 
         for validator in self.validators:
             result = validator.validate(read_one, read_two)

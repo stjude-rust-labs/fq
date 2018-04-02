@@ -5,6 +5,7 @@
 # distutils: language=c++
 
 from fqlib.utils cimport ends_with
+from libcpp cimport bool as cbool
 from libcpp.string cimport string
 
 ctypedef struct FastQRead:

@@ -48,7 +48,6 @@ cdef void fqread_generate(FastQRead &read):
         quality
     )
 
-
 #cpdef str fqread_repr(FastQRead read):
 #    return f"FastQRead(name='{read.name)}', "\
 #            f"sequence='{read.sequence}', " \
