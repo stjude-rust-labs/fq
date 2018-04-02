@@ -10,15 +10,14 @@ class SingleReadValidationError(Exception):
 
     def __str__(self):
         res = ""
-        if self.filename:
-            res += "Filename: {filename}\n"
-        if self.lineno:
-            res += "Line Number: {lineno}\n"
-        res += "Readname: {readname}\n"
+        if hasattr(self, 'filename'):
+            res += f"Filename: {self.filename}\n"
+        if hasattr(self, 'lineno'):
+            res += f"Line Number: {self.lineno}\n"
+        res += f"Readname: {self.readname}\n"
         res += "---\n"
-        res += "{description}"
-
-        return res.format(**self.__dict__)
+        res += f"{self.description}"
+        return res
 
 
 class PairedReadValidationError(Exception):
@@ -30,8 +29,8 @@ class PairedReadValidationError(Exception):
         read_one,
         read_two,
         read_pairno,
-        read_one_fastqfile=None,
-        read_two_fastqfile=None
+        read_one_fastqfile,
+        read_two_fastqfile,
     ):
         super().__init__()
         self.description = description
@@ -42,21 +41,15 @@ class PairedReadValidationError(Exception):
         self.read_two_fastqfile = read_two_fastqfile
 
     def __str__(self):
-        res = "Read Pair Number: {read_pairno}\n"
+        res =  f"Read Pair Number: {self.read_pairno}\n"
         res += "Read 1\n"
-        if self.read_one_fastqfile:
-            res += "   - File: {read_one_fastqfile.basename}\n"
-            res += "   - Line Number: {read_one_fastqfile.cfile_handle.lineno}\n"
-
-        res += f"   - Readname: {self.read_one['name']}\n"
+        res += f"   - File: {self.read_one_fastqfile.basename}\n"
+        res += f"   - Line Number: {self.read_one_fastqfile.cfile_handle.lineno}\n"
+        res += f"   - Readname: {self.read_one.get('name')}\n"
         res += "Read 2\n"
-
-        if self.read_two_fastqfile:
-            res += "   - File: {read_two_fastqfile.basename}\n"
-            res += "   - Line Number: {read_two_fastqfile.cfile_handle.lineno}\n"
-
-        res += f"   - Readname: {self.read_two['name']}\n"
+        res += f"   - File: {self.read_two_fastqfile.basename}\n"
+        res += f"   - Line Number: {self.read_two_fastqfile.cfile_handle.lineno}\n"
+        res += f"   - Readname: {self.read_two.get('name')}\n"
         res += "---\n"
-        res += "{description}"
-
-        return res.format(**self.__dict__)
+        res += f"{self.description}"
+        return res
