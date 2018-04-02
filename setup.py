@@ -15,6 +15,36 @@ with open("README.md", "r") as f:
 os.environ['CFLAGS'] = '-O3 -Wall -std=c++11 -stdlib=libc++'
 extensions = [
     Extension(
+        "fqlib.timer",
+        ["fqlib/timer.pyx"],
+        include_dirs=["."],
+        language="c++"
+    ),
+    Extension(
+        "fqlib.error",
+        ["fqlib/error.pyx"],
+        include_dirs=["."],
+        language="c++"
+    ),
+    Extension(
+        "fqlib.utils",
+        ["fqlib/utils.pyx"],
+        include_dirs=["."],
+        language="c++"
+    ),
+    Extension(
+        "fqlib.validators",
+        ["fqlib/validators.pyx"],
+        include_dirs=["."],
+        language="c++"
+    ),
+    Extension(
+        "fqlib.fqread",
+        ["fqlib/fqread.pyx"],
+        include_dirs=["."],
+        language="c++"
+    ),
+    Extension(
         "fqlib.fastq",
         ["fqlib/fastq.pyx"],
         include_dirs=["."],

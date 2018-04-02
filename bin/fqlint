@@ -106,5 +106,3 @@ if __name__ == '__main__':
         for line in str(e).split("\n"):
             logging.error(line)
         sys.exit(EXIT_PAIRED_READ_VALIDATION_ERROR)
-
-    pair.close()

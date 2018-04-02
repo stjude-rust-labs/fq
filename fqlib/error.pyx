@@ -46,16 +46,16 @@ class PairedReadValidationError(Exception):
         res += "Read 1\n"
         if self.read_one_fastqfile:
             res += "   - File: {read_one_fastqfile.basename}\n"
-            res += "   - Line Number: {read_one_fastqfile.file.lineno}\n"
+            res += "   - Line Number: {read_one_fastqfile.cfile_handle.lineno}\n"
 
-        res += "   - Readname: {read_one.name}\n"
+        res += f"   - Readname: {self.read_one['name']}\n"
         res += "Read 2\n"
 
         if self.read_two_fastqfile:
             res += "   - File: {read_two_fastqfile.basename}\n"
-            res += "   - Line Number: {read_two_fastqfile.file.lineno}\n"
+            res += "   - Line Number: {read_two_fastqfile.cfile_handle.lineno}\n"
 
-        res += "   - Readname: {read_two.name}\n"
+        res += f"   - Readname: {self.read_two['name']}\n"
         res += "---\n"
         res += "{description}"
 
