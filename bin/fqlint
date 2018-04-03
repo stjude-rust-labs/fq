@@ -4,7 +4,8 @@
 import sys
 import logging
 import argparse
-from fqlib import PairedFastQFiles, SingleReadValidationError, PairedReadValidationError
+from fqlib.fastq import PairedFastQFiles
+from fqlib.error import SingleReadValidationError, PairedReadValidationError
 from fqlib.timer import Timer
 
 EXIT_SINGLE_READ_VALIDATION_ERROR = 1
@@ -87,6 +88,7 @@ if __name__ == '__main__':
 
     try:
         logging.info("Started reading from files...")
+        readno = 0
         with Timer() as t:
             for readno, (read_r1, read_r2) in enumerate(pair, 1):
                 if readno % args.print_every_n_reads == 0:
@@ -104,5 +106,3 @@ if __name__ == '__main__':
         for line in str(e).split("\n"):
             logging.error(line)
         sys.exit(EXIT_PAIRED_READ_VALIDATION_ERROR)
-
-    pair.close()

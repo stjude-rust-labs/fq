@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+import argparse
+from fqlib.fastq import fqread_generate
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate FastQ files")
+    parser.add_argument(
+        "-n",
+        "--num-reads",
+        help="Number of reads to generate",
+        type=int,
+        default=10000
+    )
+
+    args = parser.parse_args()
+
+    for i in range(args.num_reads):
+        print(fqread_generate())

@@ -1,5 +1,2 @@
-# pylint: disable=all
-from .fastq import *
-from .error import *
-from .validators import *
-from . import timer
+# pylint: disable
+from . import (error, timer, validators, fastq)

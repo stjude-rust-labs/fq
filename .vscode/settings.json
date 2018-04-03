@@ -25,6 +25,7 @@
     "**/*.egg-info": true,
     "**/*.so": true,
     "**/*.c": true,
+    "**/*.cpp": true,
     "build/": true,
     ".gitflow": true,
     ".mypy_cache": true,
