@@ -16,15 +16,13 @@ cdef class CFileReader:
         self.rlen = 0
         self.line = NULL
 
-    cdef string read_line(self):
-        cdef string result
-        nread = getline(&self.line, &self.rlen, self.handle)
+    cdef char* read_line(self):
+        cdef size_t nread = getline(&self.line, &self.rlen, self.handle)
         self.lineno = self.lineno + 1
         if nread == -1:
-            return result
-        result = string(self.line)
-        result = result.substr(0, result.size() - 1) # remove newline
-        return result
+            return self.line
+        self.line[nread-1] = b"\0"
+        return self.line 
 
     def __dealloc__(self):
         if self.handle:

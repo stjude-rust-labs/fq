@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
-from fqlib.fastq import fqread_generate
+from fqlib.fqread import fqread_generate_new
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate FastQ files")
+    parser.add_argument(
+        "-o",
+        "--output-file",
+        default=sys.stdout,
+        type=argparse.FileType('w'),
+        help="Output file"
+    )
     parser.add_argument(
         "-n",
         "--num-reads",
@@ -14,6 +22,11 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    f = args.output_file
 
     for i in range(args.num_reads):
-        print(fqread_generate())
+        read = fqread_generate_new()
+        f.write(read['name'] + "\n")
+        f.write(read['sequence'] + "\n")
+        f.write(read['plusline'] + "\n")
+        f.write(read['quality'] + "\n")

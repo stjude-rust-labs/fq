@@ -4,17 +4,22 @@
 # cython: c_string_encoding=ascii
 # distutils: language=c++
 
-from fqlib.utils cimport ends_with
 from libcpp cimport bool as cbool
-from libcpp.string cimport string
+from libc.string cimport strtok, strcmp, strrchr, strlen
+from fqlib.string_view cimport string_view
 
 ctypedef struct FastQRead:
-    string name
-    string sequence
-    string plusline
-    string quality
-    string interleave
+    # required fields
+    char* name
+    char* sequence
+    char* plusline
+    char* quality
 
-cdef void fqread_init(FastQRead&, string, string, string, string)
+    # optional fields
+    char* secondary_name
+    char* interleave
+
+cdef void fqread_init(FastQRead&, char* name, char* sequence, char* plusline, char* quality)
 cdef void fqread_generate(FastQRead&)
-#cpdef str fqread_repr(FastQRead &read)
+cpdef FastQRead fqread_generate_new()
+cpdef str fqread_repr(FastQRead &read)

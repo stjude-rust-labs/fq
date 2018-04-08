@@ -33,6 +33,11 @@ cdef class FastQFile:
     cdef public str lint_mode
     cdef public list validators
 
+    cdef char[1000] rname
+    cdef char[1000] rsequence
+    cdef char[1000] rplusline
+    cdef char[1000] rquality
+
     def __init__(
         self,
         filename: str,
@@ -76,23 +81,19 @@ cdef class FastQFile:
             Error: multiple errors may be thrown, especially FastQ validation errors.
         """
 
-        cdef string rname
-        cdef string rsequence
-        cdef string rplusline
-        cdef string rquality
         cdef FastQRead read
 
-        rname = self.cfile_handle.read_line()
-        rsequence = self.cfile_handle.read_line()
-        rplusline = self.cfile_handle.read_line()
-        rquality = self.cfile_handle.read_line()
+        strcpy(self.rname, self.cfile_handle.read_line())
+        strcpy(self.rsequence, self.cfile_handle.read_line())
+        strcpy(self.rplusline, self.cfile_handle.read_line())
+        strcpy(self.rquality, self.cfile_handle.read_line())
 
         # only check against read name because if any of the others are none, that
         # should signal an incomplete read, not running out of reads in the file.
-        if rname.empty():
+        if strcmp(self.rname, "") == 0:
             raise StopIteration
 
-        fqread_init(read, rname, rsequence, rplusline, rquality)
+        fqread_init(read, self.rname, self.rsequence, self.rplusline, self.rquality)
 
         for validator in self.validators:
             result = validator.validate(read)

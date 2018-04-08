@@ -4,26 +4,52 @@
 # cython: c_string_encoding=ascii
 # distutils: language=c++
 
-cdef string[2] POSSIBLE_INTERLEAVES
+DEF NUM_INTERLEAVES = 2
+DEF INTERLEAVE_LEN = 2
+cdef char *POSSIBLE_INTERLEAVES[NUM_INTERLEAVES]
 POSSIBLE_INTERLEAVES[:] = [<char*> "/1",<char*> "/2"]
 
-cdef void fqread_init(FastQRead &read, string name, string sequence, string plusline,
-    string quality):
+cdef void fqread_init(
+    FastQRead &read, 
+    char* name, 
+    char* sequence, 
+    char* plusline,
+    char* quality
+):
     """Initialize a FastQRead object based on the values passed in."""
 
-    read.name = name
+    cdef char* interleave
+    cdef char* suffix
+    cdef char* tmp_name = NULL
+    cdef char* tmp_secondary = NULL
+    cdef int i = 0
+
     read.sequence = sequence
     read.plusline = plusline
     read.quality = quality
+
+    # optional fields
+    read.secondary_name = <char*> "" 
     read.interleave = <char*> ""
 
-    cdef int i = 0
+    # parse secondary name
+    tmp_name = strtok(name, " ")
+    tmp_secondary = strtok(NULL, "")
 
-    for i in range(len(POSSIBLE_INTERLEAVES)):
+    if tmp_name != NULL:
+        read.name = tmp_name 
+    if tmp_secondary != NULL:
+        read.secondary_name = tmp_secondary
+
+    # parse interleave
+    cdef size_t name_len = strlen(read.name)
+    cdef size_t suffix_offset = name_len - INTERLEAVE_LEN
+    while i < NUM_INTERLEAVES:
         interleave = POSSIBLE_INTERLEAVES[i]
-        if ends_with(read.name, interleave):
-            read.name = read.name.substr(0, read.name.size() - 2)
-            read.interleave = read.name.substr(read.name.size() - 2, 2)
+        if strcmp(read.name + suffix_offset, interleave) == 0:
+            read.name[suffix_offset] = b'\0'
+            read.interleave = interleave
+        i += 1
 
 
 cdef void fqread_generate(FastQRead &read):
@@ -48,9 +74,15 @@ cdef void fqread_generate(FastQRead &read):
         quality
     )
 
-#cpdef str fqread_repr(FastQRead read):
-#    return f"FastQRead(name='{read.name)}', "\
-#            f"sequence='{read.sequence}', " \
-#            f"plusline='{read.plusline}', " \
-#            f"quality='{read.quality}', " \
-#            f"interleave='{read.interleave}')"
+cpdef FastQRead fqread_generate_new():
+    cdef FastQRead read
+    fqread_generate(read)
+    return read
+
+cpdef str fqread_repr(FastQRead &read):
+   return f"FastQRead(name='{read.name)}', "\
+           f"sequence='{read.sequence}', " \
+           f"plusline='{read.plusline}', " \
+           f"quality='{read.quality}', " \
+           f"interleave='{read.interleave}', " \
+           f"secondary_name='{read.secondary_name}')"
