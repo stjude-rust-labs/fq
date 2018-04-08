@@ -68,7 +68,7 @@ cdef void fqread_generate(FastQRead &read):
 
     fqread_init(
         read,
-        instrument + ":" + run_number + ":" + flowcell + ":" + lane + ":" + tile + ":" + x_pos + ":" + y_pos,
+        "@" + instrument + ":" + run_number + ":" + flowcell + ":" + lane + ":" + tile + ":" + x_pos + ":" + y_pos,
         sequence,
         plusline,
         quality

@@ -7,11 +7,16 @@ from fqlib.fqread import fqread_generate_new
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate FastQ files")
     parser.add_argument(
-        "-o",
-        "--output-file",
-        default=sys.stdout,
+        "--read-one-file",
+        required=True,
         type=argparse.FileType('w'),
-        help="Output file"
+        help="FastQ file containing all R1 reads."
+    )
+    parser.add_argument(
+        "--read-two-file",
+        required=True,
+        type=argparse.FileType('w'),
+        help="FastQ file containing all R2 reads."
     )
     parser.add_argument(
         "-n",
@@ -22,11 +27,20 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    f = args.output_file
+    readonefile = args.read_one_file
+    readtwofile = args.read_two_file
 
     for i in range(args.num_reads):
         read = fqread_generate_new()
-        f.write(read['name'] + "\n")
-        f.write(read['sequence'] + "\n")
-        f.write(read['plusline'] + "\n")
-        f.write(read['quality'] + "\n")
+
+        # Print R1 read.
+        readonefile.write(read['name'] + "/1\n")
+        readonefile.write(read['sequence'] + "\n")
+        readonefile.write(read['plusline'] + "\n")
+        readonefile.write(read['quality'] + "\n")
+
+        # Print R2 read.
+        readtwofile.write(read['name'] + "/2\n")
+        readtwofile.write(read['sequence'] + "\n")
+        readtwofile.write(read['plusline'] + "\n")
+        readtwofile.write(read['quality'] + "\n")
