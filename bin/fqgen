@@ -44,3 +44,6 @@ if __name__ == "__main__":
         readtwofile.write(read['sequence'] + "\n")
         readtwofile.write(read['plusline'] + "\n")
         readtwofile.write(read['quality'] + "\n")
+
+    readonefile.close()
+    readtwofile.close()

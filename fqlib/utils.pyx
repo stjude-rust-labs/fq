@@ -7,21 +7,22 @@
 cdef class CFileReader:
     """Utility class used internally to read files using the C API. This
     class is meant to be used primarily as a building block for the
-    FastQFile python class."""
+    SingleFastQReader python class."""
 
     def __cinit__(self, filename: str):
         self.filename = filename
         self.handle = fopen(self.filename, "r")
         self.lineno = 0
-        self.rlen = 0
+        self.rlen = -1
+        self.nread = -1
         self.line = NULL
 
     cdef char* read_line(self):
-        cdef size_t nread = getline(&self.line, &self.rlen, self.handle)
+        self.nread = getline(&self.line, &self.rlen, self.handle)
+        if self.nread == -1:
+            return <char*> ""
         self.lineno = self.lineno + 1
-        if nread == -1:
-            return self.line
-        self.line[nread-1] = b"\0"
+        self.line[self.nread - 1] = b"\0"
         return self.line 
 
     def __dealloc__(self):

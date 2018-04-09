@@ -45,8 +45,8 @@ extensions = [
         language="c++"
     ),
     Extension(
-        "fqlib.fastq",
-        ["fqlib/fastq.pyx"],
+        "fqlib.fqreader",
+        ["fqlib/fqreader.pyx"],
         include_dirs=["."],
         language="c++"
     )

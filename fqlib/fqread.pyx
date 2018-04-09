@@ -9,6 +9,14 @@ DEF INTERLEAVE_LEN = 2
 cdef char *POSSIBLE_INTERLEAVES[NUM_INTERLEAVES]
 POSSIBLE_INTERLEAVES[:] = [<char*> "/1",<char*> "/2"]
 
+cdef void fqread_init_empty(FastQRead &read):
+    read.name = NULL
+    read.sequence = NULL
+    read.plusline = NULL
+    read.quality = NULL
+    read.secondary_name = NULL
+    read.interleave = NULL
+
 cdef void fqread_init(
     FastQRead &read, 
     char* name, 

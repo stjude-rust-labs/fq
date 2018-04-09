@@ -11,7 +11,7 @@ import os
 from . import validators
 from .error import SingleReadValidationError, PairedReadValidationError
 
-cdef class FastQFile:
+cdef class SingleFastQReader:
     """Class used to iterate over records in a FastQ file. Validation will be
     performed based on the level of validation set in the constructor. Eventually,
     we will add functionality to efficiently unpack only the needed parts of the
@@ -95,7 +95,7 @@ cdef class FastQFile:
         # should signal an incomplete read, not running out of reads in the file.
         read = dict(self.next_read())
 
-        if not read['name']:
+        if read['name'] == "":
             raise StopIteration
 
         return read
@@ -115,17 +115,19 @@ cdef class FastQFile:
         cdef FastQRead read
 
         strcpy(self.rname, self.cfile_handle.read_line()) # O(n)
+
+        if strcmp(self.rname, "") == 0:
+            fqread_init_empty(read)
+            return read
+
         strcpy(self.rsequence, self.cfile_handle.read_line()) # O(n)
         strcpy(self.rplusline, self.cfile_handle.read_line()) # O(n)
         strcpy(self.rquality, self.cfile_handle.read_line()) # O(n)
 
         fqread_init(read, self.rname, self.rsequence, self.rplusline, self.rquality)
 
+        # this suggests that there are no more reads left in the file.
         if strcmp(read.name, "") == 0:
-            # this suggests that there are no more reads left in the file, so
-            # reading of the file is finished. We do not need to validate an empty
-            # read, if should be caught in __next__ and a StopIteration should be
-            # thrown.
             return read
 
         for validator in self.validators:
@@ -152,7 +154,7 @@ cdef class FastQFile:
         return read
 
 
-cdef class PairedFastQFiles:
+cdef class PairedFastQReader:
     """A class that steps through two FastQFiles at the same time and validates them
     from a global perspective.
 
@@ -164,8 +166,8 @@ cdef class PairedFastQFiles:
         paired_read_validation_level (str): Validation level for the paired read errors.
     """
 
-    cdef public FastQFile read_one_fastqfile
-    cdef public FastQFile read_two_fastqfile
+    cdef public SingleFastQReader read_one_fastqfile
+    cdef public SingleFastQReader read_two_fastqfile
     cdef public str lint_mode
     cdef public ValidationLevel validation_level 
     cdef public list validators
@@ -179,12 +181,12 @@ cdef class PairedFastQFiles:
         single_read_validation_level: str = "low",
         paired_read_validation_level: str = "low"
     ):
-        self.read_one_fastqfile = FastQFile(
+        self.read_one_fastqfile = SingleFastQReader(
             read_one_filename,
             validation_level=single_read_validation_level,
             lint_mode=lint_mode
         )
-        self.read_two_fastqfile = FastQFile(
+        self.read_two_fastqfile = SingleFastQReader(
             read_two_filename,
             validation_level=single_read_validation_level,
             lint_mode=lint_mode
@@ -215,7 +217,7 @@ cdef class PairedFastQFiles:
         self._readno += 1
         return result
 
-    def next_readpair(self):
+    cpdef next_readpair(self):
         """Get the next pair of reads from both files.
 
         Returns:
@@ -230,7 +232,7 @@ cdef class PairedFastQFiles:
 
         # Must be "and". If one is None and not the other, that's a mismatched FastQ
         # read in one of the files.
-        if not read_one.get('name') and not read_two.get('name'):
+        if read_one.name == NULL and read_two.name == NULL:
             raise StopIteration
 
         for validator in self.validators:
