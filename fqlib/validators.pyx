@@ -59,7 +59,7 @@ cdef class PluslineValidator(BaseSingleReadValidator):
         super().__init__("S001", "minimum")
 
     cpdef public cbool validate(self, FastQRead &read):
-        if read.plusline != <char *> '+':
+        if strcmp(read.plusline, '+') != 0:
             self.error = <char*> "The plusline is not formatted correctly. It's possible this is a FastA file or that the reads are not correctly formed."
             return False
 
@@ -111,9 +111,20 @@ cdef class CompleteReadValidator(BaseSingleReadValidator):
         super().__init__("S004", "minimum")
 
     cpdef public cbool validate(self, FastQRead &read):
-        if read.name.empty() or read.sequence.empty() or read.plusline.empty() \
-           or read.quality.empty():
-            self.error = <char*> "Read is not complete." 
+        if read.name == NULL or strcmp(read.name, "") == 0:
+            self.error = <char*> "Read is not complete: name is empty." 
+            return False
+
+        if read.sequence == NULL or strcmp(read.sequence, "") == 0:
+            self.error = <char*> "Read is not complete: sequence is empty." 
+            return False
+
+        if read.plusline == NULL or strcmp(read.plusline, "") == 0:
+            self.error = <char*> "Read is not complete: plusline is empty." 
+            return False
+
+        if read.quality == NULL or strcmp(read.quality, "") == 0:
+            self.error = <char*> "Read is not complete: quality is empty." 
             return False
 
         return True
@@ -125,7 +136,7 @@ cdef class PairedReadnameValidator(BasePairedReadValidator):
         super().__init__("P001", "low")
 
     cpdef public cbool validate(self, FastQRead &readone, FastQRead &readtwo):
-        if not readone.name == readtwo.name:
+        if strcmp(readone.name, readtwo.name) != 0:
             self.error = <char*> 'Read names do not match.'
             return False
 

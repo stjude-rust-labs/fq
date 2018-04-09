@@ -4,7 +4,7 @@
 import sys
 import logging
 import argparse
-from fqlib.fastq import PairedFastQFiles
+from fqlib.fqreader import PairedFastQReader
 from fqlib.error import SingleReadValidationError, PairedReadValidationError
 from fqlib.timer import Timer
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         format="%(levelname)-5s: %(message)s", level=args.loglevel
     )
 
-    pair = PairedFastQFiles(
+    pair = PairedFastQReader(
         args.read_one_file,
         args.read_two_file,
         lint_mode=args.lint_mode,

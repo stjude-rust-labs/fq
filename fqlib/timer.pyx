@@ -44,5 +44,5 @@ class Timer:
         (t, r) = self._lap()  # pylint: disable=C0103
         logging.info(
             f"Processed {r} reads in {t:.2f} seconds ({r/t:.0f} reads/sec). " \
-            "Total: {self.total_reads} reads."
+            f"Total: {self.total_reads} reads."
         )

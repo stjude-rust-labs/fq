@@ -1,10 +1,23 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
-from fqlib.fastq import fqread_generate
+from fqlib.fqread import fqread_generate_new
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate FastQ files")
+    parser.add_argument(
+        "--read-one-file",
+        required=True,
+        type=argparse.FileType('w'),
+        help="FastQ file containing all R1 reads."
+    )
+    parser.add_argument(
+        "--read-two-file",
+        required=True,
+        type=argparse.FileType('w'),
+        help="FastQ file containing all R2 reads."
+    )
     parser.add_argument(
         "-n",
         "--num-reads",
@@ -14,6 +27,23 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    readonefile = args.read_one_file
+    readtwofile = args.read_two_file
 
     for i in range(args.num_reads):
-        print(fqread_generate())
+        read = fqread_generate_new()
+
+        # Print R1 read.
+        readonefile.write(read['name'] + "/1\n")
+        readonefile.write(read['sequence'] + "\n")
+        readonefile.write(read['plusline'] + "\n")
+        readonefile.write(read['quality'] + "\n")
+
+        # Print R2 read.
+        readtwofile.write(read['name'] + "/2\n")
+        readtwofile.write(read['sequence'] + "\n")
+        readtwofile.write(read['plusline'] + "\n")
+        readtwofile.write(read['quality'] + "\n")
+
+    readonefile.close()
+    readtwofile.close()

@@ -12,7 +12,7 @@ except:
 with open("README.md", "r") as f:
     long_description = f.read()
 
-os.environ['CFLAGS'] = '-O3 -Wall -std=c++11 -stdlib=libc++'
+os.environ['CFLAGS'] = '-O3 -Wall -std=c++14 -stdlib=libc++'
 extensions = [
     Extension(
         "fqlib.timer",
@@ -45,8 +45,8 @@ extensions = [
         language="c++"
     ),
     Extension(
-        "fqlib.fastq",
-        ["fqlib/fastq.pyx"],
+        "fqlib.fqreader",
+        ["fqlib/fqreader.pyx"],
         include_dirs=["."],
         language="c++"
     )
