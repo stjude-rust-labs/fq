@@ -27,8 +27,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    readonefile = args.read_one_file
-    readtwofile = args.read_two_file
 
     for i in range(args.num_reads):
         read = fqread_generate_new()
