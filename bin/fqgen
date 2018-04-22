@@ -28,8 +28,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    read_one_writer = FastQWriter(args.read_one_filename, "/1")
-    read_two_writer = FastQWriter(args.read_two_filename, "/2")
-
-    read_one_writer.generate(args.num_reads)
-    read_two_writer.generate(args.num_reads)
+    writer = FastQWriter(args.read_one_filename, args.read_two_filename)
+    writer.generate(args.num_reads)

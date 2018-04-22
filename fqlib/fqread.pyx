@@ -62,21 +62,26 @@ cdef void fqread_init(
         i += 1
 
 
-cdef void fqread_generate(FastQRead &read, char *interleave):
+cdef void fqread_generate(FastQRead &read, 
+                          char* instrument,
+                          char* run_number,
+                          char *flowcell,
+                          char *interleave):
     """Generate values emulating an Illumina-based FastQ read."""
 
-    cdef char *instrument = "illumina1"
-    cdef char *run_number = "1"
-    cdef char *flowcell = "AABBCC"
-    cdef char *lane = "1"
-    cdef char *tile = "1"
-    cdef char *x_pos = "1"
-    cdef char *y_pos = "1"
+    cdef char[1024] readname
+    cdef char[64] lane 
+    sprintf(lane, "%d", <int> (rand() % 8 + 1)) # 8 lanes.
+    cdef char[64] tile
+    sprintf(tile, "%d", <int> (rand() % 60 + 1)) # 60 tiles.
+    cdef char[64] x_pos
+    sprintf(x_pos, "%d", <int> (rand() % 10000 + 1)) # 10,000 x-pos.
+    cdef char[64] y_pos
+    sprintf(y_pos, "%d", <int> (rand() % 10000 + 1)) # 10,000 y-pos.
     cdef char *sequence = "AAAAAAAAAACCCCCCCCCGGGGGGGGGGTTTTTTTTTT"
     cdef char *plusline = "+"
     cdef char *quality =  "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
 
-    cdef char[1024] readname
     strcpy(readname, b"@")
     strcat(readname, instrument)
     strcat(readname, b":")
@@ -105,6 +110,20 @@ cdef void fqread_write_to_file(FastQRead &read, FILE *f):
     fputs(read.name, f)
     if strcmp(read.interleave, "") != 0:
         fputs(read.interleave, f)
+    if strcmp(read.secondary_name, "") != 0:
+        fputs(" ", f)
+        fputs(read.secondary_name, f)
+    fputs(b"\n", f)
+    fputs(read.sequence, f)
+    fputs(b"\n", f)
+    fputs(read.plusline, f)
+    fputs(b"\n", f)
+    fputs(read.quality, f)
+    fputs(b"\n", f)
+
+cdef void fqread_write_to_file_add_interleave(FastQRead &read, FILE *f, char* interleave):
+    fputs(read.name, f)
+    fputs(interleave, f)
     if strcmp(read.secondary_name, "") != 0:
         fputs(" ", f)
         fputs(read.secondary_name, f)
