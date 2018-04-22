@@ -15,7 +15,8 @@ all:
 	@echo "  annotate: Create HTML files for all files, open browser."
 	@echo "  build:    Build a production ready executable." 
 	@echo "  clean:    Clean all non-essential files."
-	@echo "  develop:  Compile package and link into current environment."
+	@echo "  develop:  Compile package and symlink into local Python environment."
+	@echo "  install:  Install the package to your local Python environment."
 	@echo "  test:     Run the unit tests."
 	@echo ""
 
