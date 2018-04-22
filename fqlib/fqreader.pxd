@@ -10,7 +10,6 @@ from libcpp.string cimport string
 from fqlib.fqread cimport (
     FastQRead,
     fqread_init,
-    fqread_init_empty,
     fqread_repr
 )
 from fqlib.utils cimport CFileReader

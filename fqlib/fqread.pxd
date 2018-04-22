@@ -5,6 +5,7 @@
 # distutils: language=c++
 
 from libcpp cimport bool as cbool
+from libc.stdio cimport FILE, fopen, fclose, fputs
 from libc.string cimport strtok, strcmp, strrchr, strlen, strcat, strcpy
 
 ctypedef struct FastQRead:
@@ -18,8 +19,7 @@ ctypedef struct FastQRead:
     char* secondary_name
     char* interleave
 
-cdef void fqread_init_empty(FastQRead&)
 cdef void fqread_init(FastQRead&, char* name, char* sequence, char* plusline, char* quality)
-cdef void fqread_generate(FastQRead&)
-cpdef FastQRead fqread_generate_new()
+cdef void fqread_write_to_file(FastQRead &read, FILE *f)
+cdef void fqread_generate(FastQRead& read, char* interleave)
 cpdef str fqread_repr(FastQRead &read)

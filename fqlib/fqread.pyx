@@ -9,14 +9,6 @@ DEF INTERLEAVE_LEN = 2
 cdef char *POSSIBLE_INTERLEAVES[NUM_INTERLEAVES]
 POSSIBLE_INTERLEAVES[:] = [<char*> "/1",<char*> "/2"]
 
-cdef void fqread_init_empty(FastQRead &read):
-    read.name = NULL
-    read.sequence = NULL
-    read.plusline = NULL
-    read.quality = NULL
-    read.secondary_name = NULL
-    read.interleave = NULL
-
 cdef void fqread_init(
     FastQRead &read, 
     char* name, 
@@ -63,8 +55,7 @@ cdef void fqread_init(
         i += 1
 
 
-
-cdef void fqread_generate(FastQRead &read):
+cdef void fqread_generate(FastQRead &read, char *interleave):
     """Generate values emulating an Illumina-based FastQ read."""
 
     cdef char *instrument = "illumina1"
@@ -93,6 +84,7 @@ cdef void fqread_generate(FastQRead &read):
     strcat(readname, x_pos)
     strcat(readname, b":")
     strcat(readname, y_pos)
+    strcat(readname, interleave)
 
     fqread_init(
         read,
@@ -102,10 +94,21 @@ cdef void fqread_generate(FastQRead &read):
         quality
     )
 
-cpdef FastQRead fqread_generate_new():
-    cdef FastQRead read
-    fqread_generate(read)
-    return read
+cdef void fqread_write_to_file(FastQRead &read, FILE *f):
+    fputs(read.name, f)
+    if strcmp(read.interleave, "") != 0:
+        fputs(read.interleave, f)
+    if strcmp(read.secondary_name, "") != 0:
+        fputs(" ", f)
+        fputs(read.secondary_name, f)
+    fputs(b"\n", f)
+    fputs(read.sequence, f)
+    fputs(b"\n", f)
+    fputs(read.plusline, f)
+    fputs(b"\n", f)
+    fputs(read.quality, f)
+    fputs(b"\n", f)
+
 
 cpdef str fqread_repr(FastQRead &read):
     cdef char[0x400] buff

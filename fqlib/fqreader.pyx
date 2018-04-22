@@ -117,7 +117,7 @@ cdef class SingleFastQReader:
         strcpy(self.rname, self.cfile_handle.read_line()) # O(n)
 
         if strcmp(self.rname, "") == 0:
-            fqread_init_empty(read)
+            fqread_init(read, NULL, NULL, NULL, NULL)
             return read
 
         strcpy(self.rsequence, self.cfile_handle.read_line()) # O(n)
