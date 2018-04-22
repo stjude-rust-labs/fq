@@ -7,6 +7,8 @@
 DEF CHAR_LIMIT_MAX_PER_LINE = 0x8000 # also needs to be updated in utils.pyx
 
 from libc.stdio cimport *
+from libc.stdlib cimport free
+from posix.stdlib cimport realpath
 from libc.string cimport strchr, memset, strncpy
 from libcpp cimport bool as cbool
 from libcpp.vector cimport vector

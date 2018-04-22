@@ -12,8 +12,10 @@ cdef class CFileReader:
     SingleFastQReader python class."""
 
     def __cinit__(self, filename: str):
-        self.filename = filename
+        self.filename = realpath(filename, NULL)
         self.handle = gzopen(self.filename, "r")
+        if self.handle == NULL:
+            raise RuntimeError("Could not open file!")
         self.lineno = 0
         self.buffer_len = CHAR_LIMIT_MAX_PER_LINE
         self.nread = -1
@@ -27,7 +29,7 @@ cdef class CFileReader:
         """
         cdef int index = 0
         cdef char b
-        cdef size_t nread = -1
+        cdef ssize_t nread = -1
 
         # read first char, if -1, there is nothing left in the stream.
         nread = gzread(self.handle, &b, 1) 
@@ -35,7 +37,6 @@ cdef class CFileReader:
             return -1
 
         while True:
-            
             if b == 13: # Ignore carriage returns
                 pass 
             elif b == 10: # The line ends with a newline, so exit loop
@@ -62,6 +63,7 @@ cdef class CFileReader:
         return self.buffer 
 
     def __dealloc__(self):
+        free(self.filename)
         if self.handle:
             gzclose(self.handle)
             self.handle = NULL

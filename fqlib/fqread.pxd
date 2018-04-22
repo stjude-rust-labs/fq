@@ -19,6 +19,7 @@ ctypedef struct FastQRead:
     char* secondary_name
     char* interleave
 
+cdef void fqread_init_empty(FastQRead &read)
 cdef void fqread_init(FastQRead&, char* name, char* sequence, char* plusline, char* quality)
 cdef void fqread_write_to_file(FastQRead &read, FILE *f)
 cdef void fqread_generate(FastQRead& read, char* interleave)

@@ -12,7 +12,7 @@ def command(cmd):
 
 def test_wellformed():
     (stdout, stderr, exitcode) = command(
-        "fqlint example/00_wellformed/R1.fastq example/00_wellformed/R2.fastq"
+        "fqlint example/00_wellformed/R1.fastq.gz example/00_wellformed/R2.fastq.gz"
     )
     assert exitcode == 0
 

@@ -1,6 +1,12 @@
 # Custom
+*.fastq
+*.fq
+*.fastq.gz
+*.fq.gz
 example/*.fastq
 example/*.fq
+example/*.fastq.gz
+example/*.fq.gz
 profiling
 profiling/*
 fqlib/*.c
