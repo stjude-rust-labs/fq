@@ -1,4 +1,6 @@
-# fqlib
+# fqlib - Illumina-based FastQ library written for performance.
+
+[![Build Status](https://travis-ci.org/stjude/fqlib.svg?branch=master)](https://travis-ci.org/stjude/fqlib)
 
 A package written in Python for manipulating Illumina generated FastQ files. This code
 is based on best practices developed and maintained at St. Jude Children's Research
@@ -26,6 +28,7 @@ fqlint
 
 * Insure that Python 3.6+ is installed on your machine. `fqlib` may work with earlier versions of Python, but that would be coincidental.
 
+
 ### Installing
 
 To get a full install of `fqlib` on your machine, you can run the following commands:
@@ -34,12 +37,30 @@ To get a full install of `fqlib` on your machine, you can run the following comm
 git clone https://github.com/stjude/fqlib.git
 cd fqlib
 pip install -r requirements.txt
-python setup.py install
+make install
 ```
 
-## Running the tests
+## Development
 
-No unit tests exist today, but we are working towards implementing them.
+[![Build Status](https://travis-ci.org/stjude/fqlib.svg?branch=development)](https://travis-ci.org/stjude/fqlib)
+
+
+You can get a development version of the package and link it into your local Python installation like so:
+
+```bash
+git clone -b development https://github.com/stjude/fqlib.git
+cd fqlib
+pip install -r requirements.txt
+make develop
+```
+
+### Running the tests
+
+You can run the tests by running the following command. We are actively improving the test coverage.
+
+```
+make tests
+```
 
 ## Contributing
 
@@ -53,4 +74,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
