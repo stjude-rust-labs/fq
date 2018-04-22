@@ -5,8 +5,7 @@
 # distutils: language=c++
 
 from libcpp cimport bool as cbool
-from libc.string cimport strtok, strcmp, strrchr, strlen
-from fqlib.string_view cimport string_view
+from libc.string cimport strtok, strcmp, strrchr, strlen, strcat, strcpy
 
 ctypedef struct FastQRead:
     # required fields

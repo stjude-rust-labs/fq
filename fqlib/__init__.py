@@ -1,2 +1,2 @@
 # pylint: disable
-from . import (error, timer, validators, fastq)
+from . import (error, fqread, fqreader, timer, utils, validators)

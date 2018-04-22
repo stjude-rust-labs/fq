@@ -32,13 +32,16 @@ cdef void fqread_init(
     cdef char* tmp_secondary = NULL
     cdef int i = 0
 
+    read.name = name
     read.sequence = sequence
     read.plusline = plusline
     read.quality = quality
 
     # optional fields
-    read.secondary_name = <char*> "" 
     read.interleave = <char*> ""
+    read.secondary_name = <char*> "" 
+
+    # print(fqread_repr(read))
 
     # parse secondary name
     tmp_name = strtok(name, " ")
@@ -60,23 +63,40 @@ cdef void fqread_init(
         i += 1
 
 
+
 cdef void fqread_generate(FastQRead &read):
     """Generate values emulating an Illumina-based FastQ read."""
 
-    cdef instrument = "illumina1"
-    cdef run_number = "1"
-    cdef flowcell = "AABBCC"
-    cdef lane = "1"
-    cdef tile = "1"
-    cdef x_pos = "1"
-    cdef y_pos = "1"
-    cdef sequence = "AAAAAAAAAACCCCCCCCCGGGGGGGGGGTTTTTTTTTT"
-    cdef plusline = "+"
-    cdef quality =  "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
+    cdef char *instrument = "illumina1"
+    cdef char *run_number = "1"
+    cdef char *flowcell = "AABBCC"
+    cdef char *lane = "1"
+    cdef char *tile = "1"
+    cdef char *x_pos = "1"
+    cdef char *y_pos = "1"
+    cdef char *sequence = "AAAAAAAAAACCCCCCCCCGGGGGGGGGGTTTTTTTTTT"
+    cdef char *plusline = "+"
+    cdef char *quality =  "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
+
+    cdef char[1024] readname
+    strcpy(readname, b"@")
+    strcat(readname, instrument)
+    strcat(readname, b":")
+    strcat(readname, run_number)
+    strcat(readname, b":")
+    strcat(readname, flowcell)
+    strcat(readname, b":")
+    strcat(readname, lane)
+    strcat(readname, b":")
+    strcat(readname, tile)
+    strcat(readname, b":")
+    strcat(readname, x_pos)
+    strcat(readname, b":")
+    strcat(readname, y_pos)
 
     fqread_init(
         read,
-        "@" + instrument + ":" + run_number + ":" + flowcell + ":" + lane + ":" + tile + ":" + x_pos + ":" + y_pos,
+        readname,
         sequence,
         plusline,
         quality
@@ -88,9 +108,18 @@ cpdef FastQRead fqread_generate_new():
     return read
 
 cpdef str fqread_repr(FastQRead &read):
-   return f"FastQRead(name='{read.name)}', "\
-           f"sequence='{read.sequence}', " \
-           f"plusline='{read.plusline}', " \
-           f"quality='{read.quality}', " \
-           f"interleave='{read.interleave}', " \
-           f"secondary_name='{read.secondary_name}')"
+    cdef char[0x400] buff
+    strcpy(buff, "FastQRead(name='")
+    strcat(buff, read.name)
+    strcat(buff, "', sequence='")
+    strcat(buff, read.sequence)
+    strcat(buff, "', plusline='")
+    strcat(buff, read.plusline)
+    strcat(buff, "', quality='")
+    strcat(buff, read.quality)
+    strcat(buff, "', interleave='")
+    strcat(buff, read.interleave)
+    strcat(buff, "', secondary_name='")
+    strcat(buff, read.secondary_name)
+    strcat(buff, "')")
+    return buff

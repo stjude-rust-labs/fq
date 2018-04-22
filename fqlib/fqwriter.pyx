@@ -5,5 +5,5 @@ cdef class FastQWriter:
     def __cinit__(self, filename):
         self.filename = filename
 
-    def generate(n_reads=10000):
-        print(n)
+    def generate(n_reads):
+        print(n_reads)
