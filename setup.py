@@ -44,7 +44,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="fqlib",
-    version="1.0.2",
+    version="1.0.3",
     python_requires='>3.6.1',
     description="A package written in Python for manipulating Illumina generated " \
                 "FastQ files.",
