@@ -1,12 +1,10 @@
 language: python
 os:
-#  - linux
+  - linux
   - osx
 addons:
   apt:
     packages:
-      - zlibc
-      - zlib1g
       - zlib1g-dev
 python:
   - "3.6-dev"
