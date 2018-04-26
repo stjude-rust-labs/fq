@@ -13,7 +13,7 @@ except:
 
 # determine custom compiler flags
 extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
-extra_compile_args += ["-std=c++0x", "-Wall", "-Wextra", "-lz"]
+extra_compile_args += ["-std=c++0x", "-Wall", "-Wextra"]
 if 'CFLAGS' in os.environ:
     extra_compile_args += os.environ['CFLAGS'].split()
 
@@ -34,6 +34,7 @@ for pyx in glob(all_pyx):
         modulename,
         [stripped_filename],
         include_dirs=[base_path],
+        libraries=["z"],
         language="c++",
         extra_compile_args=extra_compile_args
     )
