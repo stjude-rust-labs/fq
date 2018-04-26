@@ -16,6 +16,7 @@ from fqlib.zlib cimport (
     gzFile, 
     gzopen, 
     gzread, 
+    gzeof,
     gzclose, 
     Z_NULL
 )

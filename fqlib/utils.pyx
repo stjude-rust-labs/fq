@@ -36,7 +36,7 @@ cdef class CFileReader:
         if nread == -1:
             return -1
 
-        while True:
+        while gzeof(self.handle) != 1:
             if b == 13: # Ignore carriage returns
                 pass 
             elif b == 10: # The line ends with a newline, so exit loop
