@@ -1,6 +1,6 @@
-SRCDIR=$(realpath ./fqlib/)
-BUILDDIR=$(realpath ./build/)
-DISTDIR=$(realpath ./dist/)
+SRCDIR=./fqlib
+BUILDDIR=./build
+DISTDIR=./dist
 CFLAGS=""
 PXD_FILES=$(wildcard $(SRCDIR)/*.pxd)
 PYX_FILES=$(wildcard $(SRCDIR)/*.pyx)
