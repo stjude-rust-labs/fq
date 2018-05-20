@@ -1,10 +1,23 @@
-use rand::{FromEntropy, Rng, SeedableRng, SmallRng};
+use rand::rngs::SmallRng;
+use rand::{FromEntropy, Rng, SeedableRng};
+
+use distributions::Character;
 
 use Block;
 
-static DEFAULT_SEQUENCE: &'static str = "AAAAAAAAAACCCCCCCCCGGGGGGGGGGTTTTTTTTTT";
-static DEFAULT_PLUS_LINE: &'static str = "+";
-static DEFAULT_QUALITY: &'static str = "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ";
+static UPPER_ALPHA_CHARSET: &'static [u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static QUALITY_CHARSET: &'static [u8] = b"@ABCDEFGHIJ";
+static NUCLEOBASE_CHARSET: &'static [u8] = b"AGTC";
+
+static PLUS_LINE: &'static str = "+";
+
+const READ_LEN: usize = 101;
+const FLOW_CELL_LEN: usize = 7;
+
+const LANES: u32 = 8;
+const TILES: u32 = 60;
+const MAX_X: u32 = 10000;
+const MAX_Y: u32 = 10000;
 
 pub struct Generator {
     instrument: String,
@@ -17,7 +30,7 @@ impl Generator {
     pub fn from_rng(mut rng: SmallRng) -> Generator {
         let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
         let run_number = rng.gen_range(1, 1000 + 1);
-        let flow_cell = String::from("AABBCC");
+        let flow_cell = gen_flow_cell(&mut rng, FLOW_CELL_LEN);
 
         Generator { instrument, flow_cell, run_number, rng }
     }
@@ -33,10 +46,10 @@ impl Generator {
     }
 
     fn name(&mut self) -> String {
-        let lane = self.rng.gen_range(1, 8 + 1);
-        let tile = self.rng.gen_range(1, 60 + 1);
-        let x_pos = self.rng.gen_range(1, 10000 + 1);
-        let y_pos = self.rng.gen_range(1, 10000 + 1);
+        let lane = self.rng.gen_range(1, LANES + 1);
+        let tile = self.rng.gen_range(1, TILES + 1);
+        let x_pos = self.rng.gen_range(1, MAX_X + 1);
+        let y_pos = self.rng.gen_range(1, MAX_Y + 1);
 
         format!(
             "@{}:{}:{}:{}:{}:{}:{}",
@@ -45,25 +58,22 @@ impl Generator {
         )
     }
 
-    fn sequence(&self) -> &'static str {
-        DEFAULT_SEQUENCE
+    fn sequence(&mut self) -> String {
+        let distribution = Character::new(NUCLEOBASE_CHARSET);
+        self.rng.sample_iter(&distribution).take(READ_LEN).collect()
     }
 
     fn plus_line(&self) -> &'static str {
-        DEFAULT_PLUS_LINE
+        PLUS_LINE
     }
 
-    fn quality(&self) -> &'static str {
-        DEFAULT_QUALITY
+    fn quality(&mut self) -> String {
+        let distribution = Character::new(QUALITY_CHARSET);
+        self.rng.sample_iter(&distribution).take(READ_LEN).collect()
     }
 
     fn next_block(&mut self) -> Block {
-        Block::new(
-            self.name(),
-            self.sequence().to_string(),
-            self.plus_line().to_string(),
-            self.quality().to_string(),
-        )
+        Block::new(self.name(), self.sequence(), self.plus_line(), self.quality())
     }
 }
 
@@ -73,6 +83,11 @@ impl Iterator for Generator {
     fn next(&mut self) -> Option<Block> {
         Some(self.next_block())
     }
+}
+
+fn gen_flow_cell(rng: &mut SmallRng, len: usize) -> String {
+    let distribution = Character::new(UPPER_ALPHA_CHARSET);
+    rng.sample_iter(&distribution).take(len).collect()
 }
 
 #[cfg(test)]
@@ -87,24 +102,30 @@ mod tests {
     #[test]
     fn test_name() {
         let mut generator = Generator::from_seed(SEED);
-        assert_eq!(generator.name(), "@fqlib2:898:AABBCC:3:22:4528:5118");
+        assert_eq!(generator.name(), "@fqlib2:898:JSLNGVS:1:32:8896:8166");
     }
 
     #[test]
     fn test_sequence() {
-        let generator = Generator::new();
-        assert_eq!(generator.sequence(), DEFAULT_SEQUENCE);
+        let mut generator = Generator::from_seed(SEED);
+        assert_eq!(
+            generator.sequence(),
+            "TCTAGTGCTGGGACATTTGGAGCAGCAGCTAAGAAAGGGGAGAGTGACACTCTTAGGGAATTACAGTTGTCACAGTCGGCCAATAGCCGTGTGGGATCCTG",
+        );
     }
 
     #[test]
     fn test_plus_line() {
         let generator = Generator::new();
-        assert_eq!(generator.plus_line(), DEFAULT_PLUS_LINE);
+        assert_eq!(generator.plus_line(), PLUS_LINE);
     }
 
     #[test]
     fn test_quality() {
-        let generator = Generator::new();
-        assert_eq!(generator.quality(), DEFAULT_QUALITY);
+        let mut generator = Generator::from_seed(SEED);
+        assert_eq!(
+            generator.quality(),
+            "FB@GDDIAJFJHJHCCEBCADHGBFFECJG@ECIB@HHJDH@FJBJABAACGC@DAFGJDAE@BHEHGF@BHC@DDJAGF@I@CFFEIE@HJIDDH@FACB",
+        );
     }
 }

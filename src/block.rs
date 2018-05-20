@@ -15,9 +15,12 @@ impl Block {
     /// use fqlib::Block;
     /// let _ = Block::new("@fqlib/1", "AGCT", "+", "abcd");
     /// ```
-    pub fn new<S>(name: S, sequence: S, plus_line: S, quality: S) -> Block
+    pub fn new<S, T, U, V>(name: S, sequence: T, plus_line: U, quality: V) -> Block
     where
         S: Into<String>,
+        T: Into<String>,
+        U: Into<String>,
+        V: Into<String>,
     {
         Block {
             name: name.into(),
