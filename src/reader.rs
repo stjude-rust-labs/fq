@@ -29,18 +29,16 @@ impl<R: BufRead> FastQReader<R> {
     }
 
     pub fn next_block(&mut self) -> Option<io::Result<Block>> {
-        if let Some(name) = self.next_line() {
-            if let Some(sequence) = self.next_line() {
-                if let Some(plus_line) = self.next_line() {
-                    if let Some(quality) = self.next_line() {
-                        return Some(
-                            Ok(Block::new(
-                                name.unwrap(),
-                                sequence.unwrap(),
-                                plus_line.unwrap(),
-                                quality.unwrap(),
-                            ))
-                        )
+        if let Some(Ok(name)) = self.next_line() {
+            if let Some(Ok(sequence)) = self.next_line() {
+                if let Some(Ok(plus_line)) = self.next_line() {
+                    if let Some(Ok(quality)) = self.next_line() {
+                        return Some(Ok(Block::new(
+                            &name[..name.len() - 2],
+                            sequence,
+                            plus_line,
+                            quality,
+                        )));
                     }
                 }
             }
@@ -83,11 +81,11 @@ mod fastq_reader_tests {
         ).unwrap();
 
         let actual = reader.next().unwrap().unwrap();
-        let exepcted = Block::new("@fqlib:1/1", "AGCT", "+", "abcd");
+        let exepcted = Block::new("@fqlib:1", "AGCT", "+", "abcd");
         assert_eq!(actual, exepcted);
 
         let actual = reader.next().unwrap().unwrap();
-        let exepcted = Block::new("@fqlib:2/1", "TCGA", "+", "dcba");
+        let exepcted = Block::new("@fqlib:2", "TCGA", "+", "dcba");
         assert_eq!(actual, exepcted);
     }
 }
