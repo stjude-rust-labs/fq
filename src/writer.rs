@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
-use Generator;
+use {Block, Generator};
 
 pub struct Writer<W: Write> {
     r1_writer: W,
@@ -28,30 +28,40 @@ impl<W: Write> Writer<W> {
     }
 
     pub fn write(&mut self, generator: Generator, iterations: i32) -> io::Result<()> {
-        let mut writers = [&mut self.r1_writer, &mut self.r2_writer];
-
-        for block in generator.take(iterations as usize) {
-            for (i, writer) in writers.iter_mut().enumerate() {
-                let interleave = format!("/{}", i + 1);
-
-                writer.write_all(block.name.as_bytes())?;
-                writer.write_all(interleave.as_bytes())?;
-                writer.write_all(b"\n")?;
-                writer.write_all(block.sequence.as_bytes())?;
-                writer.write_all(b"\n")?;
-                writer.write_all(block.plus_line.as_bytes())?;
-                writer.write_all(b"\n")?;
-                writer.write_all(block.quality.as_bytes())?;
-                writer.write_all(b"\n")?;
-            }
+        for (b, d) in generator.pairs().take(iterations as usize) {
+            write_block(&mut self.r1_writer, &b, "1")?;
+            write_block(&mut self.r2_writer, &d, "2")?;
         }
 
         Ok(())
     }
 
+
     pub fn into_inner(self) -> (W, W) {
         (self.r1_writer, self.r2_writer)
     }
+}
+
+pub fn write_block<W>(
+    writer: &mut W,
+    block: &Block,
+    interleave: &str,
+) -> io::Result<()>
+where
+    W: Write
+{
+    writer.write_all(block.name.as_bytes())?;
+    writer.write_all(b"/")?;
+    writer.write_all(interleave.as_bytes())?;
+    writer.write_all(b"\n")?;
+    writer.write_all(block.sequence.as_bytes())?;
+    writer.write_all(b"\n")?;
+    writer.write_all(block.plus_line.as_bytes())?;
+    writer.write_all(b"\n")?;
+    writer.write_all(block.quality.as_bytes())?;
+    writer.write_all(b"\n")?;
+
+    Ok(())
 }
 
 #[cfg(test)]

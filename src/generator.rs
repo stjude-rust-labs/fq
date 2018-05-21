@@ -45,6 +45,10 @@ impl Generator {
         Generator::from_rng(rng)
     }
 
+    pub fn pairs(self) -> Pairs {
+        Pairs::new(self)
+    }
+
     fn name(&mut self) -> String {
         let lane = self.rng.gen_range(1, LANES + 1);
         let tile = self.rng.gen_range(1, TILES + 1);
@@ -82,6 +86,31 @@ impl Iterator for Generator {
 
     fn next(&mut self) -> Option<Block> {
         Some(self.next_block())
+    }
+}
+
+pub struct Pairs(Generator);
+
+impl Pairs {
+    pub fn new(generator: Generator) -> Pairs {
+        Pairs(generator)
+    }
+}
+
+impl Iterator for Pairs {
+    type Item = (Block, Block);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let b = self.0.next_block();
+
+        let d = Block::new(
+            b.name.clone(),
+            self.0.sequence(),
+            self.0.plus_line(),
+            self.0.quality()
+        );
+
+        Some((b, d))
     }
 }
 
