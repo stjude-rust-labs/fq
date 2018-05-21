@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn test_name() {
         let mut generator = Generator::from_seed(SEED);
-        assert_eq!(generator.name(), "@fqlib2:898:JSLNGVS:1:32:8896:8166");
+        assert_eq!(generator.name(), "@fqlib2:898:JSYLNGV:8:44:169:5281");
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod tests {
         let mut generator = Generator::from_seed(SEED);
         assert_eq!(
             generator.sequence(),
-            "TCTAGTGCTGGGACATTTGGAGCAGCAGCTAAGAAAGGGGAGAGTGACACTCTTAGGGAATTACAGTTGTCACAGTCGGCCAATAGCCGTGTGGGATCCTG",
+            "TTCTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACT",
         );
     }
 
@@ -201,7 +201,7 @@ mod tests {
         let mut generator = Generator::from_seed(SEED);
         assert_eq!(
             generator.quality(),
-            "FB@GDDIAJFJHJHCCEBCADHGBFFECJG@ECIB@HHJDH@FJBJABAACGC@DAFGJDAE@BHEHGF@BHC@DDJAGF@I@CFFEIE@HJIDDH@FACB",
+            "GEHFBJG@GIDDIIIAJBAJFJHJBHECCEBCADHGI@IBFEIFFECJCG@ECIB@HHJDH@CHFJ@@BBJABAACABGCC@ADCIACFGJDAHDIE@BHE",
         );
     }
 }
