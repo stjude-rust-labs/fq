@@ -1,4 +1,3 @@
-use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng, SeedableRng};
 
@@ -105,24 +104,23 @@ impl Generator {
         self.block_buf_1.name.push_str(&name);
         self.block_buf_2.name.push_str(&name);
 
-        let n_range = Uniform::new(0, NUCLEOBASE_CHARSET.len());
-        let q_range = Uniform::new(0, QUALITY_CHARSET.len());
+        let distribution = Character::new(NUCLEOBASE_CHARSET);
 
-        for _ in 0..READ_LEN {
-            let i = n_range.sample(&mut self.rng);
-            let c = NUCLEOBASE_CHARSET[i] as char;
+        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
             self.block_buf_1.sequence.push(c);
+        }
 
-            let i = q_range.sample(&mut self.rng);
-            let c = QUALITY_CHARSET[i] as char;
-            self.block_buf_1.quality.push(c);
-
-            let i = n_range.sample(&mut self.rng);
-            let c = NUCLEOBASE_CHARSET[i] as char;
+        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
             self.block_buf_2.sequence.push(c);
+        }
 
-            let i = q_range.sample(&mut self.rng);
-            let c = QUALITY_CHARSET[i] as char;
+        let distribution = Character::new(QUALITY_CHARSET);
+
+        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
+            self.block_buf_1.quality.push(c);
+        }
+
+        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
             self.block_buf_2.quality.push(c);
         }
 

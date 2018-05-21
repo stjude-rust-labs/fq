@@ -1,19 +1,21 @@
 use rand::Rng;
-use rand::distributions::Distribution;
+use rand::distributions::{Distribution, Uniform};
 
 pub struct Character {
     alphabet: &'static [u8],
+    range: Uniform<usize>,
 }
 
 impl Character {
     pub fn new(alphabet: &'static [u8]) -> Character {
-        Character { alphabet }
+        let range = Uniform::new(0, alphabet.len());
+        Character { alphabet, range }
     }
 }
 
 impl Distribution<char> for Character {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> char {
-        let i = rng.gen_range(0, self.alphabet.len());
+        let i = self.range.sample(rng);
         self.alphabet[i] as char
     }
 }
