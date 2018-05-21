@@ -30,3 +30,21 @@ impl Block {
         }
     }
 }
+
+pub struct BlockBuf {
+    pub name: String,
+    pub sequence: String,
+    pub plus_line: String,
+    pub quality: String,
+}
+
+impl BlockBuf {
+    pub fn new() -> BlockBuf {
+        BlockBuf {
+            name: String::new(),
+            sequence: String::new(),
+            plus_line: String::new(),
+            quality: String::new(),
+        }
+    }
+}

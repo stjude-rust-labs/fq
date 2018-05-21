@@ -1,9 +1,10 @@
+use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng, SeedableRng};
 
 use distributions::Character;
 
-use Block;
+use {Block, BlockBuf};
 
 static UPPER_ALPHA_CHARSET: &'static [u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static QUALITY_CHARSET: &'static [u8] = b"@ABCDEFGHIJ";
@@ -23,7 +24,11 @@ pub struct Generator {
     instrument: String,
     run_number: i32,
     flow_cell: String,
+
     rng: SmallRng,
+
+    block_buf_1: BlockBuf,
+    block_buf_2: BlockBuf,
 }
 
 impl Generator {
@@ -32,7 +37,13 @@ impl Generator {
         let run_number = rng.gen_range(1, 1000 + 1);
         let flow_cell = gen_flow_cell(&mut rng, FLOW_CELL_LEN);
 
-        Generator { instrument, flow_cell, run_number, rng }
+        let mut block_buf_1 = BlockBuf::new();
+        block_buf_1.plus_line.push_str(PLUS_LINE);
+
+        let mut block_buf_2 = BlockBuf::new();
+        block_buf_2.plus_line.push_str(PLUS_LINE);
+
+        Generator { instrument, flow_cell, run_number, rng, block_buf_1, block_buf_2 }
     }
 
     pub fn from_seed(seed: [u8; 16]) -> Generator {
@@ -78,6 +89,44 @@ impl Generator {
 
     fn next_block(&mut self) -> Block {
         Block::new(self.name(), self.sequence(), self.plus_line(), self.quality())
+    }
+
+    pub fn next_block_buf_pair(&mut self) -> (&BlockBuf, &BlockBuf) {
+        self.block_buf_1.name.clear();
+        self.block_buf_1.sequence.clear();
+        self.block_buf_1.quality.clear();
+
+        self.block_buf_2.name.clear();
+        self.block_buf_2.sequence.clear();
+        self.block_buf_2.quality.clear();
+
+        let name = self.name();
+
+        self.block_buf_1.name.push_str(&name);
+        self.block_buf_2.name.push_str(&name);
+
+        let n_range = Uniform::new(0, NUCLEOBASE_CHARSET.len());
+        let q_range = Uniform::new(0, QUALITY_CHARSET.len());
+
+        for _ in 0..READ_LEN {
+            let i = n_range.sample(&mut self.rng);
+            let c = NUCLEOBASE_CHARSET[i] as char;
+            self.block_buf_1.sequence.push(c);
+
+            let i = q_range.sample(&mut self.rng);
+            let c = QUALITY_CHARSET[i] as char;
+            self.block_buf_1.quality.push(c);
+
+            let i = n_range.sample(&mut self.rng);
+            let c = NUCLEOBASE_CHARSET[i] as char;
+            self.block_buf_2.sequence.push(c);
+
+            let i = q_range.sample(&mut self.rng);
+            let c = QUALITY_CHARSET[i] as char;
+            self.block_buf_2.quality.push(c);
+        }
+
+        (&self.block_buf_1, &self.block_buf_2)
     }
 }
 

@@ -2,7 +2,7 @@
 extern crate lazy_static;
 extern crate rand;
 
-pub use block::Block;
+pub use block::{Block, BlockBuf};
 pub use generator::Generator;
 pub use reader::PairedFastQReader;
 pub use writer::Writer;
