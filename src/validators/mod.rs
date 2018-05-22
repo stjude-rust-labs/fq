@@ -60,8 +60,8 @@ impl FromStr for ValidationLevel {
 }
 
 pub struct BlockValidator {
-    single_read_validation_level: ValidationLevel,
-    paired_read_validation_level: ValidationLevel,
+    single_read_validators: Vec<Box<SingleReadValidator>>,
+    paired_read_validators: Vec<Box<PairedReadValidator>>,
 }
 
 impl BlockValidator {
@@ -69,50 +69,83 @@ impl BlockValidator {
         single_read_validation_level: ValidationLevel,
         paired_read_validation_level: ValidationLevel,
     ) -> BlockValidator {
-        BlockValidator {
-            single_read_validation_level,
-            paired_read_validation_level,
-        }
+        let single_read_validators = filter_single_read_validators(single_read_validation_level);
+        let paired_read_validators = filter_paired_read_validators(paired_read_validation_level);
+        BlockValidator { single_read_validators, paired_read_validators }
     }
 
     pub fn validate(&self, b: &Block) -> Result<(), Error> {
-        lazy_static! {
-            static ref NAME_VALIDATOR: NameValidator = NameValidator;
-            static ref COMPLETE_VALIDATOR: CompleteValidator = CompleteValidator;
-            static ref ALPHABET_VALIDATOR: AlphabetValidator = Default::default();
-            static ref PLUS_LINE_VALIDATOR: PlusLineValidator = PlusLineValidator;
-            static ref CONSISTENT_SEQ_QUAL_VALIDATOR: ConsistentSeqQualValidator = ConsistentSeqQualValidator;
-        }
-
-        if self.single_read_validation_level >= ValidationLevel::Minimum {
-            PLUS_LINE_VALIDATOR.validate(b)?;
-            COMPLETE_VALIDATOR.validate(b)?;
-
-            if self.single_read_validation_level >= ValidationLevel::Low {
-                ALPHABET_VALIDATOR.validate(b)?;
-
-                if self.single_read_validation_level >= ValidationLevel::High {
-                    NAME_VALIDATOR.validate(b)?;
-                    CONSISTENT_SEQ_QUAL_VALIDATOR.validate(b)?;
-                }
-            }
+        for validator in &self.single_read_validators {
+            validator.validate(&b)?;
         }
 
         Ok(())
     }
 
     pub fn validate_pair(&self, b: &Block, d: &Block) -> Result<(), Error> {
-        lazy_static! {
-            static ref NAMES_VALIDATOR: NamesValidator = NamesValidator;
-        }
-
         self.validate(b)?;
         self.validate(d)?;
 
-        if self.paired_read_validation_level >= ValidationLevel::Low {
-            NAMES_VALIDATOR.validate(b, d)?;
+        for validator in &self.paired_read_validators {
+            validator.validate(&b, &d)?;
         }
 
         Ok(())
+    }
+}
+
+fn filter_single_read_validators(
+    validation_level: ValidationLevel,
+) -> Vec<Box<SingleReadValidator>> {
+    let single_read_validators: Vec<Box<SingleReadValidator>> = vec![
+        Box::new(NameValidator),
+        Box::new(CompleteValidator),
+        Box::new(AlphabetValidator::default()),
+        Box::new(PlusLineValidator),
+        Box::new(ConsistentSeqQualValidator),
+    ];
+
+    single_read_validators
+        .into_iter()
+        .filter(|v| v.level() <= validation_level)
+        .collect()
+}
+
+fn filter_paired_read_validators(
+    validation_level: ValidationLevel,
+) -> Vec<Box<PairedReadValidator>> {
+    let paired_read_validators: Vec<Box<PairedReadValidator>> = vec![
+        Box::new(NamesValidator),
+    ];
+
+    paired_read_validators
+        .into_iter()
+        .filter(|v| v.level() <= validation_level)
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_filter_single_read_validators() {
+        let validators = filter_single_read_validators(ValidationLevel::Minimum);
+        assert_eq!(validators.len(), 2);
+        assert_eq!(validators[0].name(), "CompleteValidator");
+        assert_eq!(validators[1].name(), "PlusLineValidator");
+
+        let validators = filter_single_read_validators(ValidationLevel::High);
+        assert_eq!(validators.len(), 5);
+    }
+
+    #[test]
+    fn test_filter_paired_read_validators() {
+        let validators = filter_paired_read_validators(ValidationLevel::Minimum);
+        assert_eq!(validators.len(), 0);
+
+        let validators = filter_paired_read_validators(ValidationLevel::High);
+        assert_eq!(validators.len(), 1);
+        assert_eq!(validators[0].name(), "NamesValidator");
     }
 }
