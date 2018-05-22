@@ -69,9 +69,18 @@ impl BlockValidator {
     pub fn new(
         single_read_validation_level: ValidationLevel,
         paired_read_validation_level: ValidationLevel,
+        disabled_validators: &[String],
     ) -> BlockValidator {
-        let single_read_validators = filter_single_read_validators(single_read_validation_level);
-        let paired_read_validators = filter_paired_read_validators(paired_read_validation_level);
+        let single_read_validators = filter_single_read_validators(
+            single_read_validation_level,
+            disabled_validators,
+        );
+
+        let paired_read_validators = filter_paired_read_validators(
+            paired_read_validation_level,
+            disabled_validators,
+        );
+
         BlockValidator { single_read_validators, paired_read_validators }
     }
 
@@ -97,6 +106,7 @@ impl BlockValidator {
 
 fn filter_single_read_validators(
     validation_level: ValidationLevel,
+    disabled_validators: &[String],
 ) -> Vec<Box<SingleReadValidator>> {
     let single_read_validators: Vec<Box<SingleReadValidator>> = vec![
         Box::new(NameValidator),
@@ -110,11 +120,13 @@ fn filter_single_read_validators(
     single_read_validators
         .into_iter()
         .filter(|v| v.level() <= validation_level)
+        .filter(|v| !disabled_validators.contains(&v.code().to_string()))
         .collect()
 }
 
 fn filter_paired_read_validators(
     validation_level: ValidationLevel,
+    disabled_validators: &[String],
 ) -> Vec<Box<PairedReadValidator>> {
     let paired_read_validators: Vec<Box<PairedReadValidator>> = vec![
         Box::new(NamesValidator),
@@ -123,6 +135,7 @@ fn filter_paired_read_validators(
     paired_read_validators
         .into_iter()
         .filter(|v| v.level() <= validation_level)
+        .filter(|v| !disabled_validators.contains(&v.code().to_string()))
         .collect()
 }
 
@@ -132,22 +145,68 @@ mod tests {
 
     #[test]
     fn test_filter_single_read_validators() {
-        let validators = filter_single_read_validators(ValidationLevel::Minimum);
+        let disabled_validators = Vec::new();
+
+        let validators = filter_single_read_validators(
+            ValidationLevel::Minimum,
+            &disabled_validators,
+        );
+
         assert_eq!(validators.len(), 2);
         assert_eq!(validators[0].name(), "CompleteValidator");
         assert_eq!(validators[1].name(), "PlusLineValidator");
 
-        let validators = filter_single_read_validators(ValidationLevel::High);
+        let validators = filter_single_read_validators(
+            ValidationLevel::High,
+            &disabled_validators,
+        );
+
         assert_eq!(validators.len(), 6);
     }
 
     #[test]
+    fn test_filter_single_read_validators_with_disabled_validators() {
+        let disabled_validators = vec![String::from("S001")];
+
+        let validators = filter_single_read_validators(
+            ValidationLevel::High,
+            &disabled_validators,
+        );
+
+        assert_eq!(validators.len(), 5);
+        assert!(validators.iter().find(|v| v.code() == "S001").is_none());
+    }
+
+    #[test]
     fn test_filter_paired_read_validators() {
-        let validators = filter_paired_read_validators(ValidationLevel::Minimum);
+        let disabled_validators = Vec::new();
+
+        let validators = filter_paired_read_validators(
+            ValidationLevel::Minimum,
+            &disabled_validators,
+        );
+
         assert_eq!(validators.len(), 0);
 
-        let validators = filter_paired_read_validators(ValidationLevel::High);
+        let validators = filter_paired_read_validators(
+            ValidationLevel::High,
+            &disabled_validators,
+        );
+
         assert_eq!(validators.len(), 1);
         assert_eq!(validators[0].name(), "NamesValidator");
+    }
+
+    #[test]
+    fn test_filter_paired_read_validators_with_disabled_validators() {
+        let disabled_validators = vec![String::from("P001")];
+
+        let validators = filter_paired_read_validators(
+            ValidationLevel::High,
+            &disabled_validators,
+        );
+
+        assert_eq!(validators.len(), 0);
+        assert!(validators.iter().find(|v| v.code() == "P001").is_none());
     }
 }

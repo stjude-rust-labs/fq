@@ -27,6 +27,11 @@ fn main() {
              .value_name("LEVEL")
              .possible_values(&["minimum", "low", "high"])
              .default_value("high"))
+        .arg(Arg::with_name("disable-validator")
+             .long("disable-validator")
+             .value_name("CODE")
+             .multiple(true)
+             .number_of_values(1))
         .arg(Arg::with_name("r1-input-pathname")
              .help("")
              .index(1)
@@ -54,6 +59,12 @@ fn main() {
         ValidationLevel
     ).unwrap_or_else(|e| e.exit());
 
+    let disabled_validators: Vec<String> = matches
+        .values_of("disable-validator")
+        .unwrap_or_default()
+        .map(String::from)
+        .collect();
+
     let reader = PairedFastQReader::open(
         r1_input_pathname,
         r2_input_pathname,
@@ -62,6 +73,7 @@ fn main() {
     let validator = BlockValidator::new(
         single_read_validation_level,
         paired_read_validation_level,
+        &disabled_validators,
     );
 
     for (r1_block, r2_block) in reader {
