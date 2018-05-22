@@ -7,6 +7,7 @@ pub use self::paired::PairedReadValidator;
 use self::single::{
     AlphabetValidator,
     CompleteValidator,
+    ConsistentSeqQualValidator,
     NameValidator,
     PlusLineValidator,
 };
@@ -80,6 +81,7 @@ impl BlockValidator {
             static ref COMPLETE_VALIDATOR: CompleteValidator = CompleteValidator;
             static ref ALPHABET_VALIDATOR: AlphabetValidator = Default::default();
             static ref PLUS_LINE_VALIDATOR: PlusLineValidator = PlusLineValidator;
+            static ref CONSISTENT_SEQ_QUAL_VALIDATOR: ConsistentSeqQualValidator = ConsistentSeqQualValidator;
         }
 
         if self.single_read_validation_level >= ValidationLevel::Minimum {
@@ -91,6 +93,7 @@ impl BlockValidator {
 
                 if self.single_read_validation_level >= ValidationLevel::High {
                     NAME_VALIDATOR.validate(b)?;
+                    CONSISTENT_SEQ_QUAL_VALIDATOR.validate(b)?;
                 }
             }
         }
