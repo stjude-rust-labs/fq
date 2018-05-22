@@ -10,6 +10,7 @@ use self::single::{
     ConsistentSeqQualValidator,
     NameValidator,
     PlusLineValidator,
+    QualityStringValidator,
 };
 use self::paired::NamesValidator;
 
@@ -103,6 +104,7 @@ fn filter_single_read_validators(
         Box::new(AlphabetValidator::default()),
         Box::new(PlusLineValidator),
         Box::new(ConsistentSeqQualValidator),
+        Box::new(QualityStringValidator),
     ];
 
     single_read_validators
@@ -136,7 +138,7 @@ mod tests {
         assert_eq!(validators[1].name(), "PlusLineValidator");
 
         let validators = filter_single_read_validators(ValidationLevel::High);
-        assert_eq!(validators.len(), 5);
+        assert_eq!(validators.len(), 6);
     }
 
     #[test]
