@@ -70,7 +70,7 @@ fn main() {
         r2_input_pathname,
     ).unwrap();
 
-    let validator = BlockValidator::new(
+    let mut validator = BlockValidator::new(
         single_read_validation_level,
         paired_read_validation_level,
         &disabled_validators,
@@ -80,7 +80,7 @@ fn main() {
         let b = r1_block.unwrap();
         let d = r2_block.unwrap();
 
-        if let Err(e) = validator.validate_pair(&b, &d) {
+        if let Err(e) = validator.validate_pair_mut(&b, &d) {
             match lint_mode {
                 LintMode::Error => panic!("{:?}", e),
                 LintMode::Report => report_error(e),
