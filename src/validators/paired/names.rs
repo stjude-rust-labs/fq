@@ -55,10 +55,14 @@ mod tests {
         let validator = NamesValidator;
 
         let b = Block::new("@fqlib/1", "", "", "");
+
         let d = Block::new("@fqlib/1", "", "", "");
         assert!(validator.validate(&b, &d).is_ok());
 
         let d = Block::new("@fqlib/2", "", "", "");
+        assert!(validator.validate(&b, &d).is_ok());
+
+        let d = Block::new("@/20180523", "", "", "");
         assert!(validator.validate(&b, &d).is_err());
     }
 }

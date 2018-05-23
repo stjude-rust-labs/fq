@@ -34,7 +34,7 @@ impl<R: BufRead> FastQReader<R> {
                 if let Some(Ok(plus_line)) = self.next_line() {
                     if let Some(Ok(quality)) = self.next_line() {
                         return Some(Ok(Block::new(
-                            &name[..name.len() - 2],
+                            name,
                             sequence,
                             plus_line,
                             quality,
@@ -81,11 +81,11 @@ mod fastq_reader_tests {
         ).unwrap();
 
         let actual = reader.next().unwrap().unwrap();
-        let exepcted = Block::new("@fqlib:1", "AGCT", "+", "abcd");
+        let exepcted = Block::new("@fqlib:1/1", "AGCT", "+", "abcd");
         assert_eq!(actual, exepcted);
 
         let actual = reader.next().unwrap().unwrap();
-        let exepcted = Block::new("@fqlib:2", "TCGA", "+", "dcba");
+        let exepcted = Block::new("@fqlib:2/1", "TCGA", "+", "dcba");
         assert_eq!(actual, exepcted);
     }
 }
