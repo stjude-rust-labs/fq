@@ -9,11 +9,19 @@ pub struct Block {
 impl Block {
     /// Creates a new FastQ block.
     ///
+    /// If `name` includes a trailing interleave, it is removed.
+    ///
     /// # Examples
     ///
     /// ```
     /// use fqlib::Block;
-    /// let _ = Block::new("@fqlib/1", "AGCT", "+", "abcd");
+    ///
+    /// let block = Block::new("@fqlib/1", "AGCT", "+", "abcd");
+    ///
+    /// assert_eq!(block.name, "@fqlib");
+    /// assert_eq!(block.sequence, "AGCT");
+    /// assert_eq!(block.plus_line, "+");
+    /// assert_eq!(block.quality, "abcd");
     /// ```
     pub fn new<S, T, U, V>(
         name: S,
