@@ -24,7 +24,7 @@ impl<R: BufRead> FastQReader<R> {
     pub fn new(reader: R) -> FastQReader<R> {
         FastQReader {
             reader,
-            block: Block::new("", "", "", ""),
+            block: Block::default(),
         }
     }
 
