@@ -5,7 +5,7 @@ use std::io::BufWriter;
 use std::fs::File;
 
 use clap::{App, Arg};
-use fqlib::{Generator, Writer};
+use fqlib::{BlockPairGenerator, Writer};
 
 fn main() {
     let matches = App::new("fqgen")
@@ -30,7 +30,7 @@ fn main() {
 
     let num_reads = value_t!(matches, "num-reads", i32).unwrap_or_else(|e| e.exit());
 
-    let generator = Generator::new();
+    let generator = BlockPairGenerator::new();
     let mut writer = Writer::<BufWriter<File>>::create(
         &r1_output_pathname,
         &r2_output_pathname,

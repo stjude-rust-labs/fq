@@ -1,7 +1,7 @@
 extern crate rand;
 
 pub use block::Block;
-pub use generator::Generator;
+pub use generator::BlockPairGenerator;
 pub use reader::PairedFastQReader;
 pub use writer::Writer;
 pub use validators::ValidationLevel;

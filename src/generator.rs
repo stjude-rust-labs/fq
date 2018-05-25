@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng, SeedableRng};
@@ -30,9 +32,10 @@ pub struct Generator {
     tile_range: Uniform<u32>,
     x_pos_range: Uniform<u32>,
     y_pos_range: Uniform<u32>,
+    sequence_distribution: Character,
+    quality_distribution: Character,
 
-    block_1: Block,
-    block_2: Block,
+    block: Block,
 }
 
 impl Generator {
@@ -46,11 +49,11 @@ impl Generator {
         let x_pos_range = Uniform::new(1, MAX_X + 1);
         let y_pos_range = Uniform::new(1, MAX_Y + 1);
 
-        let mut block_1 = Block::default();
-        block_1.plus_line.push_str(PLUS_LINE);
+        let sequence_distribution = Character::new(NUCLEOBASE_CHARSET);
+        let quality_distribution = Character::new(QUALITY_CHARSET);
 
-        let mut block_2 = Block::default();
-        block_2.plus_line.push_str(PLUS_LINE);
+        let mut block = Block::default();
+        block.plus_line.push_str(PLUS_LINE);
 
         Generator {
             instrument,
@@ -62,9 +65,10 @@ impl Generator {
             tile_range,
             x_pos_range,
             y_pos_range,
+            sequence_distribution,
+            quality_distribution,
 
-            block_1,
-            block_2,
+            block,
         }
     }
 
@@ -78,115 +82,94 @@ impl Generator {
         Generator::from_rng(rng)
     }
 
-    pub fn pairs(self) -> Pairs {
-        Pairs::new(self)
+    pub fn next_block(&mut self) -> &Block {
+        self.block.clear();
+
+        self.next_name();
+        self.next_sequence();
+        self.next_quality();
+
+        &self.block
     }
 
-    fn name(&mut self) -> String {
+    pub fn next_block_with_name(&mut self, name: &str) -> &Block {
+        self.block.clear();
+
+        self.block.name.push_str(name);
+        self.next_sequence();
+        self.next_quality();
+
+        &self.block
+    }
+
+    fn next_name(&mut self) {
         let lane = self.lane_range.sample(&mut self.rng);
         let tile = self.tile_range.sample(&mut self.rng);
         let x_pos = self.x_pos_range.sample(&mut self.rng);
         let y_pos = self.y_pos_range.sample(&mut self.rng);
 
-        format!(
+        write!(
+            &mut self.block.name,
             "@{}:{}:{}:{}:{}:{}:{}",
             self.instrument, self.run_number, self.flow_cell,
             lane, tile, x_pos, y_pos,
-        )
+        ).unwrap();
     }
 
-    fn sequence(&mut self) -> String {
-        let distribution = Character::new(NUCLEOBASE_CHARSET);
-        self.rng.sample_iter(&distribution).take(READ_LEN).collect()
-    }
+    fn next_sequence(&mut self) {
+        let iter = self.rng
+            .sample_iter(&self.sequence_distribution)
+            .take(READ_LEN);
 
-    fn plus_line(&self) -> &'static str {
-        PLUS_LINE
-    }
-
-    fn quality(&mut self) -> String {
-        let distribution = Character::new(QUALITY_CHARSET);
-        self.rng.sample_iter(&distribution).take(READ_LEN).collect()
-    }
-
-    fn next_block(&mut self) -> Block {
-        Block::new(self.name(), self.sequence(), self.plus_line(), self.quality())
-    }
-
-    pub fn next_block_pair(&mut self) -> (&Block, &Block) {
-        self.block_1.name.clear();
-        self.block_1.sequence.clear();
-        self.block_1.quality.clear();
-
-        self.block_2.name.clear();
-        self.block_2.sequence.clear();
-        self.block_2.quality.clear();
-
-        let name = self.name();
-
-        self.block_1.name.push_str(&name);
-        self.block_2.name.push_str(&name);
-
-        let distribution = Character::new(NUCLEOBASE_CHARSET);
-
-        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_1.sequence.push(c);
+        for c in iter {
+            self.block.sequence.push(c);
         }
-
-        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_2.sequence.push(c);
-        }
-
-        let distribution = Character::new(QUALITY_CHARSET);
-
-        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_1.quality.push(c);
-        }
-
-        for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_2.quality.push(c);
-        }
-
-        (&self.block_1, &self.block_2)
     }
-}
 
-impl Iterator for Generator {
-    type Item = Block;
+    fn next_quality(&mut self) {
+        let iter = self.rng
+            .sample_iter(&self.quality_distribution)
+            .take(READ_LEN);
 
-    fn next(&mut self) -> Option<Block> {
-        Some(self.next_block())
-    }
-}
-
-pub struct Pairs(Generator);
-
-impl Pairs {
-    pub fn new(generator: Generator) -> Pairs {
-        Pairs(generator)
-    }
-}
-
-impl Iterator for Pairs {
-    type Item = (Block, Block);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let b = self.0.next_block();
-
-        let d = Block::new(
-            b.name.clone(),
-            self.0.sequence(),
-            self.0.plus_line(),
-            self.0.quality()
-        );
-
-        Some((b, d))
+        for c in iter {
+            self.block.quality.push(c);
+        }
     }
 }
 
 fn gen_flow_cell(rng: &mut SmallRng, len: usize) -> String {
     let distribution = Character::new(UPPER_ALPHA_CHARSET);
     rng.sample_iter(&distribution).take(len).collect()
+}
+
+pub struct BlockPairGenerator {
+    generator_1: Generator,
+    generator_2: Generator,
+}
+
+impl BlockPairGenerator {
+    pub fn from_seed(seed: [u8; 16]) -> BlockPairGenerator {
+        let rng_1 = SmallRng::from_seed(seed);
+        let rng_2 = SmallRng::from_seed(seed);
+
+        BlockPairGenerator {
+            generator_1: Generator::from_rng(rng_1),
+            generator_2: Generator::from_rng(rng_2),
+        }
+    }
+
+    pub fn new() -> BlockPairGenerator {
+        BlockPairGenerator {
+            generator_1: Generator::new(),
+            generator_2: Generator::new(),
+        }
+    }
+
+    pub fn next_block_pair(&mut self) -> (&Block, &Block) {
+        let b = self.generator_1.next_block();
+        let d = self.generator_2.next_block_with_name(&b.name);
+        (b, d)
+    }
 }
 
 #[cfg(test)]
@@ -199,32 +182,21 @@ mod tests {
     ];
 
     #[test]
-    fn test_name() {
+    fn test_next_block() {
         let mut generator = Generator::from_seed(SEED);
-        assert_eq!(generator.name(), "@fqlib2:898:JSYLNGV:8:44:169:5281");
+
+        let block = generator.next_block();
+
+        assert_eq!(block.name, "@fqlib2:898:JSYLNGV:8:44:169:5281");
+        assert_eq!(block.sequence, "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT");
+        assert_eq!(block.plus_line, "+");
+        assert_eq!(block.quality, "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@");
     }
 
     #[test]
-    fn test_sequence() {
+    fn test_next_block_with_name() {
         let mut generator = Generator::from_seed(SEED);
-        assert_eq!(
-            generator.sequence(),
-            "TTCTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACT",
-        );
-    }
-
-    #[test]
-    fn test_plus_line() {
-        let generator = Generator::new();
-        assert_eq!(generator.plus_line(), PLUS_LINE);
-    }
-
-    #[test]
-    fn test_quality() {
-        let mut generator = Generator::from_seed(SEED);
-        assert_eq!(
-            generator.quality(),
-            "GEHFBJG@GIDDIIIAJBAJFJHJBHECCEBCADHGI@IBFEIFFECJCG@ECIB@HHJDH@CHFJ@@BBJABAACABGCC@ADCIACFGJDAHDIE@BHE",
-        );
+        let block = generator.next_block_with_name("@fqlib");
+        assert_eq!(block.name, "@fqlib");
     }
 }

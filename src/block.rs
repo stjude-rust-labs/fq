@@ -39,6 +39,12 @@ impl Block {
         block
     }
 
+    pub fn clear(&mut self) {
+        self.name.clear();
+        self.sequence.clear();
+        self.quality.clear();
+    }
+
     pub fn reset(&mut self) {
         if let Some(i) = self.name.rfind('/') {
             self.name.truncate(i);
