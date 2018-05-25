@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
-use {BlockBuf, Generator};
+use {Block, Generator};
 
 pub struct Writer<W: Write> {
     r1_writer: W,
@@ -31,7 +31,7 @@ impl<W: Write> Writer<W> {
         let mut i = 0;
 
         while i < iterations {
-            let (b, d) = generator.next_block_buf_pair();
+            let (b, d) = generator.next_block_pair();
             write_block(&mut self.r1_writer, b, "1")?;
             write_block(&mut self.r2_writer, d, "2")?;
             i += 1;
@@ -48,7 +48,7 @@ impl<W: Write> Writer<W> {
 
 pub fn write_block<W>(
     writer: &mut W,
-    block: &BlockBuf,
+    block: &Block,
     interleave: &str,
 ) -> io::Result<()>
 where

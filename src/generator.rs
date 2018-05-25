@@ -3,7 +3,7 @@ use rand::{FromEntropy, Rng, SeedableRng};
 
 use distributions::Character;
 
-use {Block, BlockBuf};
+use Block;
 
 static UPPER_ALPHA_CHARSET: &'static [u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static QUALITY_CHARSET: &'static [u8] = b"@ABCDEFGHIJ";
@@ -26,8 +26,8 @@ pub struct Generator {
 
     rng: SmallRng,
 
-    block_buf_1: BlockBuf,
-    block_buf_2: BlockBuf,
+    block_1: Block,
+    block_2: Block,
 }
 
 impl Generator {
@@ -36,13 +36,13 @@ impl Generator {
         let run_number = rng.gen_range(1, 1000 + 1);
         let flow_cell = gen_flow_cell(&mut rng, FLOW_CELL_LEN);
 
-        let mut block_buf_1 = BlockBuf::new();
-        block_buf_1.plus_line.push_str(PLUS_LINE);
+        let mut block_1 = Block::default();
+        block_1.plus_line.push_str(PLUS_LINE);
 
-        let mut block_buf_2 = BlockBuf::new();
-        block_buf_2.plus_line.push_str(PLUS_LINE);
+        let mut block_2 = Block::default();
+        block_2.plus_line.push_str(PLUS_LINE);
 
-        Generator { instrument, flow_cell, run_number, rng, block_buf_1, block_buf_2 }
+        Generator { instrument, flow_cell, run_number, rng, block_1, block_2 }
     }
 
     pub fn from_seed(seed: [u8; 16]) -> Generator {
@@ -90,41 +90,41 @@ impl Generator {
         Block::new(self.name(), self.sequence(), self.plus_line(), self.quality())
     }
 
-    pub fn next_block_buf_pair(&mut self) -> (&BlockBuf, &BlockBuf) {
-        self.block_buf_1.name.clear();
-        self.block_buf_1.sequence.clear();
-        self.block_buf_1.quality.clear();
+    pub fn next_block_pair(&mut self) -> (&Block, &Block) {
+        self.block_1.name.clear();
+        self.block_1.sequence.clear();
+        self.block_1.quality.clear();
 
-        self.block_buf_2.name.clear();
-        self.block_buf_2.sequence.clear();
-        self.block_buf_2.quality.clear();
+        self.block_2.name.clear();
+        self.block_2.sequence.clear();
+        self.block_2.quality.clear();
 
         let name = self.name();
 
-        self.block_buf_1.name.push_str(&name);
-        self.block_buf_2.name.push_str(&name);
+        self.block_1.name.push_str(&name);
+        self.block_2.name.push_str(&name);
 
         let distribution = Character::new(NUCLEOBASE_CHARSET);
 
         for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_buf_1.sequence.push(c);
+            self.block_1.sequence.push(c);
         }
 
         for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_buf_2.sequence.push(c);
+            self.block_2.sequence.push(c);
         }
 
         let distribution = Character::new(QUALITY_CHARSET);
 
         for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_buf_1.quality.push(c);
+            self.block_1.quality.push(c);
         }
 
         for c in self.rng.sample_iter(&distribution).take(READ_LEN) {
-            self.block_buf_2.quality.push(c);
+            self.block_2.quality.push(c);
         }
 
-        (&self.block_buf_1, &self.block_buf_2)
+        (&self.block_1, &self.block_2)
     }
 }
 

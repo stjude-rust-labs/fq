@@ -1,4 +1,4 @@
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub struct Block {
     pub name: String,
     pub sequence: String,
@@ -42,24 +42,6 @@ impl Block {
     pub fn reset(&mut self) {
         if let Some(i) = self.name.rfind('/') {
             self.name.truncate(i);
-        }
-    }
-}
-
-pub struct BlockBuf {
-    pub name: String,
-    pub sequence: String,
-    pub plus_line: String,
-    pub quality: String,
-}
-
-impl BlockBuf {
-    pub fn new() -> BlockBuf {
-        BlockBuf {
-            name: String::new(),
-            sequence: String::new(),
-            plus_line: String::new(),
-            quality: String::new(),
         }
     }
 }
