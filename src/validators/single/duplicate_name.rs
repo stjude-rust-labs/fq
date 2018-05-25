@@ -1,17 +1,41 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
+
+use bloom::ScalableBloomFilter;
 
 use Block;
 use validators::{Error, SingleReadValidatorMut, ValidationLevel};
 
-
+const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
+const INITIAL_CAPACITY: usize = 10000;
 
 pub struct DuplicateNameValidator {
-    set: HashSet<String>,
+    filter: ScalableBloomFilter,
+    false_positives: HashMap<String, u8>,
 }
 
 impl DuplicateNameValidator {
     pub fn new() -> DuplicateNameValidator {
-        DuplicateNameValidator { set: HashSet::new() }
+        DuplicateNameValidator {
+            filter: ScalableBloomFilter::new(
+                FALSE_POSITIVE_PROBABILITY,
+                INITIAL_CAPACITY,
+            ),
+            false_positives: HashMap::new(),
+        }
+    }
+}
+
+impl DuplicateNameValidator {
+    pub fn contains_once(&mut self, name: &str) -> bool {
+        if let Some(count) = self.false_positives.get_mut(name) {
+            if *count >= 1 {
+                return false;
+            }
+
+            *count += 1;
+        }
+
+        true
     }
 }
 
@@ -29,15 +53,15 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
     }
 
     fn validate(&mut self, b: &Block) -> Result<(), Error> {
-        let name = b.name.clone();
+        let name = &b.name;
 
-        if self.set.contains(&name) {
-            let message = format!(r#"Duplicate name exists: "{}""#, name);
-            Err(Error::Invalid(String::from(message)))
-        } else {
-            self.set.insert(name);
-            Ok(())
+        if self.filter.contains(name) {
+            self.false_positives.insert(name.clone(), 0);
         }
+
+        self.filter.insert(name);
+
+        Ok(())
     }
 }
 
@@ -47,6 +71,24 @@ mod tests {
 
     use Block;
     use validators::{SingleReadValidatorMut, ValidationLevel};
+
+    #[test]
+    fn test_contains_once() {
+        let mut validator = DuplicateNameValidator::new();
+
+        let block = Block::new("@fqlib:1", "", "", "");
+        validator.validate(&block).unwrap();
+
+        let block = Block::new("@fqlib:1", "", "", "");
+        validator.validate(&block).unwrap();
+
+        let block = Block::new("@fqlib:2", "", "", "");
+        validator.validate(&block).unwrap();
+
+        assert!(validator.contains_once("@fqlib:1"));
+        assert!(!validator.contains_once("@fqlib:1"));
+        assert!(validator.contains_once("@fqlib:2"));
+    }
 
     #[test]
     fn test_code() {
@@ -70,12 +112,10 @@ mod tests {
     fn test_validate() {
         let mut validator = DuplicateNameValidator::new();
 
-        let block = Block::new("@fqlib:1/1", "", "", "");
+        let block = Block::new("@fqlib:1", "", "", "");
         assert!(validator.validate(&block).is_ok());
 
-        let block = Block::new("@fqlib:2/1", "", "", "");
+        let block = Block::new("@fqlib:2", "", "", "");
         assert!(validator.validate(&block).is_ok());
-
-        assert!(validator.validate(&block).is_err());
     }
 }

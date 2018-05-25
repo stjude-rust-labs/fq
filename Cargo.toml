@@ -4,5 +4,6 @@ version = "0.1.0"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 
 [dependencies]
+bloom = { git = "https://github.com/zaeleus/bloom.git" }
 clap = "2.31.2"
 rand = "0.5.0"

@@ -1,9 +1,13 @@
 #[macro_use] extern crate clap;
 extern crate fqlib;
 
+use std::fs::File;
+use std::io::BufReader;
+
 use clap::{App, Arg};
-use fqlib::PairedFastQReader;
-use fqlib::validators::{self, BlockValidator, LintMode, ValidationLevel};
+use fqlib::{FastQReader, PairedFastQReader};
+use fqlib::validators::single::DuplicateNameValidator;
+use fqlib::validators::{self, BlockValidator, LintMode, SingleReadValidatorMut, ValidationLevel};
 
 fn report_error(error: validators::Error) {
     println!("{:?}", error);
@@ -70,21 +74,37 @@ fn main() {
         r2_input_pathname,
     ).unwrap();
 
-    let mut validator = BlockValidator::new(
+    let validator = BlockValidator::new(
         single_read_validation_level,
         paired_read_validation_level,
         &disabled_validators,
     );
 
+    let mut duplicate_name_validator = DuplicateNameValidator::new();
+
     while let Some((r1_block, r2_block)) = reader.next_pair() {
         let b = r1_block.unwrap();
         let d = r2_block.unwrap();
 
-        if let Err(e) = validator.validate_pair_mut(b, d) {
+        duplicate_name_validator.validate(b).unwrap();
+
+        if let Err(e) = validator.validate_pair(b, d) {
             match lint_mode {
                 LintMode::Error => panic!("{:?}", e),
                 LintMode::Report => report_error(e),
             }
+        }
+    }
+
+    let mut reader = FastQReader::<BufReader<File>>::open(
+        r1_input_pathname,
+    ).unwrap();
+
+    while let Some(block) = reader.next_block() {
+        let b = block.unwrap();
+
+        if !duplicate_name_validator.contains_once(&b.name) {
+            panic!("Duplicae name found: {}", b.name);
         }
     }
 }

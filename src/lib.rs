@@ -1,8 +1,9 @@
+extern crate bloom;
 extern crate rand;
 
 pub use block::Block;
 pub use generator::BlockPairGenerator;
-pub use reader::PairedFastQReader;
+pub use reader::{FastQReader, PairedFastQReader};
 pub use writer::Writer;
 pub use validators::ValidationLevel;
 
