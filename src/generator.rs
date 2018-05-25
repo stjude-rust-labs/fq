@@ -1,3 +1,4 @@
+use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng, SeedableRng};
 
@@ -25,6 +26,10 @@ pub struct Generator {
     flow_cell: String,
 
     rng: SmallRng,
+    lane_range: Uniform<u32>,
+    tile_range: Uniform<u32>,
+    x_pos_range: Uniform<u32>,
+    y_pos_range: Uniform<u32>,
 
     block_1: Block,
     block_2: Block,
@@ -36,13 +41,31 @@ impl Generator {
         let run_number = rng.gen_range(1, 1000 + 1);
         let flow_cell = gen_flow_cell(&mut rng, FLOW_CELL_LEN);
 
+        let lane_range = Uniform::new(1, LANES + 1);
+        let tile_range = Uniform::new(1, TILES + 1);
+        let x_pos_range = Uniform::new(1, MAX_X + 1);
+        let y_pos_range = Uniform::new(1, MAX_Y + 1);
+
         let mut block_1 = Block::default();
         block_1.plus_line.push_str(PLUS_LINE);
 
         let mut block_2 = Block::default();
         block_2.plus_line.push_str(PLUS_LINE);
 
-        Generator { instrument, flow_cell, run_number, rng, block_1, block_2 }
+        Generator {
+            instrument,
+            flow_cell,
+            run_number,
+
+            rng,
+            lane_range,
+            tile_range,
+            x_pos_range,
+            y_pos_range,
+
+            block_1,
+            block_2,
+        }
     }
 
     pub fn from_seed(seed: [u8; 16]) -> Generator {
@@ -60,10 +83,10 @@ impl Generator {
     }
 
     fn name(&mut self) -> String {
-        let lane = self.rng.gen_range(1, LANES + 1);
-        let tile = self.rng.gen_range(1, TILES + 1);
-        let x_pos = self.rng.gen_range(1, MAX_X + 1);
-        let y_pos = self.rng.gen_range(1, MAX_Y + 1);
+        let lane = self.lane_range.sample(&mut self.rng);
+        let tile = self.tile_range.sample(&mut self.rng);
+        let x_pos = self.x_pos_range.sample(&mut self.rng);
+        let y_pos = self.y_pos_range.sample(&mut self.rng);
 
         format!(
             "@{}:{}:{}:{}:{}:{}:{}",
