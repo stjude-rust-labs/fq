@@ -1,4 +1,6 @@
 extern crate bloom;
+#[macro_use]
+extern crate log;
 extern crate rand;
 
 pub use block::Block;

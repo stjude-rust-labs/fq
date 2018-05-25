@@ -1,3 +1,5 @@
+#[macro_use] extern crate log;
+extern crate env_logger;
 #[macro_use] extern crate clap;
 extern crate fqlib;
 
@@ -8,6 +10,7 @@ use clap::{App, Arg};
 use fqlib::{FastQReader, PairedFastQReader};
 use fqlib::validators::single::DuplicateNameValidator;
 use fqlib::validators::{self, BlockValidator, LintMode, SingleReadValidatorMut, ValidationLevel};
+use log::LevelFilter;
 
 fn report_error(error: validators::Error) {
     println!("{:?}", error);
@@ -36,6 +39,10 @@ fn main() {
              .value_name("CODE")
              .multiple(true)
              .number_of_values(1))
+        .arg(Arg::with_name("verbose")
+             .short("v")
+             .long("verbose")
+             .help("Use verbose logging"))
         .arg(Arg::with_name("r1-input-pathname")
              .help("")
              .index(1)
@@ -45,6 +52,13 @@ fn main() {
              .index(2)
              .required(true))
         .get_matches();
+
+    if matches.is_present("verbose") {
+        env_logger::Builder::from_default_env()
+            .filter(Some("fqlint"), LevelFilter::Info)
+            .filter(Some(crate_name!()), LevelFilter::Info)
+            .init();
+    }
 
     let r1_input_pathname = matches.value_of("r1-input-pathname").unwrap();
     let r2_input_pathname = matches.value_of("r2-input-pathname").unwrap();
@@ -69,6 +83,8 @@ fn main() {
         .map(String::from)
         .collect();
 
+    info!("fqlint start");
+
     let mut reader = PairedFastQReader::open(
         r1_input_pathname,
         r2_input_pathname,
@@ -81,6 +97,8 @@ fn main() {
     );
 
     let mut duplicate_name_validator = DuplicateNameValidator::new();
+
+    info!("starting validation (pass 1)");
 
     while let Some((r1_block, r2_block)) = reader.next_pair() {
         let b = r1_block.unwrap();
@@ -96,6 +114,8 @@ fn main() {
         }
     }
 
+    info!("starting validation (pass 2)");
+
     let mut reader = FastQReader::<BufReader<File>>::open(
         r1_input_pathname,
     ).unwrap();
@@ -107,4 +127,6 @@ fn main() {
             panic!("Duplicae name found: {}", b.name);
         }
     }
+
+    info!("fqlint end");
 }

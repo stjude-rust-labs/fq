@@ -71,15 +71,29 @@ impl BlockValidator {
         paired_read_validation_level: ValidationLevel,
         disabled_validators: &[String],
     ) -> BlockValidator {
+        info!("disabled validators: {:?}", disabled_validators);
+
         let single_read_validators = filter_single_read_validators(
             single_read_validation_level,
             disabled_validators,
         );
 
+        let validators: Vec<String> = single_read_validators
+            .iter()
+            .map(|v| format!("[{}] {}", v.code(), v.name()))
+            .collect();
+        info!("enabled single read validators: {:?}", validators);
+
         let paired_read_validators = filter_paired_read_validators(
             paired_read_validation_level,
             disabled_validators,
         );
+
+        let validators: Vec<String> = paired_read_validators
+            .iter()
+            .map(|v| format!("[{}] {}", v.code(), v.name()))
+            .collect();
+        info!("enabled paired read validators: {:?}", validators);
 
         BlockValidator {
             single_read_validators,
