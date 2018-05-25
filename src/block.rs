@@ -4,7 +4,6 @@ pub struct Block {
     pub sequence: String,
     pub plus_line: String,
     pub quality: String,
-    pub interleave: Option<String>,
 }
 
 impl Block {
@@ -28,25 +27,22 @@ impl Block {
         U: Into<String>,
         V: Into<String>,
     {
-        let (name, interleave) = parse_name(&name.into());
-
-        Block {
+        let mut block = Block {
             name: name.into(),
             sequence: sequence.into(),
             plus_line: plus_line.into(),
             quality: quality.into(),
-            interleave,
-        }
+        };
+
+        block.reset();
+
+        block
     }
-}
 
-fn parse_name(name: &str) -> (String, Option<String>) {
-    let pieces: Vec<&str> = name.rsplitn(2, '/').collect();
-
-    if pieces.len() == 2 {
-        (pieces[1].to_string(), Some(pieces[0].to_string()))
-    } else {
-        (pieces[0].to_string(), None)
+    pub fn reset(&mut self) {
+        if let Some(i) = self.name.rfind('/') {
+            self.name.truncate(i);
+        }
     }
 }
 
@@ -65,21 +61,5 @@ impl BlockBuf {
             plus_line: String::new(),
             quality: String::new(),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse_name() {
-        let (name, interleave) = parse_name("@fqlib/1");
-        assert_eq!(name, "@fqlib");
-        assert_eq!(interleave, Some(String::from("1")));
-
-        let (name, interleave) = parse_name("@fqlib");
-        assert_eq!(name, "@fqlib");
-        assert_eq!(interleave, None);
     }
 }

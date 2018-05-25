@@ -1,12 +1,12 @@
-use std::io::{self, BufRead, BufReader, Lines};
+use std::io::{self, BufRead, BufReader};
 use std::fs::File;
 use std::path::Path;
 
 use Block;
 
 pub struct FastQReader<R: BufRead> {
-    lines: Lines<R>,
-    line_no: usize,
+    reader: R,
+    block: Block,
 }
 
 impl<R: BufRead> FastQReader<R> {
@@ -23,47 +23,44 @@ impl<R: BufRead> FastQReader<R> {
 
     pub fn new(reader: R) -> FastQReader<R> {
         FastQReader {
-            lines: reader.lines(),
-            line_no: 0,
+            reader,
+            block: Block::new("", "", "", ""),
         }
     }
 
-    pub fn next_block(&mut self) -> Option<io::Result<Block>> {
-        if let Some(Ok(name)) = self.next_line() {
-            if let Some(Ok(sequence)) = self.next_line() {
-                if let Some(Ok(plus_line)) = self.next_line() {
-                    if let Some(Ok(quality)) = self.next_line() {
-                        return Some(Ok(Block::new(
-                            name,
-                            sequence,
-                            plus_line,
-                            quality,
-                        )));
-                    }
-                }
-            }
+    pub fn next_block(&mut self) -> Option<io::Result<&Block>> {
+        if let Ok(bytes_read) = read_line(&mut self.reader, &mut self.block.name) {
+            if bytes_read > 0 {
+                // FIXME
+                read_line(&mut self.reader, &mut self.block.sequence).unwrap();
+                read_line(&mut self.reader, &mut self.block.plus_line).unwrap();
+                read_line(&mut self.reader, &mut self.block.quality).unwrap();
 
-            let message = format!("unexpected EOF (line {})", self.line_no);
-            return Some(Err(io::Error::new(io::ErrorKind::UnexpectedEof, message)));
+                self.block.reset();
+
+                return Some(Ok(&self.block));
+            }
         }
 
         None
     }
-
-    fn next_line(&mut self) -> Option<io::Result<String>> {
-        self.line_no += 1;
-        self.lines.next()
-    }
 }
 
-impl<R: BufRead> Iterator for FastQReader<R> {
-    type Item = io::Result<Block>;
+fn read_line<R: BufRead>(reader: &mut R, buf: &mut String) -> io::Result<usize> {
+    buf.clear();
 
-    fn next(&mut self) -> Option<Self::Item> {
-        self.next_block()
+    let result = reader.read_line(buf);
+
+    if result.is_ok() {
+        let len = buf.len();
+
+        if len > 0 {
+            buf.truncate(len - 1);
+        }
     }
-}
 
+    result
+}
 
 #[cfg(test)]
 mod fastq_reader_tests {
@@ -80,13 +77,17 @@ mod fastq_reader_tests {
             "test/fixtures/r1.fastq",
         ).unwrap();
 
-        let actual = reader.next().unwrap().unwrap();
-        let exepcted = Block::new("@fqlib:1/1", "AGCT", "+", "abcd");
-        assert_eq!(actual, exepcted);
+        {
+            let actual = reader.next_block().unwrap().unwrap();
+            let exepcted = Block::new("@fqlib:1/1", "AGCT", "+", "abcd");
+            assert_eq!(actual, &exepcted);
+        }
 
-        let actual = reader.next().unwrap().unwrap();
-        let exepcted = Block::new("@fqlib:2/1", "TCGA", "+", "dcba");
-        assert_eq!(actual, exepcted);
+        {
+            let actual = reader.next_block().unwrap().unwrap();
+            let exepcted = Block::new("@fqlib:2/1", "TCGA", "+", "dcba");
+            assert_eq!(actual, &exepcted);
+        }
     }
 }
 
@@ -110,7 +111,7 @@ impl PairedFastQReader {
         })
     }
 
-    pub fn next_pair(&mut self) -> Option<(io::Result<Block>, io::Result<Block>)> {
+    pub fn next_pair(&mut self) -> Option<(io::Result<&Block>, io::Result<&Block>)> {
         if let Some(r1_block) = self.r1_reader.next_block() {
             if let Some(r2_block) = self.r2_reader.next_block() {
                 return Some((r1_block, r2_block));
@@ -118,14 +119,6 @@ impl PairedFastQReader {
         }
 
         None
-    }
-}
-
-impl Iterator for PairedFastQReader {
-    type Item = (io::Result<Block>, io::Result<Block>);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.next_pair()
     }
 }
 
@@ -140,8 +133,8 @@ mod paired_fastq_reader_tests {
             "test/fixtures/r2.fastq",
         ).unwrap();;
 
-        assert!(reader.next().is_some());
-        assert!(reader.next().is_some());
-        assert!(reader.next().is_none());
+        assert!(reader.next_pair().is_some());
+        assert!(reader.next_pair().is_some());
+        assert!(reader.next_pair().is_none());
     }
 }

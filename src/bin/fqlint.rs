@@ -65,7 +65,7 @@ fn main() {
         .map(String::from)
         .collect();
 
-    let reader = PairedFastQReader::open(
+    let mut reader = PairedFastQReader::open(
         r1_input_pathname,
         r2_input_pathname,
     ).unwrap();
@@ -76,11 +76,11 @@ fn main() {
         &disabled_validators,
     );
 
-    for (r1_block, r2_block) in reader {
+    while let Some((r1_block, r2_block)) = reader.next_pair() {
         let b = r1_block.unwrap();
         let d = r2_block.unwrap();
 
-        if let Err(e) = validator.validate_pair_mut(&b, &d) {
+        if let Err(e) = validator.validate_pair_mut(b, d) {
             match lint_mode {
                 LintMode::Error => panic!("{:?}", e),
                 LintMode::Report => report_error(e),
