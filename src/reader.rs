@@ -2,6 +2,8 @@ use std::io::{self, BufRead, BufReader};
 use std::fs::File;
 use std::path::Path;
 
+use flate2::bufread::GzDecoder;
+
 use Block;
 
 pub struct FastQReader<R: BufRead> {
@@ -20,6 +22,20 @@ impl<R: BufRead> FastQReader<R> {
         let reader = BufReader::new(file);
         Ok(FastQReader::new(reader))
     }
+
+    pub fn gz_open<P>(
+        pathname: P,
+    ) -> io::Result<FastQReader<BufReader<GzDecoder<BufReader<File>>>>>
+    where
+        P: AsRef<Path>,
+    {
+        let file = File::open(pathname)?;
+        let reader = BufReader::new(file);
+        let decoder = GzDecoder::new(reader);
+        let gz_reader = BufReader::new(decoder);
+        Ok(FastQReader::new(gz_reader))
+    }
+
 
     pub fn new(reader: R) -> FastQReader<R> {
         FastQReader {
@@ -91,16 +107,16 @@ mod fastq_reader_tests {
     }
 }
 
-pub struct PairedFastQReader {
-    r1_reader: FastQReader<BufReader<File>>,
-    r2_reader: FastQReader<BufReader<File>>,
+pub struct PairedFastQReader<R: BufRead> {
+    r1_reader: FastQReader<R>,
+    r2_reader: FastQReader<R>,
 }
 
-impl PairedFastQReader {
+impl<R: BufRead> PairedFastQReader<R> {
     pub fn open<P, Q>(
         r1_pathname: P,
         r2_pathname: Q,
-    ) -> io::Result<PairedFastQReader>
+    ) -> io::Result<PairedFastQReader<BufReader<File>>>
     where
         P: AsRef<Path>,
         Q: AsRef<Path>,
@@ -108,6 +124,20 @@ impl PairedFastQReader {
         Ok(PairedFastQReader {
             r1_reader: FastQReader::<BufReader<File>>::open(r1_pathname)?,
             r2_reader: FastQReader::<BufReader<File>>::open(r2_pathname)?,
+        })
+    }
+
+    pub fn gz_open<P, Q>(
+        r1_pathname: P,
+        r2_pathname: Q,
+    ) -> io::Result<PairedFastQReader<BufReader<GzDecoder<BufReader<File>>>>>
+    where
+        P: AsRef<Path>,
+        Q: AsRef<Path>,
+    {
+        Ok(PairedFastQReader {
+            r1_reader: FastQReader::<BufReader<GzDecoder<BufReader<File>>>>::gz_open(r1_pathname)?,
+            r2_reader: FastQReader::<BufReader<GzDecoder<BufReader<File>>>>::gz_open(r2_pathname)?,
         })
     }
 

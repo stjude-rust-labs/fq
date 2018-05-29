@@ -1,13 +1,15 @@
 #[macro_use] extern crate log;
 extern crate env_logger;
 #[macro_use] extern crate clap;
+extern crate flate2;
 extern crate fqlib;
 
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufRead, BufReader};
 use std::process;
 
 use clap::{App, Arg};
+use flate2::bufread::GzDecoder;
 use fqlib::{FastQReader, PairedFastQReader};
 use fqlib::validators::single::DuplicateNameValidator;
 use fqlib::validators::{
@@ -56,6 +58,57 @@ fn report_error(
 ) {
     let message = build_error_message(error, pathname, block_no);
     error!("{}", message);
+}
+
+fn validate<R: BufRead>(
+    mut reader: PairedFastQReader<R>,
+    single_read_validation_level: ValidationLevel,
+    paired_read_validation_level: ValidationLevel,
+    disabled_validators: &[String],
+    lint_mode: LintMode,
+    r1_input_pathname: &str,
+) {
+    let validator = BlockValidator::new(
+        single_read_validation_level,
+        paired_read_validation_level,
+        disabled_validators,
+    );
+
+    let mut duplicate_name_validator = DuplicateNameValidator::new();
+
+    info!("starting validation (pass 1)");
+
+    let mut block_no = 0;
+
+    while let Some((r1_block, r2_block)) = reader.next_pair() {
+        let b = r1_block.unwrap();
+        let d = r2_block.unwrap();
+
+        duplicate_name_validator.validate(b).unwrap();
+
+        if let Err(e) = validator.validate_pair(b, d) {
+            match lint_mode {
+                LintMode::Error => panic_error(e, "<filename>", block_no + 1),
+                LintMode::Report => report_error(e, "<filename>", block_no + 1),
+            }
+        }
+
+        block_no += 1;
+    }
+
+    info!("starting validation (pass 2)");
+
+    let mut reader = FastQReader::<BufReader<File>>::open(
+        r1_input_pathname,
+    ).unwrap();
+
+    while let Some(block) = reader.next_block() {
+        let b = block.unwrap();
+
+        if !duplicate_name_validator.contains_once(&b.name) {
+            panic!("Duplicae name found: {}", b.name);
+        }
+    }
 }
 
 fn main() {
@@ -127,51 +180,38 @@ fn main() {
 
     info!("fqlint start");
 
-    let mut reader = PairedFastQReader::open(
-        r1_input_pathname,
-        r2_input_pathname,
-    ).unwrap();
+    let is_compressed = r1_input_pathname.ends_with(".gz");
 
-    let validator = BlockValidator::new(
-        single_read_validation_level,
-        paired_read_validation_level,
-        &disabled_validators,
-    );
+    if is_compressed {
+        info!("inputs are compressed");
 
-    let mut duplicate_name_validator = DuplicateNameValidator::new();
+        let reader = PairedFastQReader::<BufReader<GzDecoder<BufReader<File>>>>::gz_open(
+            r1_input_pathname,
+            r2_input_pathname,
+        ).unwrap();
 
-    info!("starting validation (pass 1)");
+        validate(
+            reader,
+            single_read_validation_level,
+            paired_read_validation_level,
+            &disabled_validators,
+            lint_mode,
+            r1_input_pathname,
+        );
+    } else {
+        let reader = PairedFastQReader::<BufReader<File>>::open(
+            r1_input_pathname,
+            r2_input_pathname,
+        ).unwrap();
 
-    let mut block_no = 0;
-
-    while let Some((r1_block, r2_block)) = reader.next_pair() {
-        let b = r1_block.unwrap();
-        let d = r2_block.unwrap();
-
-        duplicate_name_validator.validate(b).unwrap();
-
-        if let Err(e) = validator.validate_pair(b, d) {
-            match lint_mode {
-                LintMode::Error => panic_error(e, "<filename>", block_no + 1),
-                LintMode::Report => report_error(e, "<filename>", block_no + 1),
-            }
-        }
-
-        block_no += 1;
-    }
-
-    info!("starting validation (pass 2)");
-
-    let mut reader = FastQReader::<BufReader<File>>::open(
-        r1_input_pathname,
-    ).unwrap();
-
-    while let Some(block) = reader.next_block() {
-        let b = block.unwrap();
-
-        if !duplicate_name_validator.contains_once(&b.name) {
-            panic!("Duplicae name found: {}", b.name);
-        }
+        validate(
+            reader,
+            single_read_validation_level,
+            paired_read_validation_level,
+            &disabled_validators,
+            lint_mode,
+            r1_input_pathname,
+        );
     }
 
     info!("fqlint end");
