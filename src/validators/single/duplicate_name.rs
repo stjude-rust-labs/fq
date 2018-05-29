@@ -55,11 +55,9 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
     fn validate(&mut self, b: &Block) -> Result<(), Error> {
         let name = &b.name;
 
-        if self.filter.contains(name) {
+        if self.filter.contains_or_insert(name) {
             self.false_positives.insert(name.clone(), 0);
         }
-
-        self.filter.insert(name);
 
         Ok(())
     }
