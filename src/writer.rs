@@ -2,6 +2,9 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
+use flate2::Compression;
+use flate2::write::GzEncoder;
+
 use {Block, BlockPairGenerator};
 
 pub struct Writer<W: Write> {
@@ -21,6 +24,24 @@ impl<W: Write> Writer<W> {
         let f1 = File::create(r1_pathname)?;
         let f2 = File::create(r2_pathname)?;
         Ok(Writer::new(BufWriter::new(f1), BufWriter::new(f2)))
+    }
+
+    pub fn gz_create<P, Q>(
+        r1_pathname: P,
+        r2_pathname: Q,
+    ) -> io::Result<Writer<GzEncoder<BufWriter<File>>>>
+    where
+        P: AsRef<Path>,
+        Q: AsRef<Path>,
+    {
+        let f1 = File::create(r1_pathname)?;
+        let f2 = File::create(r2_pathname)?;
+
+        let level = Compression::default();
+        let w1 = GzEncoder::new(BufWriter::new(f1), level);
+        let w2 = GzEncoder::new(BufWriter::new(f2), level);
+
+        Ok(Writer::new(w1, w2))
     }
 
     pub fn new(r1_writer: W, r2_writer: W) -> Writer<W> {
