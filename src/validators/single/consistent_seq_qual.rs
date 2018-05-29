@@ -1,5 +1,5 @@
 use Block;
-use validators::{Error, SingleReadValidator, ValidationLevel};
+use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 pub struct ConsistentSeqQualValidator;
 
@@ -18,8 +18,19 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
         if b.sequence.len() != b.quality.len() {
-            let message = "Name and quality lengths do not match";
-            Err(Error::Invalid(String::from(message)))
+            let message = format!(
+                "Name and quality lengths do not match (expected {}, got {})",
+                b.sequence.len(),
+                b.quality.len(),
+            );
+
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &message,
+                LineType::Sequence,
+                Some(1),
+            ))
         } else {
             Ok(())
         }

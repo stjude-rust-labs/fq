@@ -1,5 +1,5 @@
 use Block;
-use validators::{Error, SingleReadValidator, ValidationLevel};
+use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 pub struct NameValidator;
 
@@ -18,8 +18,13 @@ impl SingleReadValidator for NameValidator {
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
         if !b.name.starts_with("@") {
-            let message = "The name line does not start with an '@'.";
-            Err(Error::Invalid(String::from(message)))
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Does not start with an '@'"),
+                LineType::Name,
+                Some(1),
+            ))
         } else {
             Ok(())
         }

@@ -1,5 +1,5 @@
 use Block;
-use validators::{Error, SingleReadValidator, ValidationLevel};
+use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 pub struct PlusLineValidator;
 
@@ -18,8 +18,13 @@ impl SingleReadValidator for PlusLineValidator {
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
         if !b.plus_line.starts_with("+") {
-            let message = "The plus line does not start with a plus.";
-            Err(Error::Invalid(String::from(message)))
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Does not start with a '+'"),
+                LineType::PlusLine,
+                Some(1),
+            ))
         } else {
             Ok(())
         }

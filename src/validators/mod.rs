@@ -18,8 +18,38 @@ pub mod single;
 pub mod paired;
 
 #[derive(Debug)]
-pub enum Error {
-    Invalid(String),
+pub enum LineType {
+    Name,
+    Sequence,
+    PlusLine,
+    Quality,
+}
+
+#[derive(Debug)]
+pub struct Error {
+    pub code: String,
+    pub name: String,
+    pub message: String,
+    pub line_type: LineType,
+    pub col_no: Option<usize>,
+}
+
+impl Error {
+    pub fn new(
+        code: &str,
+        name: &str,
+        message: &str,
+        line_type: LineType,
+        col_no: Option<usize>,
+    ) -> Error {
+        Error {
+            code: code.into(),
+            name: name.into(),
+            message: message.into(),
+            line_type,
+            col_no,
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]

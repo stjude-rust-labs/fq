@@ -1,5 +1,5 @@
 use Block;
-use validators::{Error, PairedReadValidator, ValidationLevel};
+use validators::{Error, LineType, PairedReadValidator, ValidationLevel};
 
 pub struct NamesValidator;
 
@@ -18,7 +18,13 @@ impl PairedReadValidator for NamesValidator {
 
     fn validate(&self, b: &Block, d: &Block) -> Result<(), Error> {
         if b.name != d.name {
-            Err(Error::Invalid(String::from("Names do not match")))
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &format!("Names do not match (expected '{}', got '{}')", b.name, d.name),
+                LineType::Name,
+                Some(1),
+            ))
         } else {
             Ok(())
         }

@@ -5,15 +5,57 @@ extern crate fqlib;
 
 use std::fs::File;
 use std::io::BufReader;
+use std::process;
 
 use clap::{App, Arg};
 use fqlib::{FastQReader, PairedFastQReader};
 use fqlib::validators::single::DuplicateNameValidator;
-use fqlib::validators::{self, BlockValidator, LintMode, SingleReadValidatorMut, ValidationLevel};
+use fqlib::validators::{
+    self,
+    BlockValidator,
+    LintMode,
+    SingleReadValidatorMut,
+    ValidationLevel,
+};
 use log::LevelFilter;
 
-fn report_error(error: validators::Error) {
-    println!("{:?}", error);
+fn build_error_message(
+    error: validators::Error,
+    pathname: &str,
+    block_no: usize,
+) -> String {
+    let mut message = String::new();
+
+    let line_offset = error.line_type as usize;
+    let line_no = (block_no - 1) * 4 + line_offset + 1;
+    message.push_str(&format!("{}:{}:", pathname, line_no));
+
+    if let Some(col_no) = error.col_no {
+        message.push_str(&format!("{}:", col_no));
+    }
+
+    message.push_str(&format!(" [{}] {}: {}", error.code, error.name, error.message));
+
+    return message;
+}
+
+fn panic_error(
+    error: validators::Error,
+    pathname: &str,
+    block_no: usize,
+) {
+    let message = build_error_message(error, pathname, block_no);
+    eprintln!("{}", message);
+    process::exit(1);
+}
+
+fn report_error(
+    error: validators::Error,
+    pathname: &str,
+    block_no: usize,
+) {
+    let message = build_error_message(error, pathname, block_no);
+    error!("{}", message);
 }
 
 fn main() {
@@ -100,6 +142,8 @@ fn main() {
 
     info!("starting validation (pass 1)");
 
+    let mut block_no = 0;
+
     while let Some((r1_block, r2_block)) = reader.next_pair() {
         let b = r1_block.unwrap();
         let d = r2_block.unwrap();
@@ -108,10 +152,12 @@ fn main() {
 
         if let Err(e) = validator.validate_pair(b, d) {
             match lint_mode {
-                LintMode::Error => panic!("{:?}", e),
-                LintMode::Report => report_error(e),
+                LintMode::Error => panic_error(e, "<filename>", block_no + 1),
+                LintMode::Report => report_error(e, "<filename>", block_no + 1),
             }
         }
+
+        block_no += 1;
     }
 
     info!("starting validation (pass 2)");

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use Block;
-use validators::{Error, SingleReadValidator, ValidationLevel};
+use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 pub struct AlphabetValidator {
     alphabet: HashSet<char>,
@@ -29,12 +29,19 @@ impl SingleReadValidator for AlphabetValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        if !b.sequence.chars().all(|c| self.alphabet.contains(&c)) {
-            let message = format!("Invalid character in sequence");
-            Err(Error::Invalid(String::from(message)))
-        } else {
-            Ok(())
+        for (i, c) in b.sequence.chars().enumerate() {
+            if !self.alphabet.contains(&c) {
+                return Err(Error::new(
+                    self.code(),
+                    self.name(),
+                    &format!("Invalid character: {}", c),
+                    LineType::Sequence,
+                    Some(i + 1),
+                ));
+            }
         }
+
+        Ok(())
     }
 }
 

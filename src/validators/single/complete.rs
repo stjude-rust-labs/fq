@@ -1,7 +1,65 @@
 use Block;
-use validators::{Error, SingleReadValidator, ValidationLevel};
+use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 pub struct CompleteValidator;
+
+impl CompleteValidator {
+    fn validate_name(&self, b: &Block) -> Result<(), Error> {
+        if b.name.is_empty() {
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Incomplete block: name is empty"),
+                LineType::Name,
+                Some(1),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn validate_sequence(&self, b: &Block) -> Result<(), Error> {
+        if b.sequence.is_empty() {
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Incomplete block: sequence is empty"),
+                LineType::Sequence,
+                Some(1),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn validate_plus_line(&self, b: &Block) -> Result<(), Error> {
+        if b.plus_line.is_empty() {
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Incomplete block: plus line is empty"),
+                LineType::PlusLine,
+                Some(1),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn validate_quality(&self, b: &Block) -> Result<(), Error> {
+        if b.quality.is_empty() {
+            Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Incomplete block: quality is empty"),
+                LineType::Quality,
+                Some(1),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+}
 
 impl SingleReadValidator for CompleteValidator {
     fn code(&self) -> &'static str {
@@ -17,45 +75,15 @@ impl SingleReadValidator for CompleteValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        validate_name(b)?;
-        validate_sequence(b)?;
-        validate_plus_line(b)?;
-        validate_quality(b)?;
+        self.validate_name(b)?;
+        self.validate_sequence(b)?;
+        self.validate_plus_line(b)?;
+        self.validate_quality(b)?;
         Ok(())
     }
 }
 
-fn validate_name(b: &Block) -> Result<(), Error> {
-    if b.name.is_empty() {
-        Err(Error::Invalid(String::from("Block incomplete (name is empty)")))
-    } else {
-        Ok(())
-    }
-}
 
-fn validate_sequence(b: &Block) -> Result<(), Error> {
-    if b.sequence.is_empty() {
-        Err(Error::Invalid(String::from("Block incomplete (sequence is empty)")))
-    } else {
-        Ok(())
-    }
-}
-
-fn validate_plus_line(b: &Block) -> Result<(), Error> {
-    if b.plus_line.is_empty() {
-        Err(Error::Invalid(String::from("Block incomplete (plus line is empty)")))
-    } else {
-        Ok(())
-    }
-}
-
-fn validate_quality(b: &Block) -> Result<(), Error> {
-    if b.quality.is_empty() {
-        Err(Error::Invalid(String::from("Block incomplete (quality is empty)")))
-    } else {
-        Ok(())
-    }
-}
 
 #[cfg(test)]
 mod tests {

@@ -1,5 +1,5 @@
 use Block;
-use validators::{Error, SingleReadValidator, ValidationLevel};
+use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 pub struct QualityStringValidator;
 
@@ -20,12 +20,17 @@ impl SingleReadValidator for QualityStringValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        for c in b.quality.chars() {
+        for (i, c) in b.quality.chars().enumerate() {
             let o = c as u32;
 
             if o < START_OFFSET || o > END_OFFSET {
-                let message = format!(r#"Quality string contains an invalid character: "{}""#, c);
-                return Err(Error::Invalid(String::from(message)));
+                return Err(Error::new(
+                    self.code(),
+                    self.name(),
+                    &format!("Invalid character '{}'", c),
+                    LineType::Name,
+                    Some(i + 1),
+                ));
             }
         }
 
