@@ -135,7 +135,7 @@ fn main() {
         .version(crate_version!())
         .arg(Arg::with_name("lint-mode")
              .long("lint-mode")
-             .help("Panic on first error or log all errors")
+             .help("Panic on first error or log all errors. Logging forces verbose mode.")
              .value_name("MODE")
              .possible_values(&["panic", "log"])
              .default_value("panic"))
@@ -169,7 +169,9 @@ fn main() {
              .required(true))
         .get_matches();
 
-    if matches.is_present("verbose") {
+    let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
+
+    if matches.is_present("verbose") || lint_mode == LintMode::Log {
         env_logger::Builder::from_default_env()
             .filter(Some("fqlint"), LevelFilter::Info)
             .filter(Some(crate_name!()), LevelFilter::Info)
@@ -178,8 +180,6 @@ fn main() {
 
     let r1_input_pathname = matches.value_of("r1-input-pathname").unwrap();
     let r2_input_pathname = matches.value_of("r2-input-pathname").unwrap();
-
-    let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
 
     let single_read_validation_level = value_t!(
         matches,
