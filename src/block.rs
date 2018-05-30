@@ -47,9 +47,25 @@ impl Block {
         block
     }
 
+    /// Truncates all line buffers to 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::Block;
+    ///
+    /// let mut block = Block::new("@fqlib/1", "AGCT", "+", "abcd");
+    /// block.clear();
+    ///
+    /// assert!(block.name.is_empty());
+    /// assert!(block.sequence.is_empty());
+    /// assert!(block.plus_line.is_empty());
+    /// assert!(block.quality.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.name.clear();
         self.sequence.clear();
+        self.plus_line.clear();
         self.quality.clear();
     }
 

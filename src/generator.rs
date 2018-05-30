@@ -83,7 +83,7 @@ impl Generator {
     }
 
     pub fn next_block(&mut self) -> &Block {
-        self.block.clear();
+        self.clear_block();
 
         self.next_name();
         self.next_sequence();
@@ -93,7 +93,7 @@ impl Generator {
     }
 
     pub fn next_block_with_name(&mut self, name: &str) -> &Block {
-        self.block.clear();
+        self.clear_block();
 
         self.block.name.push_str(name);
         self.next_sequence();
@@ -134,6 +134,13 @@ impl Generator {
         for c in iter {
             self.block.quality.push(c);
         }
+    }
+
+    // Clears all buffers but the plus line since that never changes.
+    fn clear_block(&mut self) {
+        self.block.name.clear();
+        self.block.sequence.clear();
+        self.block.quality.clear();
     }
 }
 

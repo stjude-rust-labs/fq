@@ -36,7 +36,6 @@ impl GzReader {
 impl FastQReader for GzReader {
     fn next_block(&mut self) -> Option<io::Result<&Block>> {
         self.block.clear();
-        self.block.plus_line.clear();
 
         if let Ok(bytes_read) = read_line(&mut self.reader, &mut self.block.name) {
             if bytes_read > 0 {
