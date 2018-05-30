@@ -72,6 +72,18 @@ fn validate<R: FastQReader, S: FastQReader>(
 
     let mut duplicate_name_validator = DuplicateNameValidator::new();
 
+    let code = duplicate_name_validator.code();
+    let name = duplicate_name_validator.name();
+    let use_special_validator = !disabled_validators.contains(&code.to_string());
+
+    let validators = if use_special_validator {
+        format!(r#""[{}] {}""#, code, name)
+    } else {
+        String::new()
+    };
+
+    info!("enabled special validators: [{}]", validators);
+
     info!("starting validation (pass 1)");
 
     let mut block_no = 0;
@@ -80,7 +92,9 @@ fn validate<R: FastQReader, S: FastQReader>(
         let b = block_1.unwrap();
         let d = block_2.unwrap();
 
-        duplicate_name_validator.insert(b);
+        if use_special_validator {
+            duplicate_name_validator.insert(b);
+        }
 
         if let Err(e) = validator.validate_pair(b, d) {
             match lint_mode {
@@ -93,6 +107,10 @@ fn validate<R: FastQReader, S: FastQReader>(
     }
 
     info!("starting validation (pass 2)");
+
+    if !use_special_validator {
+        return;
+    }
 
     let mut reader = readers::factory(r1_input_pathname).unwrap();
 
