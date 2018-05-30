@@ -1,6 +1,7 @@
 use Block;
 use validators::{Error, LineType, PairedReadValidator, ValidationLevel};
 
+/// [P001] (low) Validator to check if each paired read name is the same, excluding interleave.
 pub struct NamesValidator;
 
 impl PairedReadValidator for NamesValidator {

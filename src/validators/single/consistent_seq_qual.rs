@@ -1,6 +1,7 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
+/// [S005] (high) Validator to check if the sequence and quality lengths are the same.
 pub struct ConsistentSeqQualValidator;
 
 impl SingleReadValidator for ConsistentSeqQualValidator {

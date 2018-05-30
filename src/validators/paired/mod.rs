@@ -1,3 +1,5 @@
+//! Validators that use blocks from two reads.
+
 use Block;
 use validators::{Error, ValidationLevel};
 

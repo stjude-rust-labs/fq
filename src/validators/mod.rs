@@ -25,6 +25,7 @@ pub enum LineType {
     Quality,
 }
 
+/// The error type for validation failures.
 #[derive(Debug)]
 pub struct Error {
     pub code: String,
@@ -90,6 +91,7 @@ impl FromStr for ValidationLevel {
     }
 }
 
+/// Validator that runs immutable validators over blocks.
 pub struct BlockValidator {
     single_read_validators: Vec<Box<SingleReadValidator>>,
     paired_read_validators: Vec<Box<PairedReadValidator>>,

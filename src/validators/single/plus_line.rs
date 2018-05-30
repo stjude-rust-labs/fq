@@ -1,6 +1,7 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
+/// [S001] (minimum) Validator to check if the plus line starts with a "+".
 pub struct PlusLineValidator;
 
 impl SingleReadValidator for PlusLineValidator {

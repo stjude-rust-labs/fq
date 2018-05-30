@@ -1,6 +1,7 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
+/// [S003] (high) Validator to check if the name line starts with an "@".
 pub struct NameValidator;
 
 impl SingleReadValidator for NameValidator {

@@ -1,3 +1,6 @@
+/// A FASTQ entry (block) containing a name, sequence, plus line, and quality.
+///
+/// A mutable `Block` can simply be used a multiple line buffers.
 #[derive(Debug, Default, Eq, PartialEq)]
 pub struct Block {
     pub name: String,
@@ -69,6 +72,23 @@ impl Block {
         self.quality.clear();
     }
 
+    /// Prepares a block after initialization.
+    ///
+    /// This should be called after clearing and directly writing to the line buffers.
+    ///
+    /// Resetting only includes removing the interleave from the name, if one is present.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::Block;
+    ///
+    /// let mut block = Block::default();
+    /// block.name.push_str("@fqlib/1");
+    /// assert_eq!(block.name, "@fqlib/1");
+    /// block.reset();
+    /// assert_eq!(block.name, "@fqlib");
+    /// ```
     pub fn reset(&mut self) {
         if let Some(i) = self.name.rfind('/') {
             self.name.truncate(i);

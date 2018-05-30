@@ -1,6 +1,8 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
+/// [S004] (minimum) Validator to check if all four block lines (name, sequence, plus line, and
+/// quality) are present.
 pub struct CompleteValidator;
 
 impl CompleteValidator {

@@ -1,6 +1,22 @@
 use rand::Rng;
 use rand::distributions::{Distribution, Uniform};
 
+/// Sample a `char`, uniformly distributed over a given character set.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate fqlib;
+/// # extern crate rand;
+/// # fn main() {
+/// use rand::{Rng, thread_rng};
+/// use fqlib::distributions::Character;
+///
+/// let distribution = Character::new(b"AGTC");
+/// let s: String = thread_rng().sample_iter(&distribution).take(8).collect();
+/// println!("{}", s);
+/// # }
+/// ```
 pub struct Character {
     alphabet: &'static [u8],
     range: Uniform<usize>,

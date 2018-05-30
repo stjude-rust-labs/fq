@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
+/// [S002] (low) Validator to check if all the characters in the sequence line are included in a
+/// given character set.
 pub struct AlphabetValidator {
     alphabet: HashSet<char>,
 }
@@ -46,6 +48,7 @@ impl SingleReadValidator for AlphabetValidator {
 }
 
 impl Default for AlphabetValidator {
+    /// Creates a validator with the alphabet "ACGTN", case-insensitive.
     fn default() -> AlphabetValidator {
         AlphabetValidator::new("ACGTNacgtn")
     }

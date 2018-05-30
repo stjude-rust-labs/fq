@@ -1,6 +1,8 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
+/// [S006] (low) Validator to check if all the characters in the quality line are between "!" and
+/// "~" (ordinal values).
 pub struct QualityStringValidator;
 
 const START_OFFSET: u32 = b'!' as u32;
