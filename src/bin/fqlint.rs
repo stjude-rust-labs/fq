@@ -47,7 +47,7 @@ fn panic_error(
     process::exit(1);
 }
 
-fn report_error(
+fn log_error(
     error: validators::Error,
     pathname: &str,
     block_no: usize,
@@ -98,8 +98,8 @@ fn validate<R: FastQReader, S: FastQReader>(
 
         if let Err(e) = validator.validate_pair(b, d) {
             match lint_mode {
-                LintMode::Error => panic_error(e, "<filename>", block_no + 1),
-                LintMode::Report => report_error(e, "<filename>", block_no + 1),
+                LintMode::Panic => panic_error(e, "<filename>", block_no + 1),
+                LintMode::Log => log_error(e, "<filename>", block_no + 1),
             }
         }
 
@@ -121,8 +121,8 @@ fn validate<R: FastQReader, S: FastQReader>(
 
         if let Err(e) = duplicate_name_validator.validate(&b) {
             match lint_mode {
-                LintMode::Error => panic_error(e, "<filename>", block_no + 1),
-                LintMode::Report => report_error(e, "<filename>", block_no + 1),
+                LintMode::Panic => panic_error(e, "<filename>", block_no + 1),
+                LintMode::Log => log_error(e, "<filename>", block_no + 1),
             }
         }
 
@@ -135,10 +135,10 @@ fn main() {
         .version(crate_version!())
         .arg(Arg::with_name("lint-mode")
              .long("lint-mode")
-             .help("Quit on first error (error) or log all errors (report)")
+             .help("Panic on first error or log all errors")
              .value_name("MODE")
-             .possible_values(&["error", "report"])
-             .default_value("error"))
+             .possible_values(&["panic", "log"])
+             .default_value("panic"))
         .arg(Arg::with_name("single-read-validation-level")
              .long("single-read-validation-level")
              .help("Only use single read validators up to a given level")

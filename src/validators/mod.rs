@@ -55,8 +55,8 @@ impl Error {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum LintMode {
-    Report,
-    Error,
+    Panic,
+    Log,
 }
 
 impl FromStr for LintMode {
@@ -64,8 +64,8 @@ impl FromStr for LintMode {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "report" => Ok(LintMode::Report),
-            "error" => Ok(LintMode::Error),
+            "panic" => Ok(LintMode::Panic),
+            "log" => Ok(LintMode::Log),
             _ => Err(()),
         }
     }
