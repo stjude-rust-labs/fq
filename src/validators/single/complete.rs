@@ -1,7 +1,7 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
-/// [S004] (minimum) Validator to check if all four block lines (name, sequence, plus line, and
+/// [S004] (low) Validator to check if all four block lines (name, sequence, plus line, and
 /// quality) are present.
 pub struct CompleteValidator;
 
@@ -73,7 +73,7 @@ impl SingleReadValidator for CompleteValidator {
     }
 
     fn level(&self) -> ValidationLevel {
-        ValidationLevel::Minimum
+        ValidationLevel::Low
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn test_level() {
         let validator = CompleteValidator;
-        assert_eq!(validator.level(), ValidationLevel::Minimum);
+        assert_eq!(validator.level(), ValidationLevel::Low);
     }
 
     #[test]

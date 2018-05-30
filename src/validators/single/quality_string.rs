@@ -1,7 +1,7 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
-/// [S006] (low) Validator to check if all the characters in the quality line are between "!" and
+/// [S006] (medium) Validator to check if all the characters in the quality line are between "!" and
 /// "~" (ordinal values).
 pub struct QualityStringValidator;
 
@@ -18,7 +18,7 @@ impl SingleReadValidator for QualityStringValidator {
     }
 
     fn level(&self) -> ValidationLevel {
-        ValidationLevel::Low
+        ValidationLevel::Medium
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_level() {
         let validator = QualityStringValidator;
-        assert_eq!(validator.level(), ValidationLevel::Low);
+        assert_eq!(validator.level(), ValidationLevel::Medium);
     }
 
     #[test]

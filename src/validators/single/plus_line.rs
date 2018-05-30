@@ -1,7 +1,7 @@
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
-/// [S001] (minimum) Validator to check if the plus line starts with a "+".
+/// [S001] (low) Validator to check if the plus line starts with a "+".
 pub struct PlusLineValidator;
 
 impl SingleReadValidator for PlusLineValidator {
@@ -14,7 +14,7 @@ impl SingleReadValidator for PlusLineValidator {
     }
 
     fn level(&self) -> ValidationLevel {
-        ValidationLevel::Minimum
+        ValidationLevel::Low
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_level() {
         let validator = PlusLineValidator;
-        assert_eq!(validator.level(), ValidationLevel::Minimum);
+        assert_eq!(validator.level(), ValidationLevel::Low);
     }
 
     #[test]

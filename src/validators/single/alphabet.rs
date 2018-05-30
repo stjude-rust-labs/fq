@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use Block;
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
-/// [S002] (low) Validator to check if all the characters in the sequence line are included in a
+/// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
 /// given character set.
 pub struct AlphabetValidator {
     alphabet: HashSet<char>,
@@ -27,7 +27,7 @@ impl SingleReadValidator for AlphabetValidator {
     }
 
     fn level(&self) -> ValidationLevel {
-        ValidationLevel::Low
+        ValidationLevel::Medium
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
@@ -85,7 +85,7 @@ mod tests {
     #[test]
     fn test_level() {
         let validator = AlphabetValidator::default();
-        assert_eq!(validator.level(), ValidationLevel::Low);
+        assert_eq!(validator.level(), ValidationLevel::Medium);
     }
 
     #[test]

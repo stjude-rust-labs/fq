@@ -1,7 +1,7 @@
 use Block;
 use validators::{Error, LineType, PairedReadValidator, ValidationLevel};
 
-/// [P001] (low) Validator to check if each paired read name is the same, excluding interleave.
+/// [P001] (medium) Validator to check if each paired read name is the same, excluding interleave.
 pub struct NamesValidator;
 
 impl PairedReadValidator for NamesValidator {
@@ -14,7 +14,7 @@ impl PairedReadValidator for NamesValidator {
     }
 
     fn level(&self) -> ValidationLevel {
-        ValidationLevel::Low
+        ValidationLevel::Medium
     }
 
     fn validate(&self, b: &Block, d: &Block) -> Result<(), Error> {
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_level() {
         let validator = NamesValidator;
-        assert_eq!(validator.level(), ValidationLevel::Low);
+        assert_eq!(validator.level(), ValidationLevel::Medium);
     }
 
     #[test]

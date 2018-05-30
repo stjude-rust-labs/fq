@@ -73,8 +73,8 @@ impl FromStr for LintMode {
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ValidationLevel {
-    Minimum,
     Low,
+    Medium,
     High,
 }
 
@@ -83,8 +83,8 @@ impl FromStr for ValidationLevel {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "minimum" => Ok(ValidationLevel::Minimum),
             "low" => Ok(ValidationLevel::Low),
+            "medium" => Ok(ValidationLevel::Medium),
             "high" => Ok(ValidationLevel::High),
             _ => Err(()),
         }
@@ -197,7 +197,7 @@ mod tests {
         let disabled_validators = Vec::new();
 
         let validators = filter_single_read_validators(
-            ValidationLevel::Minimum,
+            ValidationLevel::Low,
             &disabled_validators,
         );
 
@@ -231,7 +231,7 @@ mod tests {
         let disabled_validators = Vec::new();
 
         let validators = filter_paired_read_validators(
-            ValidationLevel::Minimum,
+            ValidationLevel::Low,
             &disabled_validators,
         );
 
