@@ -1,15 +1,11 @@
 #[macro_use] extern crate log;
 extern crate env_logger;
 #[macro_use] extern crate clap;
-extern crate flate2;
 extern crate fqlib;
 
-use std::io::BufWriter;
-use std::fs::File;
-
 use clap::{App, Arg};
-use flate2::write::GzEncoder;
-use fqlib::{BlockPairGenerator, Writer};
+use fqlib::{BlockPairGenerator, PairedWriter};
+use fqlib::writers::{file_writer, gz_writer};
 use log::LevelFilter;
 
 fn main() {
@@ -56,18 +52,14 @@ fn main() {
     let generator = BlockPairGenerator::new();
 
     if compress {
-        let mut writer = Writer::<GzEncoder<BufWriter<File>>>::gz_create(
-            &r1_output_pathname,
-            &r2_output_pathname,
-        ).unwrap();
-
+        let w1 = gz_writer::create(r1_output_pathname).unwrap();
+        let w2 = gz_writer::create(r2_output_pathname).unwrap();
+        let mut writer = PairedWriter::new(w1, w2);
         writer.write(generator, num_reads).unwrap();
     } else {
-        let mut writer = Writer::<BufWriter<File>>::create(
-            &r1_output_pathname,
-            &r2_output_pathname,
-        ).unwrap();
-
+        let w1 = file_writer::create(r1_output_pathname).unwrap();
+        let w2 = file_writer::create(r2_output_pathname).unwrap();
+        let mut writer = PairedWriter::new(w1, w2);
         writer.write(generator, num_reads).unwrap();
     }
 
