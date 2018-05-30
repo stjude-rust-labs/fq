@@ -3,13 +3,13 @@ use std::io;
 use Block;
 use readers::FastQReader;
 
-pub struct PairedReader<R: FastQReader> {
+pub struct PairedReader<R: FastQReader, S: FastQReader> {
     reader_1: R,
-    reader_2: R,
+    reader_2: S,
 }
 
-impl<R: FastQReader> PairedReader<R> {
-    pub fn new(reader_1: R, reader_2: R) -> PairedReader<R> {
+impl<R: FastQReader, S: FastQReader> PairedReader<R, S> {
+    pub fn new(reader_1: R, reader_2: S) -> PairedReader<R, S> {
         PairedReader { reader_1, reader_2 }
     }
 

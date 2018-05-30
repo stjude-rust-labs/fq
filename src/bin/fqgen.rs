@@ -4,17 +4,12 @@ extern crate env_logger;
 extern crate fqlib;
 
 use clap::{App, Arg};
-use fqlib::{BlockPairGenerator, PairedWriter};
-use fqlib::writers::{file_writer, gz_writer};
+use fqlib::{BlockPairGenerator, PairedWriter, writers};
 use log::LevelFilter;
 
 fn main() {
     let matches = App::new("fqgen")
         .version(crate_version!())
-        .arg(Arg::with_name("compress")
-             .help("Compress output with gzip")
-             .short("c")
-             .long("compress"))
         .arg(Arg::with_name("num-reads")
              .short("n")
              .long("num-reads")
@@ -45,23 +40,16 @@ fn main() {
     let r2_output_pathname = matches.value_of("r2-output-pathname").unwrap();
 
     let num_reads = value_t!(matches, "num-reads", i32).unwrap_or_else(|e| e.exit());
-    let compress = matches.is_present("compress");
 
     info!("fqgen start");
 
     let generator = BlockPairGenerator::new();
 
-    if compress {
-        let w1 = gz_writer::create(r1_output_pathname).unwrap();
-        let w2 = gz_writer::create(r2_output_pathname).unwrap();
-        let mut writer = PairedWriter::new(w1, w2);
-        writer.write(generator, num_reads).unwrap();
-    } else {
-        let w1 = file_writer::create(r1_output_pathname).unwrap();
-        let w2 = file_writer::create(r2_output_pathname).unwrap();
-        let mut writer = PairedWriter::new(w1, w2);
-        writer.write(generator, num_reads).unwrap();
-    }
+    let w1 = writers::factory(r1_output_pathname).unwrap();
+    let w2 = writers::factory(r2_output_pathname).unwrap();
+    let mut writer = PairedWriter::new(w1, w2);
+
+    writer.write(generator, num_reads).unwrap();
 
     info!("fqgen end");
 }

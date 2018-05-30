@@ -6,7 +6,7 @@ extern crate fqlib;
 use std::process;
 
 use clap::{App, Arg};
-use fqlib::{FastQReader, FileReader, GzReader, PairedReader};
+use fqlib::{FastQReader, PairedReader, readers};
 use fqlib::validators::single::DuplicateNameValidator;
 use fqlib::validators::{
     self,
@@ -56,8 +56,8 @@ fn report_error(
     error!("{}", message);
 }
 
-fn validate<R: FastQReader>(
-    mut reader: PairedReader<R>,
+fn validate<R: FastQReader, S: FastQReader>(
+    mut reader: PairedReader<R, S>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -94,8 +94,7 @@ fn validate<R: FastQReader>(
 
     info!("starting validation (pass 2)");
 
-    // @TODO check if input is compressed
-    let mut reader = FileReader::open(r1_input_pathname).unwrap();
+    let mut reader = readers::factory(r1_input_pathname).unwrap();
 
     while let Some(block) = reader.next_block() {
         let b = block.unwrap();
@@ -175,37 +174,18 @@ fn main() {
 
     info!("fqlint start");
 
-    let is_compressed = r1_input_pathname.ends_with(".gz");
+    let r1 = readers::factory(r1_input_pathname).unwrap();
+    let r2 = readers::factory(r2_input_pathname).unwrap();
+    let reader = PairedReader::new(r1, r2);
 
-    if is_compressed {
-        info!("inputs are compressed");
-
-        let r1 = GzReader::open(r1_input_pathname).unwrap();
-        let r2 = GzReader::open(r2_input_pathname).unwrap();
-        let reader = PairedReader::new(r1, r2);
-
-        validate(
-            reader,
-            single_read_validation_level,
-            paired_read_validation_level,
-            &disabled_validators,
-            lint_mode,
-            r1_input_pathname,
-        );
-    } else {
-        let r1 = FileReader::open(r1_input_pathname).unwrap();
-        let r2 = FileReader::open(r2_input_pathname).unwrap();
-        let reader = PairedReader::new(r1, r2);
-
-        validate(
-            reader,
-            single_read_validation_level,
-            paired_read_validation_level,
-            &disabled_validators,
-            lint_mode,
-            r1_input_pathname,
-        );
-    }
+    validate(
+        reader,
+        single_read_validation_level,
+        paired_read_validation_level,
+        &disabled_validators,
+        lint_mode,
+        r1_input_pathname,
+    );
 
     info!("fqlint end");
 }
