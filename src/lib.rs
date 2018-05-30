@@ -6,13 +6,13 @@ extern crate rand;
 
 pub use block::Block;
 pub use generator::BlockPairGenerator;
-pub use reader::{FastQReader, PairedFastQReader};
+pub use readers::{FastQReader, FileReader, GzReader, PairedReader};
 pub use writer::Writer;
 pub use validators::ValidationLevel;
 
 pub mod block;
 pub mod distributions;
 pub mod generator;
-pub mod reader;
+pub mod readers;
 pub mod validators;
 pub mod writer;

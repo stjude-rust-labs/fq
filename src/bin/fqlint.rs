@@ -1,16 +1,12 @@
 #[macro_use] extern crate log;
 extern crate env_logger;
 #[macro_use] extern crate clap;
-extern crate flate2;
 extern crate fqlib;
 
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::process;
 
 use clap::{App, Arg};
-use flate2::bufread::GzDecoder;
-use fqlib::{FastQReader, PairedFastQReader};
+use fqlib::{FastQReader, FileReader, GzReader, PairedReader};
 use fqlib::validators::single::DuplicateNameValidator;
 use fqlib::validators::{
     self,
@@ -60,8 +56,8 @@ fn report_error(
     error!("{}", message);
 }
 
-fn validate<R: BufRead>(
-    mut reader: PairedFastQReader<R>,
+fn validate<R: FastQReader>(
+    mut reader: PairedReader<R>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -98,9 +94,8 @@ fn validate<R: BufRead>(
 
     info!("starting validation (pass 2)");
 
-    let mut reader = FastQReader::<BufReader<File>>::open(
-        r1_input_pathname,
-    ).unwrap();
+    // @TODO check if input is compressed
+    let mut reader = FileReader::open(r1_input_pathname).unwrap();
 
     while let Some(block) = reader.next_block() {
         let b = block.unwrap();
@@ -185,10 +180,9 @@ fn main() {
     if is_compressed {
         info!("inputs are compressed");
 
-        let reader = PairedFastQReader::<BufReader<GzDecoder<BufReader<File>>>>::gz_open(
-            r1_input_pathname,
-            r2_input_pathname,
-        ).unwrap();
+        let r1 = GzReader::open(r1_input_pathname).unwrap();
+        let r2 = GzReader::open(r2_input_pathname).unwrap();
+        let reader = PairedReader::new(r1, r2);
 
         validate(
             reader,
@@ -199,10 +193,9 @@ fn main() {
             r1_input_pathname,
         );
     } else {
-        let reader = PairedFastQReader::<BufReader<File>>::open(
-            r1_input_pathname,
-            r2_input_pathname,
-        ).unwrap();
+        let r1 = FileReader::open(r1_input_pathname).unwrap();
+        let r2 = FileReader::open(r2_input_pathname).unwrap();
+        let reader = PairedReader::new(r1, r2);
 
         validate(
             reader,
