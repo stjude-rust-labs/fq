@@ -76,11 +76,11 @@ fn validate<R: FastQReader, S: FastQReader>(
 
     let mut block_no = 0;
 
-    while let Some((r1_block, r2_block)) = reader.next_pair() {
-        let b = r1_block.unwrap();
-        let d = r2_block.unwrap();
+    while let Some((block_1, block_2)) = reader.next_pair() {
+        let b = block_1.unwrap();
+        let d = block_2.unwrap();
 
-        duplicate_name_validator.validate(b).unwrap();
+        duplicate_name_validator.insert(b);
 
         if let Err(e) = validator.validate_pair(b, d) {
             match lint_mode {
@@ -96,12 +96,19 @@ fn validate<R: FastQReader, S: FastQReader>(
 
     let mut reader = readers::factory(r1_input_pathname).unwrap();
 
+    let mut block_no = 0;
+
     while let Some(block) = reader.next_block() {
         let b = block.unwrap();
 
-        if !duplicate_name_validator.contains_once(&b.name) {
-            panic!("Duplicae name found: {}", b.name);
+        if let Err(e) = duplicate_name_validator.validate(&b) {
+            match lint_mode {
+                LintMode::Error => panic_error(e, "<filename>", block_no + 1),
+                LintMode::Report => report_error(e, "<filename>", block_no + 1),
+            }
         }
+
+        block_no += 1;
     }
 }
 
