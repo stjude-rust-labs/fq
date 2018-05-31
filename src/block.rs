@@ -10,7 +10,7 @@ pub struct Block {
 }
 
 impl Block {
-    /// Creates a new FastQ block.
+    /// Creates a new FastQ block with the given lines.
     ///
     /// If `name` includes a trailing interleave, it is removed.
     ///
