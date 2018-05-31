@@ -22,6 +22,7 @@ const TILES: u32 = 60;
 const MAX_X: u32 = 10000;
 const MAX_Y: u32 = 10000;
 
+/// A FASTQ block generator.
 pub struct Generator {
     instrument: String,
     run_number: i32,
@@ -39,6 +40,22 @@ pub struct Generator {
 }
 
 impl Generator {
+    /// Creates a new `Generator` with a given `SmallRng`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fqlib;
+    /// # extern crate rand;
+    /// #
+    /// # use rand::{FromEntropy, rngs::SmallRng};
+    /// #
+    /// # fn main() {
+    /// use fqlib::generator::Generator;
+    /// let rng = SmallRng::from_entropy();
+    /// let _ = Generator::from_rng(rng);
+    /// # }
+    /// ```
     pub fn from_rng(mut rng: SmallRng) -> Generator {
         let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
         let run_number = rng.gen_range(1, 1000 + 1);
@@ -72,16 +89,48 @@ impl Generator {
         }
     }
 
+    /// Creates a `Generator` from a given seed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::generator::Generator;
+    ///
+    /// let seed = [
+    ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
+    ///     0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
+    /// ];
+    ///
+    /// let _ = Generator::from_seed(seed);
+    /// ```
     pub fn from_seed(seed: [u8; 16]) -> Generator {
         let rng = SmallRng::from_seed(seed);
         Generator::from_rng(rng)
     }
 
+    /// Creates a `Generator` seeded by the system.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::generator::Generator;
+    /// let _ = Generator::new();
+    /// ```
     pub fn new() -> Generator {
         let rng = SmallRng::from_entropy();
         Generator::from_rng(rng)
     }
 
+    /// Returns a freshly generated block.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::generator::Generator;
+    ///
+    /// let mut generator = Generator::new();
+    /// let _ = generator.next_block();
+    /// ```
     pub fn next_block(&mut self) -> &Block {
         self.clear_block();
 
@@ -92,6 +141,17 @@ impl Generator {
         &self.block
     }
 
+    /// Returns a freshly generated block, setting the name to the given input.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::generator::Generator;
+    ///
+    /// let mut generator = Generator::new();
+    /// let block = generator.next_block_with_name("@fqlib");
+    /// assert_eq!(block.name, "@fqlib");
+    /// ```
     pub fn next_block_with_name(&mut self, name: &str) -> &Block {
         self.clear_block();
 
@@ -149,12 +209,29 @@ fn gen_flow_cell(rng: &mut SmallRng, len: usize) -> String {
     rng.sample_iter(&distribution).take(len).collect()
 }
 
+/// Generator for block pairs.
+///
+/// Block pairs share the same name but will generate new sequences and qualities.
 pub struct BlockPairGenerator {
     generator_1: Generator,
     generator_2: Generator,
 }
 
 impl BlockPairGenerator {
+    /// Creates a `BlockPairGenerator` with generators using the given seed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::BlockPairGenerator;
+    ///
+    /// let seed = [
+    ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
+    ///     0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
+    /// ];
+    ///
+    /// let _ = BlockPairGenerator::from_seed(seed);
+    /// ```
     pub fn from_seed(seed: [u8; 16]) -> BlockPairGenerator {
         let rng_1 = SmallRng::from_seed(seed);
         let rng_2 = SmallRng::from_seed(seed);
@@ -165,6 +242,14 @@ impl BlockPairGenerator {
         }
     }
 
+    /// Creates a `BlockPairGenerator` with generators seeded by the system.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::BlockPairGenerator;
+    /// let _ = BlockPairGenerator::new();
+    /// ```
     pub fn new() -> BlockPairGenerator {
         BlockPairGenerator {
             generator_1: Generator::new(),
@@ -172,6 +257,19 @@ impl BlockPairGenerator {
         }
     }
 
+    /// Returns a freshly generated block pair.
+    ///
+    /// Block pairs share the same name but will (likely) have different sequences and qualities.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::BlockPairGenerator;
+    ///
+    /// let mut generator = BlockPairGenerator::new();
+    /// let (b, d) = generator.next_block_pair();
+    /// assert_eq!(b.name, d.name);
+    /// ```
     pub fn next_block_pair(&mut self) -> (&Block, &Block) {
         let b = self.generator_1.next_block();
         let d = self.generator_2.next_block_with_name(&b.name);
@@ -198,12 +296,5 @@ mod tests {
         assert_eq!(block.sequence, "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT");
         assert_eq!(block.plus_line, "+");
         assert_eq!(block.quality, "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@");
-    }
-
-    #[test]
-    fn test_next_block_with_name() {
-        let mut generator = Generator::from_seed(SEED);
-        let block = generator.next_block_with_name("@fqlib");
-        assert_eq!(block.name, "@fqlib");
     }
 }
