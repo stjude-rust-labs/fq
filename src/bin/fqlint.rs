@@ -216,3 +216,42 @@ fn main() {
 
     info!("fqlint end");
 }
+
+#[cfg(test)]
+mod tests {
+    use fqlib::validators::{self, LineType};
+
+    use super::build_error_message;
+
+    #[test]
+    fn test_build_error_message() {
+        let error = validators::Error::new(
+            "S002",
+            "AlphabetValidator",
+            "Invalid character: m",
+            LineType::Sequence,
+            None,
+        );
+
+        let actual = build_error_message(error, "in.fastq", 2);
+        let expected = "in.fastq:6: [S002] AlphabetValidator: Invalid character: m";
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_build_error_message_with_col_no() {
+        let error = validators::Error::new(
+            "S002",
+            "AlphabetValidator",
+            "Invalid character: m",
+            LineType::Sequence,
+            Some(44),
+        );
+
+        let actual = build_error_message(error, "in.fastq", 2);
+        let expected = "in.fastq:6:44: [S002] AlphabetValidator: Invalid character: m";
+
+        assert_eq!(actual, expected);
+    }
+}
