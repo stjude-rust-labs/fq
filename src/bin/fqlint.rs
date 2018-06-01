@@ -38,7 +38,7 @@ fn build_error_message(
     return message;
 }
 
-fn panic_error(
+fn exit_with_validation_error(
     error: validators::Error,
     pathname: &str,
     block_no: usize,
@@ -48,13 +48,25 @@ fn panic_error(
     process::exit(1);
 }
 
-fn log_error(
+fn log_validation_error(
     error: validators::Error,
     pathname: &str,
     block_no: usize,
 ) {
     let message = build_error_message(error, pathname, block_no);
     error!("{}", message);
+}
+
+fn handle_validation_error(
+    lint_mode: LintMode,
+    error: validators::Error,
+    pathname: &str,
+    block_no: usize,
+) {
+    match lint_mode {
+        LintMode::Panic => exit_with_validation_error(error, pathname, block_no + 1),
+        LintMode::Log => log_validation_error(error, pathname, block_no + 1),
+    }
 }
 
 fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
@@ -73,6 +85,7 @@ fn validate<R: FastQReader, S: FastQReader>(
     disabled_validators: &[String],
     lint_mode: LintMode,
     r1_input_pathname: &str,
+    r2_input_pathname: &str,
 ) {
     let validator = BlockValidator::new(
         single_read_validation_level,
@@ -101,23 +114,28 @@ fn validate<R: FastQReader, S: FastQReader>(
     while let Some((block_1, block_2)) = reader.next_pair() {
         let b = match block_1 {
             Ok(b) => b,
-            Err(e) => exit_with_io_error(e, None),
+            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
         };
 
         let d = match block_2 {
             Ok(b) => b,
-            Err(e) => exit_with_io_error(e, None),
+            Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
         };
 
         if use_special_validator {
             duplicate_name_validator.insert(b);
         }
 
+        if let Err(e) = validator.validate(b) {
+            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+        }
+
+        if let Err(e) = validator.validate(d) {
+            handle_validation_error(lint_mode, e, r2_input_pathname, block_no + 1);
+        }
+
         if let Err(e) = validator.validate_pair(b, d) {
-            match lint_mode {
-                LintMode::Panic => panic_error(e, "<filename>", block_no + 1),
-                LintMode::Log => log_error(e, "<filename>", block_no + 1),
-            }
+            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
         }
 
         block_no += 1;
@@ -143,10 +161,7 @@ fn validate<R: FastQReader, S: FastQReader>(
         };
 
         if let Err(e) = duplicate_name_validator.validate(&b) {
-            match lint_mode {
-                LintMode::Panic => panic_error(e, "<filename>", block_no + 1),
-                LintMode::Log => log_error(e, "<filename>", block_no + 1),
-            }
+            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
         }
 
         block_no += 1;
@@ -243,6 +258,7 @@ fn main() {
         &disabled_validators,
         lint_mode,
         r1_input_pathname,
+        r2_input_pathname,
     );
 
     info!("fqlint end");
@@ -252,7 +268,7 @@ fn main() {
 mod tests {
     use fqlib::validators::{self, LineType};
 
-    use super::build_error_message;
+    use super::*;
 
     #[test]
     fn test_build_error_message() {
@@ -261,28 +277,28 @@ mod tests {
             "AlphabetValidator",
             "Invalid character: m",
             LineType::Sequence,
-            None,
+            Some(76),
         );
 
-        let actual = build_error_message(error, "in.fastq", 2);
-        let expected = "in.fastq:6: [S002] AlphabetValidator: Invalid character: m";
-
-        assert_eq!(actual, expected);
+        assert_eq!(
+            build_error_message(error, "in.fastq", 2),
+            "in.fastq:6:76: [S002] AlphabetValidator: Invalid character: m",
+        );
     }
 
     #[test]
-    fn test_build_error_message_with_col_no() {
+    fn test_build_error_message_with_no_col_no() {
         let error = validators::Error::new(
             "S002",
             "AlphabetValidator",
             "Invalid character: m",
             LineType::Sequence,
-            Some(44),
+            None,
         );
 
-        let actual = build_error_message(error, "in.fastq", 2);
-        let expected = "in.fastq:6:44: [S002] AlphabetValidator: Invalid character: m";
-
-        assert_eq!(actual, expected);
+        assert_eq!(
+            build_error_message(error, "in.fastq", 2),
+            "in.fastq:6: [S002] AlphabetValidator: Invalid character: m",
+        );
     }
 }

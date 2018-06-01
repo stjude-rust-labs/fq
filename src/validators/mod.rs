@@ -53,7 +53,7 @@ impl Error {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LintMode {
     Panic,
     Log,
@@ -142,9 +142,6 @@ impl BlockValidator {
     }
 
     pub fn validate_pair(&self, b: &Block, d: &Block) -> Result<(), Error> {
-        self.validate(b)?;
-        self.validate(d)?;
-
         for validator in &self.paired_read_validators {
             validator.validate(&b, &d)?;
         }
