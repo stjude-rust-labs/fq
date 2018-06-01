@@ -3,9 +3,21 @@ extern crate env_logger;
 #[macro_use] extern crate clap;
 extern crate fqlib;
 
+use std::io;
+use std::process;
+
 use clap::{App, Arg};
 use fqlib::{BlockPairGenerator, PairedWriter, writers};
 use log::LevelFilter;
+
+fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
+    match pathname {
+        Some(p) => eprintln!("{}: {}", error, p),
+        None => eprintln!("{}", error),
+    }
+
+    process::exit(1);
+}
 
 fn main() {
     let matches = App::new("fqgen")
@@ -44,11 +56,21 @@ fn main() {
 
     let generator = BlockPairGenerator::new();
 
-    let w1 = writers::factory(r1_output_pathname).unwrap();
-    let w2 = writers::factory(r2_output_pathname).unwrap();
+    let w1 = match writers::factory(r1_output_pathname) {
+        Ok(w) => w,
+        Err(e) => exit_with_io_error(e, Some(r1_output_pathname)),
+    };
+
+    let w2 = match writers::factory(r2_output_pathname) {
+        Ok(w) => w,
+        Err(e) => exit_with_io_error(e, Some(r2_output_pathname)),
+    };
+
     let mut writer = PairedWriter::new(w1, w2);
 
-    writer.write(generator, num_reads).unwrap();
+    if let Err(e) = writer.write(generator, num_reads) {
+        exit_with_io_error(e, None);
+    }
 
     info!("fqgen end");
 }

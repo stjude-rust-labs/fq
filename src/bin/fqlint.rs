@@ -3,6 +3,7 @@ extern crate env_logger;
 #[macro_use] extern crate clap;
 extern crate fqlib;
 
+use std::io;
 use std::process;
 
 use clap::{App, Arg};
@@ -56,6 +57,15 @@ fn log_error(
     error!("{}", message);
 }
 
+fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
+    match pathname {
+        Some(p) => eprintln!("{}: {}", error, p),
+        None => eprintln!("{}", error),
+    }
+
+    process::exit(1);
+}
+
 fn validate<R: FastQReader, S: FastQReader>(
     mut reader: PairedReader<R, S>,
     single_read_validation_level: ValidationLevel,
@@ -89,8 +99,15 @@ fn validate<R: FastQReader, S: FastQReader>(
     let mut block_no = 0;
 
     while let Some((block_1, block_2)) = reader.next_pair() {
-        let b = block_1.unwrap();
-        let d = block_2.unwrap();
+        let b = match block_1 {
+            Ok(b) => b,
+            Err(e) => exit_with_io_error(e, None),
+        };
+
+        let d = match block_2 {
+            Ok(b) => b,
+            Err(e) => exit_with_io_error(e, None),
+        };
 
         if use_special_validator {
             duplicate_name_validator.insert(b);
@@ -112,12 +129,18 @@ fn validate<R: FastQReader, S: FastQReader>(
         return;
     }
 
-    let mut reader = readers::factory(r1_input_pathname).unwrap();
+    let mut reader = match readers::factory(r1_input_pathname) {
+        Ok(r) => r,
+        Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+    };
 
     let mut block_no = 0;
 
     while let Some(block) = reader.next_block() {
-        let b = block.unwrap();
+        let b = match block {
+            Ok(b) => b,
+            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+        };
 
         if let Err(e) = duplicate_name_validator.validate(&b) {
             match lint_mode {
@@ -201,8 +224,16 @@ fn main() {
 
     info!("fqlint start");
 
-    let r1 = readers::factory(r1_input_pathname).unwrap();
-    let r2 = readers::factory(r2_input_pathname).unwrap();
+    let r1 = match readers::factory(r1_input_pathname) {
+        Ok(r) => r,
+        Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+    };
+
+    let r2 = match readers::factory(r2_input_pathname) {
+        Ok(r) => r,
+        Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
+    };
+
     let reader = PairedReader::new(r1, r2);
 
     validate(
