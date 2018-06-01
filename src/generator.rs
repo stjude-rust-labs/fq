@@ -15,7 +15,7 @@ static NUCLEOBASE_CHARSET: &'static [u8] = b"AGTC";
 static PLUS_LINE: &'static str = "+";
 
 const READ_LEN: usize = 101;
-const FLOW_CELL_LEN: usize = 7;
+const FLOW_CELL_ID_LEN: usize = 7;
 
 const LANES: u32 = 8;
 const TILES: u32 = 60;
@@ -26,7 +26,7 @@ const MAX_Y: u32 = 10000;
 pub struct Generator {
     instrument: String,
     run_number: i32,
-    flow_cell: String,
+    flow_cell_id: String,
 
     rng: SmallRng,
     lane_range: Uniform<u32>,
@@ -59,7 +59,7 @@ impl Generator {
     pub fn from_rng(mut rng: SmallRng) -> Generator {
         let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
         let run_number = rng.gen_range(1, 1000 + 1);
-        let flow_cell = gen_flow_cell(&mut rng, FLOW_CELL_LEN);
+        let flow_cell_id = gen_flow_cell_id(&mut rng, FLOW_CELL_ID_LEN);
 
         let lane_range = Uniform::new(1, LANES + 1);
         let tile_range = Uniform::new(1, TILES + 1);
@@ -74,7 +74,7 @@ impl Generator {
 
         Generator {
             instrument,
-            flow_cell,
+            flow_cell_id,
             run_number,
 
             rng,
@@ -162,6 +162,9 @@ impl Generator {
         &self.block
     }
 
+    // Generates a name following Illumina's naming format, sans interleave.
+    //
+    // @see <https://help.basespace.illumina.com/articles/descriptive/fastq-files/>
     fn next_name(&mut self) {
         let lane = self.lane_range.sample(&mut self.rng);
         let tile = self.tile_range.sample(&mut self.rng);
@@ -171,7 +174,7 @@ impl Generator {
         write!(
             &mut self.block.name,
             "@{}:{}:{}:{}:{}:{}:{}",
-            self.instrument, self.run_number, self.flow_cell,
+            self.instrument, self.run_number, self.flow_cell_id,
             lane, tile, x_pos, y_pos,
         ).unwrap();
     }
@@ -204,7 +207,7 @@ impl Generator {
     }
 }
 
-fn gen_flow_cell(rng: &mut SmallRng, len: usize) -> String {
+fn gen_flow_cell_id(rng: &mut SmallRng, len: usize) -> String {
     let distribution = Character::new(UPPER_ALPHA_CHARSET);
     rng.sample_iter(&distribution).take(len).collect()
 }
