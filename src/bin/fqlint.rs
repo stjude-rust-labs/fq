@@ -42,7 +42,7 @@ fn panic_error(
     error: validators::Error,
     pathname: &str,
     block_no: usize,
-) {
+) -> ! {
     let message = build_error_message(error, pathname, block_no);
     eprintln!("{}", message);
     process::exit(1);
