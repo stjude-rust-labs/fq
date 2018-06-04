@@ -22,10 +22,10 @@ fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
 fn main() {
     let matches = App::new("fqgen")
         .version(crate_version!())
-        .arg(Arg::with_name("num-reads")
+        .arg(Arg::with_name("num-blocks")
              .short("n")
-             .long("num-reads")
-             .help("Number of reads to generate")
+             .long("num-blocks")
+             .help("Number of blocks to generate")
              .value_name("N")
              .default_value("10000"))
         .arg(Arg::with_name("verbose")
@@ -50,7 +50,7 @@ fn main() {
     let r1_output_pathname = matches.value_of("r1-output-pathname").unwrap();
     let r2_output_pathname = matches.value_of("r2-output-pathname").unwrap();
 
-    let num_reads = value_t!(matches, "num-reads", i32).unwrap_or_else(|e| e.exit());
+    let num_blocks = value_t!(matches, "num-blocks", i32).unwrap_or_else(|e| e.exit());
 
     info!("fqgen start");
 
@@ -68,7 +68,7 @@ fn main() {
 
     let mut writer = PairedWriter::new(w1, w2);
 
-    if let Err(e) = writer.write(generator, num_reads) {
+    if let Err(e) = writer.write(generator, num_blocks) {
         exit_with_io_error(e, None);
     }
 
