@@ -32,10 +32,12 @@ fn main() {
              .short("v")
              .long("verbose")
              .help("Use verbose logging"))
-        .arg(Arg::with_name("r1-output-pathname")
+        .arg(Arg::with_name("out1")
+             .help("Read 1 output pathname. Output will be gzipped if ends in `.gz`.")
              .index(1)
              .required(true))
-        .arg(Arg::with_name("r2-output-pathname")
+        .arg(Arg::with_name("out2")
+             .help("Read 2 output pathname. Output will be gzipped if ends in `.gz`.")
              .index(2)
              .required(true))
         .get_matches();
@@ -47,8 +49,8 @@ fn main() {
             .init();
     }
 
-    let r1_output_pathname = matches.value_of("r1-output-pathname").unwrap();
-    let r2_output_pathname = matches.value_of("r2-output-pathname").unwrap();
+    let r1_output_pathname = matches.value_of("out1").unwrap();
+    let r2_output_pathname = matches.value_of("out2").unwrap();
 
     let num_blocks = value_t!(matches, "num-blocks", i32).unwrap_or_else(|e| e.exit());
 

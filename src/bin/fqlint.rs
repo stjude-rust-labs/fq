@@ -199,10 +199,12 @@ fn main() {
              .short("v")
              .long("verbose")
              .help("Use verbose logging"))
-        .arg(Arg::with_name("r1-input-pathname")
+        .arg(Arg::with_name("in1")
+             .help("Read 1 input pathname. Accepts both raw and gzipped FASTQ inputs.")
              .index(1)
              .required(true))
-        .arg(Arg::with_name("r2-input-pathname")
+        .arg(Arg::with_name("in2")
+             .help("Read 2 input pathname. Accepts both raw and gzipped FASTQ inputs.")
              .index(2)
              .required(true))
         .get_matches();
@@ -216,8 +218,8 @@ fn main() {
             .init();
     }
 
-    let r1_input_pathname = matches.value_of("r1-input-pathname").unwrap();
-    let r2_input_pathname = matches.value_of("r2-input-pathname").unwrap();
+    let r1_input_pathname = matches.value_of("in1").unwrap();
+    let r2_input_pathname = matches.value_of("in2").unwrap();
 
     let single_read_validation_level = value_t!(
         matches,
