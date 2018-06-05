@@ -10,7 +10,7 @@ Use [Cargo] to install the two command-line tools included with fqlib:
 **fqgen** and **fqlint**.
 
 ```
-$ cargo install --git https://github.com/zaeleus/fqlib.git
+$ cargo install --git https://github.com/stjude/fqlib.git
 ```
 
 [Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
