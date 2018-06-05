@@ -1,0 +1,13 @@
+[package]
+name = "fqlib"
+version = "0.1.0"
+authors = ["Michael Macias <michael.macias@stjude.org>"]
+license = "Apache-2.0"
+
+[dependencies]
+bloom = { git = "https://github.com/zaeleus/bloom.git" }
+clap = "2.31.2"
+env_logger = "0.5.10"
+flate2 = "1.0.1"
+log = "0.4.1"
+rand = "0.5.0"
