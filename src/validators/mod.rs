@@ -93,8 +93,8 @@ impl FromStr for ValidationLevel {
 
 /// Validator that runs immutable validators over blocks.
 pub struct BlockValidator {
-    single_read_validators: Vec<Box<SingleReadValidator>>,
-    paired_read_validators: Vec<Box<PairedReadValidator>>,
+    single_read_validators: Vec<Box<dyn SingleReadValidator>>,
+    paired_read_validators: Vec<Box<dyn PairedReadValidator>>,
 }
 
 impl BlockValidator {
@@ -153,8 +153,8 @@ impl BlockValidator {
 fn filter_single_read_validators(
     validation_level: ValidationLevel,
     disabled_validators: &[String],
-) -> Vec<Box<SingleReadValidator>> {
-    let single_read_validators: Vec<Box<SingleReadValidator>> = vec![
+) -> Vec<Box<dyn SingleReadValidator>> {
+    let single_read_validators: Vec<Box<dyn SingleReadValidator>> = vec![
         Box::new(NameValidator),
         Box::new(CompleteValidator),
         Box::new(AlphabetValidator::default()),
@@ -173,8 +173,8 @@ fn filter_single_read_validators(
 fn filter_paired_read_validators(
     validation_level: ValidationLevel,
     disabled_validators: &[String],
-) -> Vec<Box<PairedReadValidator>> {
-    let paired_read_validators: Vec<Box<PairedReadValidator>> = vec![
+) -> Vec<Box<dyn PairedReadValidator>> {
+    let paired_read_validators: Vec<Box<dyn PairedReadValidator>> = vec![
         Box::new(NamesValidator),
     ];
 

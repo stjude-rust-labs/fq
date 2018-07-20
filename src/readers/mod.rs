@@ -22,12 +22,12 @@ impl<R: FastQReader + ?Sized> FastQReader for Box<R> {
     }
 }
 
-pub fn factory<P>(pathname: P) -> io::Result<Box<FastQReader>> where P: AsRef<Path> {
+pub fn factory<P>(pathname: P) -> io::Result<Box<dyn FastQReader>> where P: AsRef<Path> {
     let path = pathname.as_ref();
 
     match path.extension().and_then(OsStr::to_str) {
-        Some("gz") => GzReader::open(path).map(|w| Box::new(w) as Box<FastQReader>),
-        _ => FileReader::open(path).map(|w| Box::new(w) as Box<FastQReader>),
+        Some("gz") => GzReader::open(path).map(|w| Box::new(w) as Box<dyn FastQReader>),
+        _ => FileReader::open(path).map(|w| Box::new(w) as Box<dyn FastQReader>),
     }
 }
 

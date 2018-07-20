@@ -1,3 +1,5 @@
+#![deny(bare_trait_objects)]
+
 extern crate bloom;
 extern crate flate2;
 #[macro_use]
