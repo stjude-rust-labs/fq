@@ -45,3 +45,30 @@ pub fn read_line<R: BufRead>(reader: &mut R, buf: &mut String) -> io::Result<usi
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::BufReader;
+
+    use super::read_line;
+
+    #[test]
+    fn test_read_line() {
+        let data = "@fqlib\nAGCT\n";
+        let mut reader = BufReader::new(data.as_bytes());
+
+        let mut buf = String::new();
+        let len = read_line(&mut reader, &mut buf).unwrap();
+        assert_eq!(len, 7);
+        assert_eq!(buf, "@fqlib");
+
+        buf.clear();
+        let len = read_line(&mut reader, &mut buf).unwrap();
+        assert_eq!(len, 5);
+        assert_eq!(buf, "AGCT");
+
+        buf.clear();
+        let len = read_line(&mut reader, &mut buf).unwrap();
+        assert_eq!(len, 0);
+    }
+}
