@@ -12,8 +12,10 @@ use rand::distributions::{Distribution, Uniform};
 /// use rand::{Rng, thread_rng};
 /// use fqlib::distributions::Character;
 ///
+/// let mut rng = thread_rng();
 /// let distribution = Character::new(b"AGTC");
-/// let s: String = thread_rng().sample_iter(&distribution).take(8).collect();
+/// let bytes: Vec<u8> = rng.sample_iter(&distribution).take(8).collect();
+/// let s = String::from_utf8(bytes).unwrap();
 /// println!("{}", s);
 /// # }
 /// ```
@@ -29,10 +31,10 @@ impl Character {
     }
 }
 
-impl Distribution<char> for Character {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> char {
+impl Distribution<u8> for Character {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8 {
         let i = self.range.sample(rng);
-        self.alphabet[i] as char
+        self.alphabet[i]
     }
 }
 
@@ -48,6 +50,6 @@ mod tests {
         let distribution = Character::new(b"abcd");
         let mut rng = StepRng::new(0, 1);
         let x = rng.sample(distribution);
-        assert_eq!(x, 'a');
+        assert_eq!(x, b'a');
     }
 }

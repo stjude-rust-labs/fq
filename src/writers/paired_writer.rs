@@ -35,15 +35,15 @@ fn write_block<W>(
 where
     W: Write
 {
-    writer.write_all(block.name.as_bytes())?;
+    writer.write_all(block.name())?;
     writer.write_all(b"/")?;
     writer.write_all(interleave.as_bytes())?;
     writer.write_all(b"\n")?;
-    writer.write_all(block.sequence.as_bytes())?;
+    writer.write_all(block.sequence())?;
     writer.write_all(b"\n")?;
-    writer.write_all(block.plus_line.as_bytes())?;
+    writer.write_all(block.plus_line())?;
     writer.write_all(b"\n")?;
-    writer.write_all(block.quality.as_bytes())?;
+    writer.write_all(block.quality())?;
     writer.write_all(b"\n")?;
 
     Ok(())

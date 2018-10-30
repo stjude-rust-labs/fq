@@ -43,7 +43,7 @@ const INITIAL_CAPACITY: usize = 10000;
 /// [`validate`]: #method.validate
 pub struct DuplicateNameValidator {
     filter: ScalableBloomFilter,
-    possible_duplicates: HashMap<String, u8>,
+    possible_duplicates: HashMap<Vec<u8>, u8>,
 }
 
 impl DuplicateNameValidator {
@@ -74,10 +74,10 @@ impl DuplicateNameValidator {
     /// validator.insert(&block);
     /// ```
     pub fn insert(&mut self, b: &Block) {
-        let name = &b.name;
+        let name = b.name();
 
         if self.filter.contains_or_insert(name) {
-            self.possible_duplicates.insert(name.clone(), 0);
+            self.possible_duplicates.insert(name.to_vec(), 0);
         }
     }
 
@@ -122,7 +122,7 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
                 return Err(Error::new(
                     code,
                     name,
-                    &format!("Duplicate found: '{}'", b.name),
+                    &format!("Duplicate found: '{}'", String::from_utf8_lossy(b.name())),
                     LineType::Name,
                     Some(1),
                 ));

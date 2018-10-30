@@ -31,8 +31,20 @@ pub fn factory<P>(pathname: P) -> io::Result<Box<dyn FastQReader>> where P: AsRe
     }
 }
 
-pub fn read_line<R: BufRead>(reader: &mut R, buf: &mut String) -> io::Result<usize> {
-    let result = reader.read_line(buf);
+pub fn read_block<R: BufRead>(reader: &mut R, block: &mut Block) -> io::Result<usize> {
+    let mut len = read_line(reader, &mut block.name)?;
+
+    if len > 0 {
+        len += read_line(reader, &mut block.sequence)?;
+        len += read_line(reader, &mut block.plus_line)?;
+        len += read_line(reader, &mut block.quality)?;
+    }
+
+    Ok(len)
+}
+
+pub fn read_line<R: BufRead>(reader: &mut R, buf: &mut Vec<u8>) -> io::Result<usize> {
+    let result = reader.read_until(b'\n', buf);
 
     // Chomp newline.
     if result.is_ok() {
@@ -57,15 +69,15 @@ mod tests {
         let data = "@fqlib\nAGCT\n";
         let mut reader = BufReader::new(data.as_bytes());
 
-        let mut buf = String::new();
+        let mut buf = Vec::new();
         let len = read_line(&mut reader, &mut buf).unwrap();
         assert_eq!(len, 7);
-        assert_eq!(buf, "@fqlib");
+        assert_eq!(buf, b"@fqlib");
 
         buf.clear();
         let len = read_line(&mut reader, &mut buf).unwrap();
         assert_eq!(len, 5);
-        assert_eq!(buf, "AGCT");
+        assert_eq!(buf, b"AGCT");
 
         buf.clear();
         let len = read_line(&mut reader, &mut buf).unwrap();

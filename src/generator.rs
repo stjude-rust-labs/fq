@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::io::Write;
 
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
@@ -8,11 +8,11 @@ use distributions::Character;
 
 use Block;
 
-static UPPER_ALPHA_CHARSET: &'static [u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static QUALITY_CHARSET: &'static [u8] = b"@ABCDEFGHIJ";
-static NUCLEOBASE_CHARSET: &'static [u8] = b"AGTC";
+static UPPER_ALPHA_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static QUALITY_CHARSET: &[u8] = b"@ABCDEFGHIJ";
+static NUCLEOBASE_CHARSET: &[u8] = b"AGTC";
 
-static PLUS_LINE: &'static str = "+";
+static PLUS_LINE: &[u8] = b"+";
 
 const READ_LEN: usize = 101;
 const FLOW_CELL_ID_LEN: usize = 7;
@@ -70,7 +70,7 @@ impl Generator {
         let quality_distribution = Character::new(QUALITY_CHARSET);
 
         let mut block = Block::default();
-        block.plus_line.push_str(PLUS_LINE);
+        block.plus_line.extend_from_slice(PLUS_LINE);
 
         Generator {
             instrument,
@@ -149,13 +149,13 @@ impl Generator {
     /// use fqlib::generator::Generator;
     ///
     /// let mut generator = Generator::new();
-    /// let block = generator.next_block_with_name("@fqlib");
-    /// assert_eq!(block.name, "@fqlib");
+    /// let block = generator.next_block_with_name(b"@fqlib");
+    /// assert_eq!(block.name(), b"@fqlib");
     /// ```
-    pub fn next_block_with_name(&mut self, name: &str) -> &Block {
+    pub fn next_block_with_name(&mut self, name: &[u8]) -> &Block {
         self.clear_block();
 
-        self.block.name.push_str(name);
+        self.block.name.extend_from_slice(name);
         self.next_sequence();
         self.next_quality();
 
@@ -209,7 +209,8 @@ impl Generator {
 
 fn gen_flow_cell_id(rng: &mut SmallRng, len: usize) -> String {
     let distribution = Character::new(UPPER_ALPHA_CHARSET);
-    rng.sample_iter(&distribution).take(len).collect()
+    let bytes = rng.sample_iter(&distribution).take(len).collect();
+    String::from_utf8(bytes).unwrap()
 }
 
 /// Generator for block pairs.
@@ -295,9 +296,9 @@ mod tests {
 
         let block = generator.next_block();
 
-        assert_eq!(block.name, "@fqlib2:898:JSYLNGV:8:44:169:5281");
-        assert_eq!(block.sequence, "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT");
-        assert_eq!(block.plus_line, "+");
-        assert_eq!(block.quality, "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@");
+        assert_eq!(block.name(), "@fqlib2:898:JSYLNGV:8:44:169:5281".as_bytes());
+        assert_eq!(block.sequence(), "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT".as_bytes());
+        assert_eq!(block.plus_line(), "+".as_bytes());
+        assert_eq!(block.quality(), "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@".as_bytes());
     }
 }

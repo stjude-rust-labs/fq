@@ -5,8 +5,8 @@ use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 /// "~" (ordinal values).
 pub struct QualityStringValidator;
 
-const START_OFFSET: u32 = b'!' as u32;
-const END_OFFSET: u32 = b'~' as u32;
+const START_OFFSET: u8 = b'!';
+const END_OFFSET: u8 = b'~';
 
 impl SingleReadValidator for QualityStringValidator {
     fn code(&self) -> &'static str {
@@ -22,14 +22,12 @@ impl SingleReadValidator for QualityStringValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        for (i, c) in b.quality.chars().enumerate() {
-            let o = c as u32;
-
-            if o < START_OFFSET || o > END_OFFSET {
+        for (i, &b) in b.quality().iter().enumerate() {
+            if b < START_OFFSET || b > END_OFFSET {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
-                    &format!("Invalid character '{}'", c),
+                    &format!("Invalid character '{}'", b as char),
                     LineType::Name,
                     Some(i + 1),
                 ));

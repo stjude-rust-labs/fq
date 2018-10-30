@@ -6,13 +6,13 @@ use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 /// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
 /// given character set.
 pub struct AlphabetValidator {
-    alphabet: HashSet<char>,
+    alphabet: HashSet<u8>,
 }
 
 impl AlphabetValidator {
-    pub fn new(characters: &str) -> AlphabetValidator {
+    pub fn new(characters: &[u8]) -> AlphabetValidator {
         AlphabetValidator {
-            alphabet: characters.chars().collect(),
+            alphabet: characters.iter().cloned().collect(),
         }
     }
 }
@@ -31,12 +31,12 @@ impl SingleReadValidator for AlphabetValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        for (i, c) in b.sequence.chars().enumerate() {
-            if !self.alphabet.contains(&c) {
+        for (i, &b) in b.sequence().iter().enumerate() {
+            if !self.alphabet.contains(&b) {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
-                    &format!("Invalid character: {}", c),
+                    &format!("Invalid character: {}", b as char),
                     LineType::Sequence,
                     Some(i + 1),
                 ));
@@ -50,7 +50,7 @@ impl SingleReadValidator for AlphabetValidator {
 impl Default for AlphabetValidator {
     /// Creates a validator with the alphabet "ACGTN", case-insensitive.
     fn default() -> AlphabetValidator {
-        AlphabetValidator::new("ACGTNacgtn")
+        AlphabetValidator::new(b"ACGTNacgtn")
     }
 }
 
@@ -63,11 +63,11 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let validator = AlphabetValidator::new("abc");
+        let validator = AlphabetValidator::new(b"abc");
         assert_eq!(validator.alphabet.len(), 3);
-        assert!(validator.alphabet.contains(&'a'));
-        assert!(validator.alphabet.contains(&'b'));
-        assert!(validator.alphabet.contains(&'c'));
+        assert!(validator.alphabet.contains(&b'a'));
+        assert!(validator.alphabet.contains(&b'b'));
+        assert!(validator.alphabet.contains(&b'c'));
     }
 
     #[test]

@@ -18,16 +18,17 @@ impl SingleReadValidator for NameValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        if !b.name.starts_with("@") {
-            Err(Error::new(
-                self.code(),
-                self.name(),
-                &String::from("Does not start with an '@'"),
-                LineType::Name,
-                Some(1),
-            ))
-        } else {
-            Ok(())
+        match b.name().first() {
+            Some(b'@') => Ok(()),
+            _ => {
+                Err(Error::new(
+                    self.code(),
+                    self.name(),
+                    &String::from("Does not start with an '@'"),
+                    LineType::Name,
+                    Some(1),
+                ))
+            },
         }
     }
 }

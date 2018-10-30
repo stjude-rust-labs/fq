@@ -1,12 +1,12 @@
 /// A FASTQ entry (block) containing a name, sequence, plus line, and quality.
 ///
-/// A mutable `Block` can simply be used a multiple line buffers.
+/// Note that lines are stored as byte buffers, not strings.
 #[derive(Debug, Default, Eq, PartialEq)]
 pub struct Block {
-    pub name: String,
-    pub sequence: String,
-    pub plus_line: String,
-    pub quality: String,
+    pub name: Vec<u8>,
+    pub sequence: Vec<u8>,
+    pub plus_line: Vec<u8>,
+    pub quality: Vec<u8>,
 }
 
 impl Block {
@@ -21,10 +21,10 @@ impl Block {
     ///
     /// let block = Block::new("@fqlib/1", "AGCT", "+", "abcd");
     ///
-    /// assert_eq!(block.name, "@fqlib");
-    /// assert_eq!(block.sequence, "AGCT");
-    /// assert_eq!(block.plus_line, "+");
-    /// assert_eq!(block.quality, "abcd");
+    /// assert_eq!(block.name(), b"@fqlib");
+    /// assert_eq!(block.sequence(), b"AGCT");
+    /// assert_eq!(block.plus_line(), b"+");
+    /// assert_eq!(block.quality(), b"abcd");
     /// ```
     pub fn new<S, T, U, V>(
         name: S,
@@ -33,10 +33,10 @@ impl Block {
         quality: V,
     ) -> Block
     where
-        S: Into<String>,
-        T: Into<String>,
-        U: Into<String>,
-        V: Into<String>,
+        S: Into<Vec<u8>>,
+        T: Into<Vec<u8>>,
+        U: Into<Vec<u8>>,
+        V: Into<Vec<u8>>,
     {
         let mut block = Block {
             name: name.into(),
@@ -60,10 +60,10 @@ impl Block {
     /// let mut block = Block::new("@fqlib/1", "AGCT", "+", "abcd");
     /// block.clear();
     ///
-    /// assert!(block.name.is_empty());
-    /// assert!(block.sequence.is_empty());
-    /// assert!(block.plus_line.is_empty());
-    /// assert!(block.quality.is_empty());
+    /// assert!(block.name().is_empty());
+    /// assert!(block.sequence().is_empty());
+    /// assert!(block.plus_line().is_empty());
+    /// assert!(block.quality().is_empty());
     /// ```
     pub fn clear(&mut self) {
         self.name.clear();
@@ -84,22 +84,39 @@ impl Block {
     /// use fqlib::Block;
     ///
     /// let mut block = Block::default();
-    /// block.name.push_str("@fqlib/1");
-    /// assert_eq!(block.name, "@fqlib/1");
+    /// block.name.extend_from_slice(b"@fqlib/1");
+    /// assert_eq!(block.name(), b"@fqlib/1");
     /// block.reset();
-    /// assert_eq!(block.name, "@fqlib");
+    /// assert_eq!(block.name(), b"@fqlib");
     ///
     /// let mut block = Block::default();
-    /// block.name.push_str("@fqlib 1");
-    /// assert_eq!(block.name, "@fqlib 1");
+    /// block.name.extend_from_slice(b"@fqlib 1");
+    /// assert_eq!(block.name(), b"@fqlib 1");
     /// block.reset();
-    /// assert_eq!(block.name, "@fqlib");
+    /// assert_eq!(block.name(), b"@fqlib");
     /// ```
     pub fn reset(&mut self) {
-        if let Some(i) = self.name.rfind('/') {
-            self.name.truncate(i);
-        } else if let Some(i) = self.name.rfind(' ') {
-            self.name.truncate(i);
+        let pos = self.name.iter().rev().enumerate().position(|(_, &j)| j == b'/' || j == b' ');
+
+        if let Some(i) = pos {
+            let len = self.name.len();
+            self.name.truncate(len - i - 1);
         }
+    }
+
+    pub fn name(&self) -> &[u8] {
+        &self.name
+    }
+
+    pub fn sequence(&self) -> &[u8] {
+        &self.sequence
+    }
+
+    pub fn plus_line(&self) -> &[u8] {
+        &self.plus_line
+    }
+
+    pub fn quality(&self) -> &[u8] {
+        &self.quality
     }
 }

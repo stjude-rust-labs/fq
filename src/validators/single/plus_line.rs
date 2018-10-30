@@ -18,16 +18,17 @@ impl SingleReadValidator for PlusLineValidator {
     }
 
     fn validate(&self, b: &Block) -> Result<(), Error> {
-        if !b.plus_line.starts_with("+") {
-            Err(Error::new(
-                self.code(),
-                self.name(),
-                &String::from("Does not start with a '+'"),
-                LineType::PlusLine,
-                Some(1),
-            ))
-        } else {
-            Ok(())
+        match b.plus_line().first() {
+            Some(b'+') => Ok(()),
+            _ => {
+                Err(Error::new(
+                    self.code(),
+                    self.name(),
+                    &String::from("Does not start with a '+'"),
+                    LineType::PlusLine,
+                    Some(1),
+                ))
+            },
         }
     }
 }
