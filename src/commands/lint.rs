@@ -1,22 +1,17 @@
-#[macro_use] extern crate log;
-extern crate env_logger;
-#[macro_use] extern crate clap;
-extern crate fqlib;
-
 use std::io;
 use std::process;
 
-use clap::{App, Arg};
-use fqlib::{FastQReader, PairedReader, readers};
-use fqlib::validators::single::DuplicateNameValidator;
-use fqlib::validators::{
+use clap::ArgMatches;
+
+use ::{FastQReader, PairedReader, readers};
+use validators::single::DuplicateNameValidator;
+use validators::{
     self,
     BlockValidator,
     LintMode,
     SingleReadValidatorMut,
     ValidationLevel,
 };
-use log::LevelFilter;
 
 fn build_error_message(
     error: validators::Error,
@@ -35,7 +30,7 @@ fn build_error_message(
 
     message.push_str(&format!(" [{}] {}: {}", error.code, error.name, error.message));
 
-    return message;
+    message
 }
 
 fn exit_with_validation_error(
@@ -168,55 +163,8 @@ fn validate<R: FastQReader, S: FastQReader>(
     }
 }
 
-fn main() {
-    let matches = App::new("fqlint")
-        .version(crate_version!())
-        .arg(Arg::with_name("lint-mode")
-             .long("lint-mode")
-             .help("Panic on first error or log all errors. Logging forces verbose mode.")
-             .value_name("MODE")
-             .possible_values(&["panic", "log"])
-             .default_value("panic"))
-        .arg(Arg::with_name("single-read-validation-level")
-             .long("single-read-validation-level")
-             .help("Only use single read validators up to a given level")
-             .value_name("LEVEL")
-             .possible_values(&["low", "medium", "high"])
-             .default_value("high"))
-        .arg(Arg::with_name("paired-read-validation-level")
-             .long("paired-read-validation-level")
-             .help("Only use paired read validators up to a given level")
-             .value_name("LEVEL")
-             .possible_values(&["low", "medium", "high"])
-             .default_value("high"))
-        .arg(Arg::with_name("disable-validator")
-             .long("disable-validator")
-             .help("Disable validators by code. Use multiple times to disable more than one.")
-             .value_name("CODE")
-             .multiple(true)
-             .number_of_values(1))
-        .arg(Arg::with_name("verbose")
-             .short("v")
-             .long("verbose")
-             .help("Use verbose logging"))
-        .arg(Arg::with_name("in1")
-             .help("Read 1 input pathname. Accepts both raw and gzipped FASTQ inputs.")
-             .index(1)
-             .required(true))
-        .arg(Arg::with_name("in2")
-             .help("Read 2 input pathname. Accepts both raw and gzipped FASTQ inputs.")
-             .index(2)
-             .required(true))
-        .get_matches();
-
+pub fn lint(matches: &ArgMatches) {
     let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
-
-    if matches.is_present("verbose") || lint_mode == LintMode::Log {
-        env_logger::Builder::from_default_env()
-            .filter(Some("fqlint"), LevelFilter::Info)
-            .filter(Some(crate_name!()), LevelFilter::Info)
-            .init();
-    }
 
     let r1_input_pathname = matches.value_of("in1").unwrap();
     let r2_input_pathname = matches.value_of("in2").unwrap();
@@ -239,7 +187,7 @@ fn main() {
         .map(String::from)
         .collect();
 
-    info!("fqlint start");
+    info!("fq-lint start");
 
     let r1 = match readers::factory(r1_input_pathname) {
         Ok(r) => r,
@@ -263,12 +211,12 @@ fn main() {
         r2_input_pathname,
     );
 
-    info!("fqlint end");
+    info!("fq-lint end");
 }
 
 #[cfg(test)]
 mod tests {
-    use fqlib::validators::{self, LineType};
+    use validators::{self, LineType};
 
     use super::*;
 

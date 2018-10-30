@@ -3,6 +3,11 @@ name = "fqlib"
 version = "0.1.0"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 license = "Apache-2.0"
+autobins = false
+
+[[bin]]
+name = "fq"
+path = "src/main.rs"
 
 [dependencies]
 bloom = { git = "https://github.com/zaeleus/bloom.git" }

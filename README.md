@@ -6,8 +6,7 @@
 
 ## Install
 
-Use [Cargo] to install the two command-line tools included with fqlib:
-**fqgen** and **fqlint**.
+Use [Cargo] to install fqlib. The binary built is named `fq`.
 
 ```
 $ cargo install --git https://github.com/stjude/fqlib.git
@@ -15,30 +14,32 @@ $ cargo install --git https://github.com/stjude/fqlib.git
 
 [Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
 
-## fqgen
+## Usage
 
-**fqgen** is a FASTQ file pair generator. It creates two reads, formatting
+fqlib provides two subcommands for FASTQ generation and validation.
+
+### generate
+
+**fq generate** is a FASTQ file pair generator. It creates two reads, formatting
 names as [described by Illumina][1].
 
-While fqgen will generate "valid" FASTQ reads, the content of the files are
-completely random. The sequences will not align to any genome.
+While _generate_ creates "valid" FASTQ reads, the content of the files are
+completely random. The sequences do not align to any genome.
 
 [1]: https://help.basespace.illumina.com/articles/descriptive/fastq-files/
 
-### Usage
+#### Usage
 
 ```
-$ fqgen --help
-
-fqgen 0.1.0
+fq-generate
+Generate a random FASTQ file pair
 
 USAGE:
-    fqgen [FLAGS] [OPTIONS] <out1> <out2>
+    fq generate [FLAGS] [OPTIONS] <out1> <out2>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
-    -v, --verbose    Use verbose logging
 
 OPTIONS:
     -n, --num-blocks <N>    Number of blocks to generate [default: 10000]
@@ -48,32 +49,32 @@ ARGS:
     <out2>    Read 2 output pathname. Output will be gzipped if ends in `.gz`.
 ```
 
-### Examples
+#### Examples
 
 ```sh
 # Generates the default number of blocks, written to uncompressed files.
-$ fqgen /tmp/r1.fastq /tmp/r2.fastq
+$ fq generate /tmp/r1.fastq /tmp/r2.fastq
 
 # Generates FASTQ paired reads with 32 blocks, written to gzipped outputs.
-$ fqgen --num-blocks 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
+$ fq generate --num-blocks 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 ```
 
-## fqlint
+### lint
 
-**fqlint** is a FASTQ file pair validator.
+**fq lint** is a FASTQ file pair validator.
 
-### Usage
+#### Usage
 
 ```
-$ fqlint --help
+fq-lint
+Validate a FASTQ file pair
 
 USAGE:
-    fqlint [FLAGS] [OPTIONS] <in1> <in2>
+    fq lint [OPTIONS] <in1> <in2>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
-    -v, --verbose    Use verbose logging
 
 OPTIONS:
         --disable-validator <CODE>...
@@ -94,14 +95,14 @@ ARGS:
     <in2>    Read 2 input pathname. Accepts both raw and gzipped FASTQ inputs.
 ```
 
-### Validators
+#### Validators
 
-fqlint includes a set of validators that run on single blocks or block pairs.
-By default, blocks will be validated with all rules, but validators can be
+_validate_ includes a set of validators that run on single blocks or block
+pairs. By default, blocks are validated with all rules, but validators can be
 disabled using `--disable-valdiator CODE`, where `CODE` is one of validators
 listed below.
 
-#### Single
+##### Single
 
 | Code | Level  | Name              | Validation
 |------|--------|-------------------|------------
@@ -113,25 +114,25 @@ listed below.
 | S006 | medium | QualityString     | All characters in quality line are between "!" and "~" (ordinal values).
 | S007 | high   | DuplicateName     | All block names are unique.
 
-#### Paired
+##### Paired
 
 | Code | Level   | Name              | Validation
 |------|---------|-------------------|------------
 | P001 | medium  | Names             | Each paired read name is the same, excluding interleave.
 
-### Examples
+#### Examples
 
 ```sh
 # Validate both reads using all validators. Exits cleanly (0) if no validation
 # errors occur.
-$ fqlint r1.fastq r2.fastq
+$ fq lint r1.fastq r2.fastq
 
 # Enable log messages.
-$ fqlint --verbose r1.fastq r2.fastq
+$ fq --verbose lint r1.fastq r2.fastq
 
 # Log errors instead of quitting on first error.
-$ fqlint --lint-mode log r1.fastq r2.fastq
+$ fq lint --lint-mode log r1.fastq r2.fastq
 
 # Disable validators S004 and S007.
-$ fqlint --disable-validator S004 --disable-validator S007 r1.fastq r2.fastq
+$ fq lint --disable-validator S004 --disable-validator S007 r1.fastq r2.fastq
 ```
