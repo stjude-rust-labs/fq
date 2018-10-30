@@ -88,9 +88,17 @@ impl Block {
     /// assert_eq!(block.name, "@fqlib/1");
     /// block.reset();
     /// assert_eq!(block.name, "@fqlib");
+    ///
+    /// let mut block = Block::default();
+    /// block.name.push_str("@fqlib 1");
+    /// assert_eq!(block.name, "@fqlib 1");
+    /// block.reset();
+    /// assert_eq!(block.name, "@fqlib");
     /// ```
     pub fn reset(&mut self) {
         if let Some(i) = self.name.rfind('/') {
+            self.name.truncate(i);
+        } else if let Some(i) = self.name.rfind(' ') {
             self.name.truncate(i);
         }
     }
