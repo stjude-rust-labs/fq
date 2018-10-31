@@ -9,6 +9,10 @@ autobins = false
 name = "fq"
 path = "src/main.rs"
 
+[profile.release]
+lto = "fat"
+codegen-units = 1
+
 [dependencies]
 bloom = { git = "https://github.com/zaeleus/bloom.git" }
 clap = "2.31.2"
