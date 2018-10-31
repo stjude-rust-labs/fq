@@ -96,7 +96,7 @@ impl Block {
     /// assert_eq!(block.name(), b"@fqlib");
     /// ```
     pub fn reset(&mut self) {
-        let pos = self.name.iter().rev().enumerate().position(|(_, &j)| j == b'/' || j == b' ');
+        let pos = self.name.iter().rev().position(|&b| b == b'/' || b == b' ');
 
         if let Some(i) = pos {
             let len = self.name.len();
