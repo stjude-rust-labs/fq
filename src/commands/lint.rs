@@ -15,7 +15,7 @@ fn build_error_message(
     let mut message = String::new();
 
     let line_offset = error.line_type as usize;
-    let line_no = (block_no - 1) * 4 + line_offset + 1;
+    let line_no = block_no * 4 + line_offset + 1;
     message.push_str(&format!("{}:{}:", pathname, line_no));
 
     if let Some(col_no) = error.col_no {
@@ -53,8 +53,8 @@ fn handle_validation_error(
     block_no: usize,
 ) {
     match lint_mode {
-        LintMode::Panic => exit_with_validation_error(error, pathname, block_no + 1),
-        LintMode::Log => log_validation_error(error, pathname, block_no + 1),
+        LintMode::Panic => exit_with_validation_error(error, pathname, block_no),
+        LintMode::Log => log_validation_error(error, pathname, block_no),
     }
 }
 
@@ -92,14 +92,14 @@ fn validate_single(
 
         for validator in &single_read_validators {
             if let Err(e) = validator.validate(b) {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
             }
         }
 
         block_no += 1;
     }
 
-    info!("read {} blocks", block_no + 1);
+    info!("read {} blocks", block_no);
 }
 
 fn validate_pair<R: FastQReader, S: FastQReader>(
@@ -152,17 +152,17 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
 
         for validator in &single_read_validators {
             if let Err(e) = validator.validate(b) {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
             }
 
             if let Err(e) = validator.validate(d) {
-                handle_validation_error(lint_mode, e, r2_input_pathname, block_no + 1);
+                handle_validation_error(lint_mode, e, r2_input_pathname, block_no);
             }
         }
 
         for validator in &paired_read_validators {
             if let Err(e) = validator.validate(b, d) {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
             }
         }
 
@@ -189,13 +189,13 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
         };
 
         if let Err(e) = duplicate_name_validator.validate(&b) {
-            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+            handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
         }
 
         block_no += 1;
     }
 
-    info!("read {} * 2 blocks", block_no + 1);
+    info!("read {} * 2 blocks", block_no);
 }
 
 pub fn lint(matches: &ArgMatches) {
