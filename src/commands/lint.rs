@@ -98,6 +98,8 @@ fn validate_single(
 
         block_no += 1;
     }
+
+    info!("read {} blocks", block_no + 1);
 }
 
 fn validate_pair<R: FastQReader, S: FastQReader>(
@@ -192,6 +194,8 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
 
         block_no += 1;
     }
+
+    info!("read {} * 2 blocks", block_no + 1);
 }
 
 pub fn lint(matches: &ArgMatches) {
