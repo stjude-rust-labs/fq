@@ -4,6 +4,7 @@ extern crate bloom;
 #[macro_use] extern crate clap;
 extern crate flate2;
 #[macro_use] extern crate log;
+extern crate noodles;
 extern crate rand;
 
 pub use block::Block;

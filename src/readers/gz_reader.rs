@@ -2,13 +2,13 @@ use std::fs::File;
 use std::io::{self, BufReader};
 use std::path::Path;
 
-use flate2::read::GzDecoder;
+use noodles::formats::gz::MultiGzDecoder;
 
 use Block;
 use readers::{FastQReader, read_block};
 
 pub struct GzReader {
-    reader: BufReader<GzDecoder<File>>,
+    reader: BufReader<MultiGzDecoder<BufReader<File>>>,
     block: Block,
 }
 
@@ -20,12 +20,12 @@ impl GzReader {
         P: AsRef<Path>,
     {
         let file = File::open(pathname)?;
-        let decoder = GzDecoder::new(file);
-        let reader = BufReader::new(decoder);
-        Ok(GzReader::new(reader))
+        let reader = BufReader::new(file);
+        let decoder = MultiGzDecoder::new(reader);
+        Ok(GzReader::new(BufReader::new(decoder)))
     }
 
-    pub fn new(reader: BufReader<GzDecoder<File>>) -> GzReader {
+    pub fn new(reader: BufReader<MultiGzDecoder<BufReader<File>>>) -> GzReader {
         GzReader {
             reader,
             block: Block::default(),
