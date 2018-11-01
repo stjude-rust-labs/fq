@@ -73,7 +73,39 @@ fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
     process::exit(1);
 }
 
-fn validate<R: FastQReader, S: FastQReader>(
+fn validate_single(
+    mut reader: impl FastQReader,
+    single_read_validation_level: ValidationLevel,
+    paired_read_validation_level: ValidationLevel,
+    disabled_validators: &[String],
+    lint_mode: LintMode,
+    r1_input_pathname: &str,
+) {
+    let validator = BlockValidator::new(
+        single_read_validation_level,
+        paired_read_validation_level,
+        disabled_validators,
+    );
+
+    info!("starting validation");
+
+    let mut block_no = 0;
+
+    while let Some(block) = reader.next_block() {
+        let b = match block {
+            Ok(b) => b,
+            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+        };
+
+        if let Err(e) = validator.validate(b) {
+            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+        }
+
+        block_no += 1;
+    }
+}
+
+fn validate_pair<R: FastQReader, S: FastQReader>(
     mut reader: PairedReader<R, S>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
@@ -167,7 +199,7 @@ pub fn lint(matches: &ArgMatches) {
     let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
 
     let r1_input_pathname = matches.value_of("in1").unwrap();
-    let r2_input_pathname = matches.value_of("in2").unwrap();
+    let r2_input_pathname = matches.value_of("in2");
 
     let single_read_validation_level = value_t!(
         matches,
@@ -194,22 +226,37 @@ pub fn lint(matches: &ArgMatches) {
         Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
     };
 
-    let r2 = match readers::factory(r2_input_pathname) {
-        Ok(r) => r,
-        Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
-    };
+    if let Some(r2_input_pathname) = r2_input_pathname {
+        info!("validating paired end reads");
 
-    let reader = PairedReader::new(r1, r2);
+        let r2 = match readers::factory(r2_input_pathname) {
+            Ok(r) => r,
+            Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
+        };
 
-    validate(
-        reader,
-        single_read_validation_level,
-        paired_read_validation_level,
-        &disabled_validators,
-        lint_mode,
-        r1_input_pathname,
-        r2_input_pathname,
-    );
+        let reader = PairedReader::new(r1, r2);
+
+        validate_pair(
+            reader,
+            single_read_validation_level,
+            paired_read_validation_level,
+            &disabled_validators,
+            lint_mode,
+            r1_input_pathname,
+            r2_input_pathname,
+        );
+    } else {
+        info!("validating single end read");
+
+        validate_single(
+            r1,
+            single_read_validation_level,
+            paired_read_validation_level,
+            &disabled_validators,
+            lint_mode,
+            r1_input_pathname,
+        );
+    }
 
     info!("fq-lint end");
 }

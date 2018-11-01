@@ -57,8 +57,7 @@ fn main() {
              .required(true))
         .arg(Arg::with_name("in2")
              .help("Read 2 input pathname. Accepts both raw and gzipped FASTQ inputs.")
-             .index(2)
-             .required(true));
+             .index(2));
 
     let matches = App::new("fq")
         .version(crate_version!())
