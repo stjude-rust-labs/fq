@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
-use Block;
-
-pub use self::single::{SingleReadValidator, SingleReadValidatorMut};
 pub use self::paired::PairedReadValidator;
+pub use self::single::{SingleReadValidator, SingleReadValidatorMut};
+
+use self::paired::NamesValidator;
 use self::single::{
     AlphabetValidator,
     CompleteValidator,
@@ -12,10 +12,9 @@ use self::single::{
     PlusLineValidator,
     QualityStringValidator,
 };
-use self::paired::NamesValidator;
 
-pub mod single;
 pub mod paired;
+pub mod single;
 
 #[derive(Debug)]
 pub enum LineType {
@@ -91,63 +90,37 @@ impl FromStr for ValidationLevel {
     }
 }
 
-/// Validator that runs immutable validators over blocks.
-pub struct BlockValidator {
-    single_read_validators: Vec<Box<dyn SingleReadValidator>>,
-    paired_read_validators: Vec<Box<dyn PairedReadValidator>>,
-}
+pub fn filter_validators(
+    single_read_validation_level: ValidationLevel,
+    paired_read_validation_level: Option<ValidationLevel>,
+    disabled_validators: &[String],
+) -> (Vec<Box<dyn SingleReadValidator>>, Vec<Box<dyn PairedReadValidator>>) {
+    info!("disabled validators: {:?}", disabled_validators);
 
-impl BlockValidator {
-    pub fn new(
-        single_read_validation_level: ValidationLevel,
-        paired_read_validation_level: ValidationLevel,
-        disabled_validators: &[String],
-    ) -> BlockValidator {
-        info!("disabled validators: {:?}", disabled_validators);
+    let single_read_validators = filter_single_read_validators(
+        single_read_validation_level,
+        disabled_validators,
+    );
 
-        let single_read_validators = filter_single_read_validators(
-            single_read_validation_level,
-            disabled_validators,
-        );
+    let validators: Vec<String> = single_read_validators
+        .iter()
+        .map(|v| format!("[{}] {}", v.code(), v.name()))
+        .collect();
 
-        let validators: Vec<String> = single_read_validators
-            .iter()
-            .map(|v| format!("[{}] {}", v.code(), v.name()))
-            .collect();
-        info!("enabled single read validators: {:?}", validators);
+    info!("enabled single read validators: {:?}", validators);
 
-        let paired_read_validators = filter_paired_read_validators(
-            paired_read_validation_level,
-            disabled_validators,
-        );
+    let paired_read_validators = paired_read_validation_level
+        .map(|level| filter_paired_read_validators(level, disabled_validators))
+        .unwrap_or_default();
 
-        let validators: Vec<String> = paired_read_validators
-            .iter()
-            .map(|v| format!("[{}] {}", v.code(), v.name()))
-            .collect();
-        info!("enabled paired read validators: {:?}", validators);
+    let validators: Vec<String> = paired_read_validators
+        .iter()
+        .map(|v| format!("[{}] {}", v.code(), v.name()))
+        .collect();
 
-        BlockValidator {
-            single_read_validators,
-            paired_read_validators,
-        }
-    }
+    info!("enabled paired read validators: {:?}", validators);
 
-    pub fn validate(&self, b: &Block) -> Result<(), Error> {
-        for validator in &self.single_read_validators {
-            validator.validate(&b)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn validate_pair(&self, b: &Block, d: &Block) -> Result<(), Error> {
-        for validator in &self.paired_read_validators {
-            validator.validate(&b, &d)?;
-        }
-
-        Ok(())
-    }
+    (single_read_validators, paired_read_validators)
 }
 
 fn filter_single_read_validators(
@@ -188,6 +161,27 @@ fn filter_paired_read_validators(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_filter_validators() {
+        let (single_read_validators, paired_read_validators) = filter_validators(
+            ValidationLevel::High,
+            None,
+            &[],
+        );
+
+        assert_eq!(single_read_validators.len(), 6);
+        assert_eq!(paired_read_validators.len(), 0);
+
+        let (single_read_validators, paired_read_validators) = filter_validators(
+            ValidationLevel::High,
+            Some(ValidationLevel::High),
+            &[],
+        );
+
+        assert_eq!(single_read_validators.len(), 6);
+        assert_eq!(paired_read_validators.len(), 1);
+    }
 
     #[test]
     fn test_filter_single_read_validators() {

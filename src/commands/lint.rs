@@ -5,13 +5,7 @@ use clap::ArgMatches;
 
 use ::{FastQReader, PairedReader, readers};
 use validators::single::DuplicateNameValidator;
-use validators::{
-    self,
-    BlockValidator,
-    LintMode,
-    SingleReadValidatorMut,
-    ValidationLevel,
-};
+use validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
 fn build_error_message(
     error: validators::Error,
@@ -76,14 +70,13 @@ fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
 fn validate_single(
     mut reader: impl FastQReader,
     single_read_validation_level: ValidationLevel,
-    paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
     r1_input_pathname: &str,
 ) {
-    let validator = BlockValidator::new(
+    let (single_read_validators, _) = validators::filter_validators(
         single_read_validation_level,
-        paired_read_validation_level,
+        None,
         disabled_validators,
     );
 
@@ -97,8 +90,10 @@ fn validate_single(
             Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
         };
 
-        if let Err(e) = validator.validate(b) {
-            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+        for validator in &single_read_validators {
+            if let Err(e) = validator.validate(b) {
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+            }
         }
 
         block_no += 1;
@@ -114,9 +109,9 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
     r1_input_pathname: &str,
     r2_input_pathname: &str,
 ) {
-    let validator = BlockValidator::new(
+    let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
-        paired_read_validation_level,
+        Some(paired_read_validation_level),
         disabled_validators,
     );
 
@@ -153,16 +148,20 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
             duplicate_name_validator.insert(b);
         }
 
-        if let Err(e) = validator.validate(b) {
-            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+        for validator in &single_read_validators {
+            if let Err(e) = validator.validate(b) {
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+            }
+
+            if let Err(e) = validator.validate(d) {
+                handle_validation_error(lint_mode, e, r2_input_pathname, block_no + 1);
+            }
         }
 
-        if let Err(e) = validator.validate(d) {
-            handle_validation_error(lint_mode, e, r2_input_pathname, block_no + 1);
-        }
-
-        if let Err(e) = validator.validate_pair(b, d) {
-            handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+        for validator in &paired_read_validators {
+            if let Err(e) = validator.validate(b, d) {
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no + 1);
+            }
         }
 
         block_no += 1;
@@ -251,7 +250,6 @@ pub fn lint(matches: &ArgMatches) {
         validate_single(
             r1,
             single_read_validation_level,
-            paired_read_validation_level,
             &disabled_validators,
             lint_mode,
             r1_input_pathname,
