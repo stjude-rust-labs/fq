@@ -74,6 +74,8 @@ fn main() {
         env_logger::Builder::from_default_env()
             .filter(Some(crate_name!()), LevelFilter::Info)
             .init();
+    } else {
+        env_logger::init();
     }
 
     if let Some(m) = matches.subcommand_matches("generate") {
