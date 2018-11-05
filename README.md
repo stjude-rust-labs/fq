@@ -1,5 +1,7 @@
 # fqlib
 
+[![Build Status](https://travis-ci.org/stjude/fqlib.svg?branch=master)](https://travis-ci.org/stjude/fqlib)
+
 **fqlib** is a library to generate and validate [FASTQ] file pairs.
 
 [FASTQ]: https://en.wikipedia.org/wiki/FASTQ_format
