@@ -281,7 +281,7 @@ mod tests {
 
         assert_eq!(
             build_error_message(error, "in.fastq", 2),
-            "in.fastq:6:76: [S002] AlphabetValidator: Invalid character: m",
+            "in.fastq:10:76: [S002] AlphabetValidator: Invalid character: m",
         );
     }
 
@@ -297,7 +297,7 @@ mod tests {
 
         assert_eq!(
             build_error_message(error, "in.fastq", 2),
-            "in.fastq:6: [S002] AlphabetValidator: Invalid character: m",
+            "in.fastq:10: [S002] AlphabetValidator: Invalid character: m",
         );
     }
 }
