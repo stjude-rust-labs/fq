@@ -1,4 +1,5 @@
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S001] (low) Validator to check if the plus line starts with a "+".
@@ -17,8 +18,8 @@ impl SingleReadValidator for PlusLineValidator {
         ValidationLevel::Low
     }
 
-    fn validate(&self, b: &Block) -> Result<(), Error> {
-        match b.plus_line().first() {
+    fn validate(&self, r: &Record) -> Result<(), Error> {
+        match r.plus_line().first() {
             Some(b'+') => Ok(()),
             _ => {
                 Err(Error::new(
@@ -35,9 +36,9 @@ impl SingleReadValidator for PlusLineValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::PlusLineValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
+    use super::PlusLineValidator;
     use validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
@@ -62,10 +63,10 @@ mod tests {
     fn test_validate() {
         let validator = PlusLineValidator;
 
-        let block = Block::new("", "", "+", "");
-        assert!(validator.validate(&block).is_ok());
+        let record = Record::new("", "", "+", "");
+        assert!(validator.validate(&record).is_ok());
 
-        let block = Block::new("", "", "", "");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("", "", "", "");
+        assert!(validator.validate(&record).is_err());
     }
 }

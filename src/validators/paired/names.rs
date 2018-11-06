@@ -1,4 +1,5 @@
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, PairedReadValidator, ValidationLevel};
 
 /// [P001] (medium) Validator to check if each paired read name is the same, excluding interleave.
@@ -17,15 +18,15 @@ impl PairedReadValidator for NamesValidator {
         ValidationLevel::Medium
     }
 
-    fn validate(&self, b: &Block, d: &Block) -> Result<(), Error> {
-        if b.name != d.name {
+    fn validate(&self, r: &Record, s: &Record) -> Result<(), Error> {
+        if r.name() != s.name() {
             Err(Error::new(
                 self.code(),
                 self.name(),
                 &format!(
                     "Names do not match (expected '{}', got '{}')",
-                    String::from_utf8_lossy(b.name()),
-                    String::from_utf8_lossy(d.name()),
+                    String::from_utf8_lossy(r.name()),
+                    String::from_utf8_lossy(s.name()),
                 ),
                 LineType::Name,
                 Some(1),
@@ -38,9 +39,9 @@ impl PairedReadValidator for NamesValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::NamesValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
+    use super::NamesValidator;
     use validators::{PairedReadValidator, ValidationLevel};
 
     #[test]
@@ -65,15 +66,12 @@ mod tests {
     fn test_validate() {
         let validator = NamesValidator;
 
-        let b = Block::new("@fqlib/1", "", "", "");
+        let r = Record::new("@fqlib/1", "", "", "");
 
-        let d = Block::new("@fqlib/1", "", "", "");
-        assert!(validator.validate(&b, &d).is_ok());
+        let s = Record::new("@fqlib/1", "", "", "");
+        assert!(validator.validate(&r, &s).is_ok());
 
-        let d = Block::new("@fqlib/2", "", "", "");
-        assert!(validator.validate(&b, &d).is_ok());
-
-        let d = Block::new("@/20180523", "", "", "");
-        assert!(validator.validate(&b, &d).is_err());
+        let s = Record::new("@/20180523", "", "", "");
+        assert!(validator.validate(&r, &s).is_err());
     }
 }

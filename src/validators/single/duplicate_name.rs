@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use bloom::ScalableBloomFilter;
+use noodles::formats::fastq::Record;
 
-use Block;
 use validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};
 
 const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
@@ -18,25 +18,31 @@ const INITIAL_CAPACITY: usize = 10000;
 /// # Examples
 ///
 /// ```
-/// use fqlib::Block;
+/// # extern crate fqlib;
+/// # extern crate noodles;
+/// #
+/// # fn main() {
+/// use noodles::formats::fastq::Record;
+///
 /// use fqlib::validators::single::{DuplicateNameValidator, SingleReadValidatorMut};
 ///
 /// let mut validator = DuplicateNameValidator::new();
 ///
-/// let b = Block::new("@fqlib:1", "", "", "");
-/// let d = Block::new("@fqlib:2", "", "", "");
+/// let r = Record::new("@fqlib:1", "", "", "");
+/// let s = Record::new("@fqlib:2", "", "", "");
 ///
 /// // pass 1
 ///
-/// validator.insert(&b);
-/// validator.insert(&d);
-/// validator.insert(&d);
+/// validator.insert(&r);
+/// validator.insert(&s);
+/// validator.insert(&s);
 ///
 /// // pass 2
 ///
-/// assert!(validator.validate(&b).is_ok());
-/// assert!(validator.validate(&d).is_ok());
-/// assert!(validator.validate(&d).is_err());
+/// assert!(validator.validate(&r).is_ok());
+/// assert!(validator.validate(&s).is_ok());
+/// assert!(validator.validate(&s).is_err());
+/// # }
 /// ```
 ///
 /// [`insert`]: #method.insert
@@ -66,15 +72,21 @@ impl DuplicateNameValidator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::Block;
+    /// # extern crate fqlib;
+    /// # extern crate noodles;
+    /// #
+    /// # fn main() {
+    /// use noodles::formats::fastq::Record;
+    ///
     /// use fqlib::validators::single::DuplicateNameValidator;
     ///
     /// let mut validator = DuplicateNameValidator::new();
-    /// let block = Block::new("@fqlib:1", "", "", "");
-    /// validator.insert(&block);
+    /// let record = Record::new("@fqlib:1", "", "", "");
+    /// validator.insert(&record);
+    /// # }
     /// ```
-    pub fn insert(&mut self, b: &Block) {
-        let name = b.name();
+    pub fn insert(&mut self, r: &Record) {
+        let name = r.name();
 
         if self.filter.contains_or_insert(name) {
             self.possible_duplicates.insert(name.to_vec(), 0);
@@ -113,16 +125,16 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
         ValidationLevel::High
     }
 
-    fn validate(&mut self, b: &Block) -> Result<(), Error> {
+    fn validate(&mut self, r: &Record) -> Result<(), Error> {
         let code = self.code();
         let name = self.name();
 
-        if let Some(count) = self.possible_duplicates.get_mut(&b.name) {
+        if let Some(count) = self.possible_duplicates.get_mut(&r.name().to_vec()) {
             if *count >= 1 {
                 return Err(Error::new(
                     code,
                     name,
-                    &format!("Duplicate found: '{}'", String::from_utf8_lossy(b.name())),
+                    &format!("Duplicate found: '{}'", String::from_utf8_lossy(r.name())),
                     LineType::Name,
                     Some(1),
                 ));
@@ -142,6 +154,8 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
+        let validator = DuplicateNameValidator::new();
+        assert!(validator.is_empty());
     }
 
     #[test]

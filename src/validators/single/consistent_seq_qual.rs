@@ -1,4 +1,5 @@
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S005] (high) Validator to check if the sequence and quality lengths are the same.
@@ -17,12 +18,12 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
         ValidationLevel::High
     }
 
-    fn validate(&self, b: &Block) -> Result<(), Error> {
-        if b.sequence.len() != b.quality.len() {
+    fn validate(&self, r: &Record) -> Result<(), Error> {
+        if r.sequence().len() != r.quality().len() {
             let message = format!(
                 "Name and quality lengths do not match (expected {}, got {})",
-                b.sequence.len(),
-                b.quality.len(),
+                r.sequence().len(),
+                r.quality().len(),
             );
 
             Err(Error::new(
@@ -40,9 +41,9 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::ConsistentSeqQualValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
+    use super::ConsistentSeqQualValidator;
     use validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
@@ -67,10 +68,10 @@ mod tests {
     fn test_validate() {
         let validator = ConsistentSeqQualValidator;
 
-        let block = Block::new("", "AGTC", "", "ABCD");
-        assert!(validator.validate(&block).is_ok());
+        let record = Record::new("", "AGTC", "", "ABCD");
+        assert!(validator.validate(&record).is_ok());
 
-        let block = Block::new("", "AGTC", "", "ABC");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("", "AGTC", "", "ABC");
+        assert!(validator.validate(&record).is_err());
     }
 }

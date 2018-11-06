@@ -1,9 +1,10 @@
-use std::io;
+use std::io::{self, BufRead};
 use std::process;
 
 use clap::ArgMatches;
+use noodles::formats::fastq::{self, Record};
 
-use ::{FastQReader, PairedReader, readers};
+use ::{block, PairReader};
 use validators::single::DuplicateNameValidator;
 use validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
@@ -68,7 +69,7 @@ fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
 }
 
 fn validate_single(
-    mut reader: impl FastQReader,
+    mut reader: fastq::Reader<impl BufRead>,
     single_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
@@ -82,16 +83,23 @@ fn validate_single(
 
     info!("starting validation");
 
+    let mut block = Record::default();
     let mut block_no = 0;
 
-    while let Some(block) = reader.next_block() {
-        let b = match block {
-            Ok(b) => b,
+    loop {
+        let bytes_read = match reader.read_record(&mut block) {
+            Ok(len) => len,
             Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
         };
 
+        if bytes_read == 0 {
+            break;
+        }
+
+        block::reset(&mut block);
+
         for validator in &single_read_validators {
-            if let Err(e) = validator.validate(b) {
+            if let Err(e) = validator.validate(&block) {
                 handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
             }
         }
@@ -102,8 +110,9 @@ fn validate_single(
     info!("read {} blocks", block_no);
 }
 
-fn validate_pair<R: FastQReader, S: FastQReader>(
-    mut reader: PairedReader<R, S>,
+fn validate_pair(
+    reader_1: fastq::Reader<impl BufRead>,
+    reader_2: fastq::Reader<impl BufRead>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -133,19 +142,10 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
 
     info!("starting validation (pass 1)");
 
+    let mut reader = PairReader::new(reader_1, reader_2);
     let mut block_no = 0;
 
-    while let Some((block_1, block_2)) = reader.next_pair() {
-        let b = match block_1 {
-            Ok(b) => b,
-            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
-        };
-
-        let d = match block_2 {
-            Ok(b) => b,
-            Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
-        };
-
+    while let Some((b, d)) = reader.next_pair() {
         if use_special_validator {
             duplicate_name_validator.insert(b);
         }
@@ -175,20 +175,27 @@ fn validate_pair<R: FastQReader, S: FastQReader>(
         return;
     }
 
-    let mut reader = match readers::factory(r1_input_pathname) {
+    let mut reader = match fastq::reader::open(r1_input_pathname) {
         Ok(r) => r,
         Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
     };
 
+    let mut block = Record::default();
     let mut block_no = 0;
 
-    while let Some(block) = reader.next_block() {
-        let b = match block {
-            Ok(b) => b,
+    loop {
+        let bytes_read = match reader.read_record(&mut block) {
+            Ok(len) => len,
             Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
         };
 
-        if let Err(e) = duplicate_name_validator.validate(&b) {
+        if bytes_read == 0 {
+            break;
+        }
+
+        block::reset(&mut block);
+
+        if let Err(e) = duplicate_name_validator.validate(&block) {
             handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
         }
 
@@ -224,7 +231,7 @@ pub fn lint(matches: &ArgMatches) {
 
     info!("fq-lint start");
 
-    let r1 = match readers::factory(r1_input_pathname) {
+    let r1 = match fastq::reader::open(r1_input_pathname) {
         Ok(r) => r,
         Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
     };
@@ -232,15 +239,14 @@ pub fn lint(matches: &ArgMatches) {
     if let Some(r2_input_pathname) = r2_input_pathname {
         info!("validating paired end reads");
 
-        let r2 = match readers::factory(r2_input_pathname) {
+        let r2 = match fastq::reader::open(r2_input_pathname) {
             Ok(r) => r,
             Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
         };
 
-        let reader = PairedReader::new(r1, r2);
-
         validate_pair(
-            reader,
+            r1,
+            r2,
             single_read_validation_level,
             paired_read_validation_level,
             &disabled_validators,

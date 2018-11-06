@@ -1,6 +1,7 @@
 //! Validators that use blocks from a single read.
 
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, ValidationLevel};
 
 pub use self::alphabet::AlphabetValidator;
@@ -23,12 +24,12 @@ pub trait SingleReadValidator {
     fn code(&self) -> &'static str;
     fn name(&self) -> &'static str;
     fn level(&self) -> ValidationLevel;
-    fn validate(&self, b: &Block) -> Result<(), Error>;
+    fn validate(&self, r: &Record) -> Result<(), Error>;
 }
 
 pub trait SingleReadValidatorMut {
     fn code(&self) -> &'static str;
     fn name(&self) -> &'static str;
     fn level(&self) -> ValidationLevel;
-    fn validate(&mut self, b: &Block) -> Result<(), Error>;
+    fn validate(&mut self, r: &Record) -> Result<(), Error>;
 }

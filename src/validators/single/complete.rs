@@ -1,4 +1,5 @@
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S004] (low) Validator to check if all four block lines (name, sequence, plus line, and
@@ -6,8 +7,8 @@ use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 pub struct CompleteValidator;
 
 impl CompleteValidator {
-    fn validate_name(&self, b: &Block) -> Result<(), Error> {
-        if b.name.is_empty() {
+    fn validate_name(&self, r: &Record) -> Result<(), Error> {
+        if r.name().is_empty() {
             Err(Error::new(
                 self.code(),
                 self.name(),
@@ -20,8 +21,8 @@ impl CompleteValidator {
         }
     }
 
-    fn validate_sequence(&self, b: &Block) -> Result<(), Error> {
-        if b.sequence.is_empty() {
+    fn validate_sequence(&self, r: &Record) -> Result<(), Error> {
+        if r.sequence().is_empty() {
             Err(Error::new(
                 self.code(),
                 self.name(),
@@ -34,8 +35,8 @@ impl CompleteValidator {
         }
     }
 
-    fn validate_plus_line(&self, b: &Block) -> Result<(), Error> {
-        if b.plus_line.is_empty() {
+    fn validate_plus_line(&self, r: &Record) -> Result<(), Error> {
+        if r.plus_line().is_empty() {
             Err(Error::new(
                 self.code(),
                 self.name(),
@@ -48,8 +49,8 @@ impl CompleteValidator {
         }
     }
 
-    fn validate_quality(&self, b: &Block) -> Result<(), Error> {
-        if b.quality.is_empty() {
+    fn validate_quality(&self, r: &Record) -> Result<(), Error> {
+        if r.quality().is_empty() {
             Err(Error::new(
                 self.code(),
                 self.name(),
@@ -76,11 +77,11 @@ impl SingleReadValidator for CompleteValidator {
         ValidationLevel::Low
     }
 
-    fn validate(&self, b: &Block) -> Result<(), Error> {
-        self.validate_name(b)?;
-        self.validate_sequence(b)?;
-        self.validate_plus_line(b)?;
-        self.validate_quality(b)?;
+    fn validate(&self, r: &Record) -> Result<(), Error> {
+        self.validate_name(r)?;
+        self.validate_sequence(r)?;
+        self.validate_plus_line(r)?;
+        self.validate_quality(r)?;
         Ok(())
     }
 }
@@ -89,9 +90,9 @@ impl SingleReadValidator for CompleteValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::CompleteValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
+    use super::CompleteValidator;
     use validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
@@ -116,19 +117,19 @@ mod tests {
     fn test_validate() {
         let validator = CompleteValidator;
 
-        let block = Block::new("@fqlib", "AGCT", "+", "abcd");
-        assert!(validator.validate(&block).is_ok());
+        let record = Record::new("@fqlib", "AGCT", "+", "abcd");
+        assert!(validator.validate(&record).is_ok());
 
-        let block = Block::new("", "AGCT", "+", "abcd");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("", "AGCT", "+", "abcd");
+        assert!(validator.validate(&record).is_err());
 
-        let block = Block::new("@fqlib", "", "+", "abcd");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("@fqlib", "", "+", "abcd");
+        assert!(validator.validate(&record).is_err());
 
-        let block = Block::new("@fqlib", "AGCT", "", "abcd");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("@fqlib", "AGCT", "", "abcd");
+        assert!(validator.validate(&record).is_err());
 
-        let block = Block::new("@fqlib", "AGCT", "+", "");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("@fqlib", "AGCT", "+", "");
+        assert!(validator.validate(&record).is_err());
     }
 }

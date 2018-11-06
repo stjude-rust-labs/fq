@@ -1,4 +1,5 @@
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S006] (medium) Validator to check if all the characters in the quality line are between "!" and
@@ -21,8 +22,8 @@ impl SingleReadValidator for QualityStringValidator {
         ValidationLevel::Medium
     }
 
-    fn validate(&self, b: &Block) -> Result<(), Error> {
-        for (i, &b) in b.quality().iter().enumerate() {
+    fn validate(&self, r: &Record) -> Result<(), Error> {
+        for (i, &b) in r.quality().iter().enumerate() {
             if b < START_OFFSET || b > END_OFFSET {
                 return Err(Error::new(
                     self.code(),
@@ -40,11 +41,10 @@ impl SingleReadValidator for QualityStringValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::QualityStringValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
     use validators::{SingleReadValidator, ValidationLevel};
-
+    use super::QualityStringValidator;
     #[test]
     fn test_code() {
         let validator = QualityStringValidator;
@@ -68,10 +68,10 @@ mod tests {
         let validator = QualityStringValidator;
 
         let quality = r##"!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
-        let block = Block::new("", "", "", quality);
-        assert!(validator.validate(&block).is_ok());
+        let record = Record::new("", "", "", quality);
+        assert!(validator.validate(&record).is_ok());
 
-        let block = Block::new("", "", "", "ab早いcd");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("", "", "", "ab早いcd");
+        assert!(validator.validate(&record).is_err());
     }
 }

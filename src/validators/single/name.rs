@@ -1,4 +1,5 @@
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S003] (high) Validator to check if the name line starts with an "@".
@@ -17,8 +18,8 @@ impl SingleReadValidator for NameValidator {
         ValidationLevel::High
     }
 
-    fn validate(&self, b: &Block) -> Result<(), Error> {
-        match b.name().first() {
+    fn validate(&self, r: &Record) -> Result<(), Error> {
+        match r.name().first() {
             Some(b'@') => Ok(()),
             _ => {
                 Err(Error::new(
@@ -35,9 +36,9 @@ impl SingleReadValidator for NameValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::NameValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
+    use super::NameValidator;
     use validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
@@ -62,10 +63,10 @@ mod tests {
     fn test_validate() {
         let validator = NameValidator;
 
-        let block = Block::new("@fqlib", "", "", "");
-        assert!(validator.validate(&block).is_ok());
+        let record = Record::new("@fqlib", "", "", "");
+        assert!(validator.validate(&record).is_ok());
 
-        let block = Block::new("+fqlib", "", "", "");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("+fqlib", "", "", "");
+        assert!(validator.validate(&record).is_err());
     }
 }

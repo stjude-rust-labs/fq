@@ -1,3 +1,5 @@
+use noodles::formats::fastq::Record;
+
 /// A FASTQ entry (block) containing a name, sequence, plus line, and quality.
 ///
 /// Note that lines are stored as byte buffers, not strings.
@@ -118,5 +120,14 @@ impl Block {
 
     pub fn quality(&self) -> &[u8] {
         &self.quality
+    }
+}
+
+pub fn reset(block: &mut Record) {
+    let pos = block.name().iter().rev().position(|&b| b == b'/' || b == b' ');
+
+    if let Some(i) = pos {
+        let len = block.name().len();
+        block.name_mut().truncate(len - i - 1);
     }
 }

@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
-use Block;
+use noodles::formats::fastq::Record;
+
 use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
@@ -30,8 +31,8 @@ impl SingleReadValidator for AlphabetValidator {
         ValidationLevel::Medium
     }
 
-    fn validate(&self, b: &Block) -> Result<(), Error> {
-        for (i, &b) in b.sequence().iter().enumerate() {
+    fn validate(&self, r: &Record) -> Result<(), Error> {
+        for (i, &b) in r.sequence().iter().enumerate() {
             if !self.alphabet.contains(&b) {
                 return Err(Error::new(
                     self.code(),
@@ -56,9 +57,9 @@ impl Default for AlphabetValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::AlphabetValidator;
+    use noodles::formats::fastq::Record;
 
-    use Block;
+    use super::AlphabetValidator;
     use validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
@@ -92,10 +93,10 @@ mod tests {
     fn test_validate() {
         let validator = AlphabetValidator::default();
 
-        let block = Block::new("", "AACCGGTTNNaaccggttnn", "", "");
-        assert!(validator.validate(&block).is_ok());
+        let record = Record::new("", "AACCGGTTNNaaccggttnn", "", "");
+        assert!(validator.validate(&record).is_ok());
 
-        let block = Block::new("", "fqlib", "", "");
-        assert!(validator.validate(&block).is_err());
+        let record = Record::new("", "fqlib", "", "");
+        assert!(validator.validate(&record).is_err());
     }
 }
