@@ -2,7 +2,7 @@ use std::io::BufRead;
 
 use noodles::formats::fastq::{self, Record};
 
-use block;
+use record;
 
 pub struct PairReader<R: BufRead, S: BufRead> {
     reader_1: fastq::Reader<R>,
@@ -34,8 +34,8 @@ impl<R, S> PairReader<R, S> where R: BufRead, S: BufRead {
             return None;
         }
 
-        block::reset(&mut self.record_1);
-        block::reset(&mut self.record_2);
+        record::reset(&mut self.record_1);
+        record::reset(&mut self.record_2);
 
         Some((&self.record_1, &self.record_2))
     }

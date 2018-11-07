@@ -4,7 +4,7 @@ use std::process;
 use clap::ArgMatches;
 use noodles::formats::fastq::{self, Record};
 
-use ::{block, PairReader};
+use ::{record, PairReader};
 use validators::single::DuplicateNameValidator;
 use validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
@@ -96,7 +96,7 @@ fn validate_single(
             break;
         }
 
-        block::reset(&mut block);
+        record::reset(&mut block);
 
         for validator in &single_read_validators {
             if let Err(e) = validator.validate(&block) {
@@ -193,7 +193,7 @@ fn validate_pair(
             break;
         }
 
-        block::reset(&mut block);
+        record::reset(&mut block);
 
         if let Err(e) = duplicate_name_validator.validate(&block) {
             handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
