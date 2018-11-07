@@ -2,8 +2,9 @@ use std::io;
 use std::process;
 
 use clap::ArgMatches;
+use noodles::formats::fastq;
 
-use ::{BlockPairGenerator, PairedWriter, writers};
+use ::{Generator, PairWriter};
 
 fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
     match pathname {
@@ -22,19 +23,19 @@ pub fn generate(matches: &ArgMatches) {
 
     info!("fq-generate start");
 
-    let generator = BlockPairGenerator::new();
+    let generator = Generator::new();
 
-    let w1 = match writers::factory(r1_output_pathname) {
+    let w1 = match fastq::writer::create(r1_output_pathname) {
         Ok(w) => w,
         Err(e) => exit_with_io_error(e, Some(r1_output_pathname)),
     };
 
-    let w2 = match writers::factory(r2_output_pathname) {
+    let w2 = match fastq::writer::create(r2_output_pathname) {
         Ok(w) => w,
         Err(e) => exit_with_io_error(e, Some(r2_output_pathname)),
     };
 
-    let mut writer = PairedWriter::new(w1, w2);
+    let mut writer = PairWriter::new(w1, w2);
 
     if let Err(e) = writer.write(generator, num_blocks) {
         exit_with_io_error(e, None);

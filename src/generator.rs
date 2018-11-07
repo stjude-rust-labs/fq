@@ -1,18 +1,15 @@
 use std::io::Write;
 
+use noodles::formats::fastq::Record;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng, SeedableRng};
 
 use distributions::Character;
 
-use Block;
-
 static UPPER_ALPHA_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static QUALITY_CHARSET: &[u8] = b"@ABCDEFGHIJ";
 static NUCLEOBASE_CHARSET: &[u8] = b"AGTC";
-
-static PLUS_LINE: &[u8] = b"+";
 
 const READ_LEN: usize = 101;
 const FLOW_CELL_ID_LEN: usize = 7;
@@ -35,8 +32,6 @@ pub struct Generator {
     y_pos_range: Uniform<u32>,
     sequence_distribution: Character,
     quality_distribution: Character,
-
-    block: Block,
 }
 
 impl Generator {
@@ -51,7 +46,7 @@ impl Generator {
     /// # use rand::{FromEntropy, rngs::SmallRng};
     /// #
     /// # fn main() {
-    /// use fqlib::generator::Generator;
+    /// use fqlib::Generator;
     /// let rng = SmallRng::from_entropy();
     /// let _ = Generator::from_rng(rng);
     /// # }
@@ -69,9 +64,6 @@ impl Generator {
         let sequence_distribution = Character::new(NUCLEOBASE_CHARSET);
         let quality_distribution = Character::new(QUALITY_CHARSET);
 
-        let mut block = Block::default();
-        block.plus_line.extend_from_slice(PLUS_LINE);
-
         Generator {
             instrument,
             flow_cell_id,
@@ -84,8 +76,6 @@ impl Generator {
             y_pos_range,
             sequence_distribution,
             quality_distribution,
-
-            block,
         }
     }
 
@@ -94,7 +84,7 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::generator::Generator;
+    /// use fqlib::Generator;
     ///
     /// let seed = [
     ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
@@ -113,7 +103,7 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::generator::Generator;
+    /// use fqlib::Generator;
     /// let _ = Generator::new();
     /// ```
     pub fn new() -> Generator {
@@ -126,19 +116,25 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::generator::Generator;
+    /// # extern crate fqlib;
+    /// # extern crate noodles;
+    /// #
+    /// # use noodles::formats::fastq::Record;
+    /// #
+    /// # fn main() {
+    /// use fqlib::Generator;
     ///
     /// let mut generator = Generator::new();
-    /// let _ = generator.next_block();
+    /// let mut record = Record::default();
+    /// generator.next_block(&mut record);
+    /// # }
     /// ```
-    pub fn next_block(&mut self) -> &Block {
-        self.clear_block();
+    pub fn next_block(&mut self, record: &mut Record) {
+        clear_record(record);
 
-        self.next_name();
-        self.next_sequence();
-        self.next_quality();
-
-        &self.block
+        self.next_name(record);
+        self.next_sequence(record);
+        self.next_quality(record);
     }
 
     /// Returns a freshly generated block, setting the name to the given input.
@@ -146,65 +142,75 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::generator::Generator;
+    /// # extern crate fqlib;
+    /// # extern crate noodles;
+    /// #
+    /// # use noodles::formats::fastq::Record;
+    /// #
+    /// # fn main() {
+    /// use fqlib::Generator;
     ///
     /// let mut generator = Generator::new();
-    /// let block = generator.next_block_with_name(b"@fqlib");
-    /// assert_eq!(block.name(), b"@fqlib");
+    /// let mut record = Record::default();
+    /// generator.next_block_with_name(b"@fqlib", &mut record);
+    /// assert_eq!(record.name(), b"@fqlib");
+    /// # }
     /// ```
-    pub fn next_block_with_name(&mut self, name: &[u8]) -> &Block {
-        self.clear_block();
+    pub fn next_block_with_name(&mut self, name: &[u8], record: &mut Record) {
+        clear_record(record);
 
-        self.block.name.extend_from_slice(name);
-        self.next_sequence();
-        self.next_quality();
-
-        &self.block
+        record.name_mut().extend_from_slice(name);
+        self.next_sequence(record);
+        self.next_quality(record);
     }
 
     // Generates a name following Illumina's naming format, sans interleave.
     //
     // @see <https://help.basespace.illumina.com/articles/descriptive/fastq-files/>
-    fn next_name(&mut self) {
+    fn next_name(&mut self, record: &mut Record) {
         let lane = self.lane_range.sample(&mut self.rng);
         let tile = self.tile_range.sample(&mut self.rng);
         let x_pos = self.x_pos_range.sample(&mut self.rng);
         let y_pos = self.y_pos_range.sample(&mut self.rng);
 
         write!(
-            &mut self.block.name,
+            record.name_mut(),
             "@{}:{}:{}:{}:{}:{}:{}",
             self.instrument, self.run_number, self.flow_cell_id,
             lane, tile, x_pos, y_pos,
         ).unwrap();
     }
 
-    fn next_sequence(&mut self) {
+    fn next_sequence(&mut self, record: &mut Record) {
         let iter = self.rng
             .sample_iter(&self.sequence_distribution)
             .take(READ_LEN);
 
+        let sequence = record.sequence_mut();
+
         for c in iter {
-            self.block.sequence.push(c);
+            sequence.push(c);
         }
     }
 
-    fn next_quality(&mut self) {
+    fn next_quality(&mut self, record: &mut Record) {
         let iter = self.rng
             .sample_iter(&self.quality_distribution)
             .take(READ_LEN);
 
+        let quality = record.quality_mut();
+
         for c in iter {
-            self.block.quality.push(c);
+            quality.push(c);
         }
     }
 
-    // Clears all buffers but the plus line since that never changes.
-    fn clear_block(&mut self) {
-        self.block.name.clear();
-        self.block.sequence.clear();
-        self.block.quality.clear();
-    }
+}
+
+fn clear_record(record: &mut Record) {
+    record.name_mut().clear();
+    record.sequence_mut().clear();
+    record.quality_mut().clear();
 }
 
 fn gen_flow_cell_id(rng: &mut SmallRng, len: usize) -> String {
@@ -213,76 +219,10 @@ fn gen_flow_cell_id(rng: &mut SmallRng, len: usize) -> String {
     String::from_utf8(bytes).unwrap()
 }
 
-/// Generator for block pairs.
-///
-/// Block pairs share the same name but will generate new sequences and qualities.
-pub struct BlockPairGenerator {
-    generator_1: Generator,
-    generator_2: Generator,
-}
-
-impl BlockPairGenerator {
-    /// Creates a `BlockPairGenerator` with generators using the given seed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fqlib::BlockPairGenerator;
-    ///
-    /// let seed = [
-    ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
-    ///     0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
-    /// ];
-    ///
-    /// let _ = BlockPairGenerator::from_seed(seed);
-    /// ```
-    pub fn from_seed(seed: [u8; 16]) -> BlockPairGenerator {
-        let rng_1 = SmallRng::from_seed(seed);
-        let rng_2 = SmallRng::from_seed(seed);
-
-        BlockPairGenerator {
-            generator_1: Generator::from_rng(rng_1),
-            generator_2: Generator::from_rng(rng_2),
-        }
-    }
-
-    /// Creates a `BlockPairGenerator` with generators seeded by the system.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fqlib::BlockPairGenerator;
-    /// let _ = BlockPairGenerator::new();
-    /// ```
-    pub fn new() -> BlockPairGenerator {
-        BlockPairGenerator {
-            generator_1: Generator::new(),
-            generator_2: Generator::new(),
-        }
-    }
-
-    /// Returns a freshly generated block pair.
-    ///
-    /// Block pairs share the same name but will (likely) have different sequences and qualities.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fqlib::BlockPairGenerator;
-    ///
-    /// let mut generator = BlockPairGenerator::new();
-    /// let (b, d) = generator.next_block_pair();
-    /// assert_eq!(b.name, d.name);
-    /// ```
-    pub fn next_block_pair(&mut self) -> (&Block, &Block) {
-        let b = self.generator_1.next_block();
-        let d = self.generator_2.next_block_with_name(&b.name);
-        (b, d)
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use noodles::formats::fastq::Record;
+
     use super::*;
 
     static SEED: [u8; 16] = [
@@ -294,11 +234,11 @@ mod tests {
     fn test_next_block() {
         let mut generator = Generator::from_seed(SEED);
 
-        let block = generator.next_block();
+        let mut record = Record::default();
+        generator.next_block(&mut record);
 
-        assert_eq!(block.name(), "@fqlib2:898:JSYLNGV:8:44:169:5281".as_bytes());
-        assert_eq!(block.sequence(), "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT".as_bytes());
-        assert_eq!(block.plus_line(), "+".as_bytes());
-        assert_eq!(block.quality(), "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@".as_bytes());
+        assert_eq!(record.name(), "@fqlib2:898:JSYLNGV:8:44:169:5281".as_bytes());
+        assert_eq!(record.sequence(), "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT".as_bytes());
+        assert_eq!(record.quality(), "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@".as_bytes());
     }
 }
