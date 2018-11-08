@@ -6,7 +6,7 @@ use noodles::formats::fastq::Record;
 use validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};
 
 const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
-const INITIAL_CAPACITY: usize = 10000;
+const INITIAL_CAPACITY: usize = 10_000_000;
 
 /// [S007] (high) Validator to check if all block names are unique.
 ///
