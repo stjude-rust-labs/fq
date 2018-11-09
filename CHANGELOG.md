@@ -4,6 +4,9 @@
 
 ### Added
 
+  * For paired end reads, `fq lint` exits with unexpected EOF if the both
+    streams do not finish together.
+
   * Multistream gzip files can be used as inputs. Written files still use a
     single stream.
 

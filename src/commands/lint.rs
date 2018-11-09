@@ -4,9 +4,16 @@ use std::process;
 use clap::ArgMatches;
 use noodles::formats::fastq::{self, Record};
 
-use ::{record, PairReader};
+use ::record;
 use validators::single::DuplicateNameValidator;
 use validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
+
+fn unexpected_eof() -> io::Error {
+    io::Error::new(
+        io::ErrorKind::UnexpectedEof,
+        "unexpected EOF",
+    )
+}
 
 fn build_error_message(
     error: validators::Error,
@@ -111,8 +118,8 @@ fn validate_single(
 }
 
 fn validate_pair(
-    reader_1: fastq::Reader<impl BufRead>,
-    reader_2: fastq::Reader<impl BufRead>,
+    mut reader_1: fastq::Reader<impl BufRead>,
+    mut reader_2: fastq::Reader<impl BufRead>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -142,26 +149,48 @@ fn validate_pair(
 
     info!("starting validation (pass 1)");
 
-    let mut reader = PairReader::new(reader_1, reader_2);
+    let mut b = Record::default();
+    let mut d = Record::default();
     let mut block_no = 0;
 
-    while let Some((b, d)) = reader.next_pair() {
+    loop {
+        let r1_len = match reader_1.read_record(&mut b) {
+            Ok(len) => len,
+            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+        };
+
+        let r2_len = match reader_2.read_record(&mut d) {
+            Ok(len) => len,
+            Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
+        };
+
+        if r1_len == 0 && r2_len > 0 {
+            exit_with_io_error(unexpected_eof(), Some(r1_input_pathname));
+        } else if r2_len == 0 && r1_len > 0 {
+            exit_with_io_error(unexpected_eof(), Some(r2_input_pathname));
+        } else if r1_len == 0 && r2_len == 0 {
+            break;
+        }
+
+        record::reset(&mut b);
+        record::reset(&mut d);
+
         if use_special_validator {
-            duplicate_name_validator.insert(b);
+            duplicate_name_validator.insert(&b);
         }
 
         for validator in &single_read_validators {
-            if let Err(e) = validator.validate(b) {
+            if let Err(e) = validator.validate(&b) {
                 handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
             }
 
-            if let Err(e) = validator.validate(d) {
+            if let Err(e) = validator.validate(&d) {
                 handle_validation_error(lint_mode, e, r2_input_pathname, block_no);
             }
         }
 
         for validator in &paired_read_validators {
-            if let Err(e) = validator.validate(b, d) {
+            if let Err(e) = validator.validate(&b, &d) {
                 handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
             }
         }
