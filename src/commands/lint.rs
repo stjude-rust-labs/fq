@@ -169,6 +169,7 @@ fn validate_pair(
         block_no += 1;
     }
 
+    info!("read {} * 2 blocks", block_no);
     info!("starting validation (pass 2)");
 
     if !use_special_validator {
@@ -202,7 +203,7 @@ fn validate_pair(
         block_no += 1;
     }
 
-    info!("read {} * 2 blocks", block_no);
+    info!("read {} blocks", block_no);
 }
 
 pub fn lint(matches: &ArgMatches) {
