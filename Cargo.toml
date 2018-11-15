@@ -16,7 +16,7 @@ codegen-units = 1
 [dependencies]
 bloom = { git = "https://github.com/zaeleus/bloom.git" }
 clap = "2.31.2"
-env_logger = "0.5.10"
+env_logger = "0.6.0"
 flate2 = "1.0.1"
 log = "0.4.1"
 noodles = { git = "https://github.com/zaeleus/noodles.git" }
