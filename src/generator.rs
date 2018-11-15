@@ -237,8 +237,8 @@ mod tests {
         let mut record = Record::default();
         generator.next_block(&mut record);
 
-        assert_eq!(record.name(), "@fqlib2:898:JSYLNGV:8:44:169:5281".as_bytes());
-        assert_eq!(record.sequence(), "CTACTATCGGCCCACGACTCTCGCTGGGAGAGCTCACATTCTTGGCGTAGGCAATTCGCAGCTCAAGACAAAAGAGTGGAAGGCAGTTCGACGCGAACTCT".as_bytes());
-        assert_eq!(record.quality(), "GGIFD@BCBHC@DDJAAIGFF@I@CFFCEIE@DH@CFAJJIDDHJH@@FACBAHJHIHJCDFDHEHBBCCBABFIJHFCFCB@FAFCCAHFDBCJJGFJI@".as_bytes());
+        assert_eq!(record.name(), "@fqlib1:950:DFZYAUO:3:33:7515:3404".as_bytes());
+        assert_eq!(record.sequence(), "TTGATTGAAAATTAGATAATACATCAATTCGGGGCCTAATAGTTGGGGTAAGCAAAGGCAGTCATTGACATGGTATCGTTTGCCCTTCACAGCTTACAACG".as_bytes());
+        assert_eq!(record.quality(), "FFI@@AEFEGJG@DDDBBCCIJE@DDCACIDFFJE@GIB@@J@AFEDBCGBB@BAAGDFBJHGA@CEBBGGBJHFGG@C@A@HCAFGGGCFIHIFFAEHDC".as_bytes());
     }
 }
