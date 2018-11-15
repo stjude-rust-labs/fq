@@ -72,7 +72,7 @@ fq-lint
 Validate a FASTQ file pair
 
 USAGE:
-    fq lint [OPTIONS] <in1> <in2>
+    fq lint [OPTIONS] <in1> [--] [in2]
 
 FLAGS:
     -h, --help       Prints help information
