@@ -139,7 +139,7 @@ dependencies = [
 
 [[package]]
 name = "fqlib"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bloom 0.1.0 (git+https://github.com/zaeleus/bloom.git)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",

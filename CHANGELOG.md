@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.2.0] - 2018-11-28
 
 ### Added
 
@@ -27,3 +27,5 @@
 ## 0.1.0 - 2018-06-05
 
   * Initial release
+
+[0.2.0]: https://github.com/stjude/fqlib/compare/v0.1.0...v0.2.0
