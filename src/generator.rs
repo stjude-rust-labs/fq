@@ -5,7 +5,7 @@ use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng, SeedableRng};
 
-use distributions::Character;
+use crate::distributions::Character;
 
 static UPPER_ALPHA_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static QUALITY_CHARSET: &[u8] = b"@ABCDEFGHIJ";

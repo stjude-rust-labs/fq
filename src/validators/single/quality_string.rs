@@ -1,6 +1,6 @@
 use noodles::formats::fastq::Record;
 
-use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S006] (medium) Validator to check if all the characters in the quality line are between "!" and
 /// "~" (ordinal values).
@@ -43,7 +43,7 @@ impl SingleReadValidator for QualityStringValidator {
 mod tests {
     use noodles::formats::fastq::Record;
 
-    use validators::{SingleReadValidator, ValidationLevel};
+    use crate::validators::{SingleReadValidator, ValidationLevel};
     use super::QualityStringValidator;
     #[test]
     fn test_code() {

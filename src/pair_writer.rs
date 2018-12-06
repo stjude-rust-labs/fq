@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use noodles::formats::fastq::{self, Record};
 
-use Generator;
+use crate::Generator;
 
 static PLUS_LINE: &[u8] = b"+";
 

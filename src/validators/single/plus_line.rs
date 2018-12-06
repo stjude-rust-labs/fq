@@ -1,6 +1,6 @@
 use noodles::formats::fastq::Record;
 
-use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S001] (low) Validator to check if the plus line starts with a "+".
 pub struct PlusLineValidator;
@@ -39,7 +39,7 @@ mod tests {
     use noodles::formats::fastq::Record;
 
     use super::PlusLineValidator;
-    use validators::{SingleReadValidator, ValidationLevel};
+    use crate::validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
     fn test_code() {

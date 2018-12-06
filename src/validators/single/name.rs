@@ -1,6 +1,6 @@
 use noodles::formats::fastq::Record;
 
-use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S003] (high) Validator to check if the name line starts with an "@".
 pub struct NameValidator;
@@ -39,7 +39,7 @@ mod tests {
     use noodles::formats::fastq::Record;
 
     use super::NameValidator;
-    use validators::{SingleReadValidator, ValidationLevel};
+    use crate::validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
     fn test_code() {

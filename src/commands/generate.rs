@@ -4,7 +4,7 @@ use std::process;
 use clap::ArgMatches;
 use noodles::formats::fastq;
 
-use ::{Generator, PairWriter};
+use crate::{Generator, PairWriter};
 
 fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
     match pathname {

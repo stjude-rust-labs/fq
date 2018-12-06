@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use bloom::ScalableBloomFilter;
 use noodles::formats::fastq::Record;
 
-use validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};
+use crate::validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};
 
 const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
 const INITIAL_CAPACITY: usize = 10_000_000;
@@ -150,7 +150,7 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
 #[cfg(test)]
 mod tests {
     use super::DuplicateNameValidator;
-    use validators::{SingleReadValidatorMut, ValidationLevel};
+    use crate::validators::{SingleReadValidatorMut, ValidationLevel};
 
     #[test]
     fn test_is_empty() {

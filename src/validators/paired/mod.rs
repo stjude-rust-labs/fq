@@ -2,7 +2,7 @@
 
 use noodles::formats::fastq::Record;
 
-use validators::{Error, ValidationLevel};
+use crate::validators::{Error, ValidationLevel};
 
 pub use self::names::NamesValidator;
 

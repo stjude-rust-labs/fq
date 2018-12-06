@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use noodles::formats::fastq::Record;
 
-use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
 /// given character set.
@@ -60,7 +60,7 @@ mod tests {
     use noodles::formats::fastq::Record;
 
     use super::AlphabetValidator;
-    use validators::{SingleReadValidator, ValidationLevel};
+    use crate::validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
     fn test_new() {

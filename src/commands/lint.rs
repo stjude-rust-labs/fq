@@ -4,9 +4,9 @@ use std::process;
 use clap::ArgMatches;
 use noodles::formats::fastq::{self, Record};
 
-use ::record;
-use validators::single::DuplicateNameValidator;
-use validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
+use crate::record;
+use crate::validators::single::DuplicateNameValidator;
+use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
 fn unexpected_eof() -> io::Error {
     io::Error::new(
@@ -301,7 +301,7 @@ pub fn lint(matches: &ArgMatches) {
 
 #[cfg(test)]
 mod tests {
-    use validators::{self, LineType};
+    use crate::validators::{self, LineType};
 
     use super::*;
 

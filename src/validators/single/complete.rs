@@ -1,6 +1,6 @@
 use noodles::formats::fastq::Record;
 
-use validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
 /// [S004] (low) Validator to check if all four block lines (name, sequence, plus line, and
 /// quality) are present.
@@ -93,7 +93,7 @@ mod tests {
     use noodles::formats::fastq::Record;
 
     use super::CompleteValidator;
-    use validators::{SingleReadValidator, ValidationLevel};
+    use crate::validators::{SingleReadValidator, ValidationLevel};
 
     #[test]
     fn test_code() {

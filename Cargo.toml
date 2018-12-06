@@ -2,6 +2,7 @@
 name = "fqlib"
 version = "0.2.0"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
+edition = "2018"
 license = "Apache-2.0"
 autobins = false
 
