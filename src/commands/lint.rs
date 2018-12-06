@@ -66,7 +66,7 @@ fn handle_validation_error(
     }
 }
 
-fn exit_with_io_error(error: io::Error, pathname: Option<&str>) -> ! {
+fn exit_with_io_error(error: &io::Error, pathname: Option<&str>) -> ! {
     match pathname {
         Some(p) => eprintln!("{}: {}", error, p),
         None => eprintln!("{}", error),
@@ -96,7 +96,7 @@ fn validate_single(
     loop {
         let bytes_read = match reader.read_record(&mut block) {
             Ok(len) => len,
-            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+            Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
         };
 
         if bytes_read == 0 {
@@ -117,6 +117,7 @@ fn validate_single(
     info!("read {} blocks", block_no);
 }
 
+#[allow(clippy::too_many_arguments)]
 fn validate_pair(
     mut reader_1: fastq::Reader<impl BufRead>,
     mut reader_2: fastq::Reader<impl BufRead>,
@@ -156,18 +157,18 @@ fn validate_pair(
     loop {
         let r1_len = match reader_1.read_record(&mut b) {
             Ok(len) => len,
-            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+            Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
         };
 
         let r2_len = match reader_2.read_record(&mut d) {
             Ok(len) => len,
-            Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
+            Err(e) => exit_with_io_error(&e, Some(r2_input_pathname)),
         };
 
         if r1_len == 0 && r2_len > 0 {
-            exit_with_io_error(unexpected_eof(), Some(r1_input_pathname));
+            exit_with_io_error(&unexpected_eof(), Some(r1_input_pathname));
         } else if r2_len == 0 && r1_len > 0 {
-            exit_with_io_error(unexpected_eof(), Some(r2_input_pathname));
+            exit_with_io_error(&unexpected_eof(), Some(r2_input_pathname));
         } else if r1_len == 0 && r2_len == 0 {
             break;
         }
@@ -207,7 +208,7 @@ fn validate_pair(
 
     let mut reader = match fastq::reader::open(r1_input_pathname) {
         Ok(r) => r,
-        Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+        Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
     };
 
     let mut block = Record::default();
@@ -216,7 +217,7 @@ fn validate_pair(
     loop {
         let bytes_read = match reader.read_record(&mut block) {
             Ok(len) => len,
-            Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+            Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
         };
 
         if bytes_read == 0 {
@@ -263,7 +264,7 @@ pub fn lint(matches: &ArgMatches) {
 
     let r1 = match fastq::reader::open(r1_input_pathname) {
         Ok(r) => r,
-        Err(e) => exit_with_io_error(e, Some(r1_input_pathname)),
+        Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
     };
 
     if let Some(r2_input_pathname) = r2_input_pathname {
@@ -271,7 +272,7 @@ pub fn lint(matches: &ArgMatches) {
 
         let r2 = match fastq::reader::open(r2_input_pathname) {
             Ok(r) => r,
-            Err(e) => exit_with_io_error(e, Some(r2_input_pathname)),
+            Err(e) => exit_with_io_error(&e, Some(r2_input_pathname)),
         };
 
         validate_pair(

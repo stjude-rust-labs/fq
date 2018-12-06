@@ -16,6 +16,11 @@ use self::single::{
 pub mod paired;
 pub mod single;
 
+pub type SingleAndPairedValidators = (
+    Vec<Box<dyn SingleReadValidator>>,
+    Vec<Box<dyn PairedReadValidator>>,
+);
+
 #[derive(Debug)]
 pub enum LineType {
     Name,
@@ -94,7 +99,7 @@ pub fn filter_validators(
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: Option<ValidationLevel>,
     disabled_validators: &[String],
-) -> (Vec<Box<dyn SingleReadValidator>>, Vec<Box<dyn PairedReadValidator>>) {
+) -> SingleAndPairedValidators {
     info!("disabled validators: {:?}", disabled_validators);
 
     let single_read_validators = filter_single_read_validators(

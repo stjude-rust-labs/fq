@@ -107,8 +107,7 @@ impl Generator {
     /// let _ = Generator::new();
     /// ```
     pub fn new() -> Generator {
-        let rng = SmallRng::from_entropy();
-        Generator::from_rng(rng)
+        Generator::default()
     }
 
     /// Returns a freshly generated block.
@@ -205,6 +204,13 @@ impl Generator {
         }
     }
 
+}
+
+impl Default for Generator {
+    fn default() -> Generator {
+        let rng = SmallRng::from_entropy();
+        Generator::from_rng(rng)
+    }
 }
 
 fn clear_record(record: &mut Record) {
