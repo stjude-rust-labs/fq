@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 pub use self::paired::PairedReadValidator;
 pub use self::single::{SingleReadValidator, SingleReadValidatorMut};
 
@@ -15,6 +13,10 @@ use self::single::{
 
 pub mod paired;
 pub mod single;
+
+use std::str::FromStr;
+
+use log::info;
 
 pub type SingleAndPairedValidators = (
     Vec<Box<dyn SingleReadValidator>>,

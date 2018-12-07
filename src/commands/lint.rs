@@ -1,7 +1,8 @@
 use std::io::{self, BufRead};
 use std::process;
 
-use clap::ArgMatches;
+use clap::{ArgMatches, value_t};
+use log::{error, info};
 use noodles::formats::fastq::{self, Record};
 
 use crate::record;

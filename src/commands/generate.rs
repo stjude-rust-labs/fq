@@ -1,7 +1,8 @@
 use std::io;
 use std::process;
 
-use clap::ArgMatches;
+use clap::{ArgMatches, value_t};
+use log::info;
 use noodles::formats::fastq;
 
 use crate::{Generator, PairWriter};

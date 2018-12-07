@@ -1,9 +1,4 @@
-extern crate log;
-extern crate env_logger;
-#[macro_use] extern crate clap;
-extern crate fqlib;
-
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, crate_name, crate_version, SubCommand};
 use fqlib::commands::{generate, lint};
 use log::LevelFilter;
 

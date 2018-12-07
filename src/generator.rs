@@ -40,9 +40,6 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// # extern crate fqlib;
-    /// # extern crate rand;
-    /// #
     /// # use rand::{FromEntropy, rngs::SmallRng};
     /// #
     /// # fn main() {
@@ -115,18 +112,12 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// # extern crate fqlib;
-    /// # extern crate noodles;
-    /// #
-    /// # use noodles::formats::fastq::Record;
-    /// #
-    /// # fn main() {
     /// use fqlib::Generator;
+    /// use noodles::formats::fastq::Record;
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
     /// generator.next_block(&mut record);
-    /// # }
     /// ```
     pub fn next_block(&mut self, record: &mut Record) {
         clear_record(record);
@@ -141,19 +132,13 @@ impl Generator {
     /// # Examples
     ///
     /// ```
-    /// # extern crate fqlib;
-    /// # extern crate noodles;
-    /// #
-    /// # use noodles::formats::fastq::Record;
-    /// #
-    /// # fn main() {
     /// use fqlib::Generator;
+    /// use noodles::formats::fastq::Record;
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
     /// generator.next_block_with_name(b"@fqlib", &mut record);
     /// assert_eq!(record.name(), b"@fqlib");
-    /// # }
     /// ```
     pub fn next_block_with_name(&mut self, name: &[u8], record: &mut Record) {
         clear_record(record);

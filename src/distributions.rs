@@ -6,9 +6,6 @@ use rand::distributions::{Distribution, Uniform};
 /// # Examples
 ///
 /// ```
-/// # extern crate fqlib;
-/// # extern crate rand;
-/// # fn main() {
 /// use rand::{Rng, thread_rng};
 /// use fqlib::distributions::Character;
 ///
@@ -16,8 +13,7 @@ use rand::distributions::{Distribution, Uniform};
 /// let distribution = Character::new(b"AGTC");
 /// let bytes: Vec<u8> = rng.sample_iter(&distribution).take(8).collect();
 /// let s = String::from_utf8(bytes).unwrap();
-/// println!("{}", s);
-/// # }
+/// println!("{}", s); // e.g., "TCCTCGAG"
 /// ```
 pub struct Character {
     alphabet: &'static [u8],

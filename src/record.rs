@@ -11,13 +11,8 @@ use noodles::formats::fastq::Record;
 /// # Examples
 ///
 /// ```
-/// # extern crate fqlib;
-/// # extern crate noodles;
-/// #
-/// # use noodles::formats::fastq::Record;
-/// #
-/// # fn main() {
 /// use fqlib::record;
+/// use noodles::formats::fastq::Record;
 ///
 /// let mut r = Record::default();
 /// r.name_mut().extend_from_slice(b"@fqlib/1");
@@ -30,7 +25,6 @@ use noodles::formats::fastq::Record;
 /// assert_eq!(r.name(), b"@fqlib 1");
 /// record::reset(&mut r);
 /// assert_eq!(r.name(), b"@fqlib");
-/// # }
 /// ```
 pub fn reset(record: &mut Record) {
     let pos = record.name().iter().rev().position(|&b| b == b'/' || b == b' ');

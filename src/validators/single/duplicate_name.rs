@@ -18,13 +18,8 @@ const INITIAL_CAPACITY: usize = 10_000_000;
 /// # Examples
 ///
 /// ```
-/// # extern crate fqlib;
-/// # extern crate noodles;
-/// #
-/// # fn main() {
-/// use noodles::formats::fastq::Record;
-///
 /// use fqlib::validators::single::{DuplicateNameValidator, SingleReadValidatorMut};
+/// use noodles::formats::fastq::Record;
 ///
 /// let mut validator = DuplicateNameValidator::new();
 ///
@@ -42,7 +37,6 @@ const INITIAL_CAPACITY: usize = 10_000_000;
 /// assert!(validator.validate(&r).is_ok());
 /// assert!(validator.validate(&s).is_ok());
 /// assert!(validator.validate(&s).is_err());
-/// # }
 /// ```
 ///
 /// [`insert`]: #method.insert
@@ -66,18 +60,12 @@ impl DuplicateNameValidator {
     /// # Examples
     ///
     /// ```
-    /// # extern crate fqlib;
-    /// # extern crate noodles;
-    /// #
-    /// # fn main() {
-    /// use noodles::formats::fastq::Record;
-    ///
     /// use fqlib::validators::single::DuplicateNameValidator;
+    /// use noodles::formats::fastq::Record;
     ///
     /// let mut validator = DuplicateNameValidator::new();
     /// let record = Record::new("@fqlib:1", "", "", "");
     /// validator.insert(&record);
-    /// # }
     /// ```
     pub fn insert(&mut self, r: &Record) {
         let name = r.name();
