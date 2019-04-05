@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 use std::process;
 
-use clap::{ArgMatches, value_t};
+use clap::{value_t, ArgMatches};
 use log::{error, info};
 use noodles::formats::fastq::{self, Record};
 
@@ -10,17 +10,10 @@ use crate::validators::single::DuplicateNameValidator;
 use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
 fn unexpected_eof() -> io::Error {
-    io::Error::new(
-        io::ErrorKind::UnexpectedEof,
-        "unexpected EOF",
-    )
+    io::Error::new(io::ErrorKind::UnexpectedEof, "unexpected EOF")
 }
 
-fn build_error_message(
-    error: validators::Error,
-    pathname: &str,
-    block_no: usize,
-) -> String {
+fn build_error_message(error: validators::Error, pathname: &str, block_no: usize) -> String {
     let mut message = String::new();
 
     let line_offset = error.line_type as usize;
@@ -31,26 +24,21 @@ fn build_error_message(
         message.push_str(&format!("{}:", col_no));
     }
 
-    message.push_str(&format!(" [{}] {}: {}", error.code, error.name, error.message));
+    message.push_str(&format!(
+        " [{}] {}: {}",
+        error.code, error.name, error.message
+    ));
 
     message
 }
 
-fn exit_with_validation_error(
-    error: validators::Error,
-    pathname: &str,
-    block_no: usize,
-) -> ! {
+fn exit_with_validation_error(error: validators::Error, pathname: &str, block_no: usize) -> ! {
     let message = build_error_message(error, pathname, block_no);
     eprintln!("{}", message);
     process::exit(1);
 }
 
-fn log_validation_error(
-    error: validators::Error,
-    pathname: &str,
-    block_no: usize,
-) {
+fn log_validation_error(error: validators::Error, pathname: &str, block_no: usize) {
     let message = build_error_message(error, pathname, block_no);
     error!("{}", message);
 }
@@ -83,11 +71,8 @@ fn validate_single(
     lint_mode: LintMode,
     r1_input_pathname: &str,
 ) {
-    let (single_read_validators, _) = validators::filter_validators(
-        single_read_validation_level,
-        None,
-        disabled_validators,
-    );
+    let (single_read_validators, _) =
+        validators::filter_validators(single_read_validation_level, None, disabled_validators);
 
     info!("starting validation");
 
@@ -243,17 +228,13 @@ pub fn lint(matches: &ArgMatches) {
     let r1_input_pathname = matches.value_of("in1").unwrap();
     let r2_input_pathname = matches.value_of("in2");
 
-    let single_read_validation_level = value_t!(
-        matches,
-        "single-read-validation-level",
-        ValidationLevel
-    ).unwrap_or_else(|e| e.exit());
+    let single_read_validation_level =
+        value_t!(matches, "single-read-validation-level", ValidationLevel)
+            .unwrap_or_else(|e| e.exit());
 
-    let paired_read_validation_level = value_t!(
-        matches,
-        "paired-read-validation-level",
-        ValidationLevel
-    ).unwrap_or_else(|e| e.exit());
+    let paired_read_validation_level =
+        value_t!(matches, "paired-read-validation-level", ValidationLevel)
+            .unwrap_or_else(|e| e.exit());
 
     let disabled_validators: Vec<String> = matches
         .values_of("disable-validator")

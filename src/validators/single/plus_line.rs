@@ -21,15 +21,13 @@ impl SingleReadValidator for PlusLineValidator {
     fn validate(&self, r: &Record) -> Result<(), Error> {
         match r.plus_line().first() {
             Some(b'+') => Ok(()),
-            _ => {
-                Err(Error::new(
-                    self.code(),
-                    self.name(),
-                    &String::from("Does not start with a '+'"),
-                    LineType::PlusLine,
-                    Some(1),
-                ))
-            },
+            _ => Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Does not start with a '+'"),
+                LineType::PlusLine,
+                Some(1),
+            )),
         }
     }
 }

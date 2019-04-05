@@ -132,10 +132,7 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
 impl Default for DuplicateNameValidator {
     fn default() -> DuplicateNameValidator {
         DuplicateNameValidator {
-            filter: ScalableBloomFilter::new(
-                FALSE_POSITIVE_PROBABILITY,
-                INITIAL_CAPACITY,
-            ),
+            filter: ScalableBloomFilter::new(FALSE_POSITIVE_PROBABILITY, INITIAL_CAPACITY),
             possible_duplicates: HashMap::new(),
         }
     }

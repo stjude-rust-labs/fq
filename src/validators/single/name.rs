@@ -21,15 +21,13 @@ impl SingleReadValidator for NameValidator {
     fn validate(&self, r: &Record) -> Result<(), Error> {
         match r.name().first() {
             Some(b'@') => Ok(()),
-            _ => {
-                Err(Error::new(
-                    self.code(),
-                    self.name(),
-                    &String::from("Does not start with an '@'"),
-                    LineType::Name,
-                    Some(1),
-                ))
-            },
+            _ => Err(Error::new(
+                self.code(),
+                self.name(),
+                &String::from("Does not start with an '@'"),
+                LineType::Name,
+                Some(1),
+            )),
         }
     }
 }

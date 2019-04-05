@@ -1,7 +1,7 @@
 use std::io;
 use std::process;
 
-use clap::{ArgMatches, value_t};
+use clap::{value_t, ArgMatches};
 use log::info;
 use noodles::formats::fastq;
 

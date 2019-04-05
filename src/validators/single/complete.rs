@@ -86,8 +86,6 @@ impl SingleReadValidator for CompleteValidator {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use noodles::formats::fastq::Record;

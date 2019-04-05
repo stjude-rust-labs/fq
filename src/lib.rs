@@ -8,5 +8,5 @@ pub mod commands;
 pub mod distributions;
 pub mod generator;
 pub mod pair_writer;
-pub mod validators;
 pub mod record;
+pub mod validators;

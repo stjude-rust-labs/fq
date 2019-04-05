@@ -11,19 +11,16 @@ pub struct PairWriter<W: Write, X: Write> {
     writer_2: fastq::Writer<X>,
 }
 
-impl<W, X> PairWriter<W, X> where W: Write, X: Write {
-    pub fn new(
-        writer_1: fastq::Writer<W>,
-        writer_2: fastq::Writer<X>,
-    ) -> PairWriter<W, X> {
+impl<W, X> PairWriter<W, X>
+where
+    W: Write,
+    X: Write,
+{
+    pub fn new(writer_1: fastq::Writer<W>, writer_2: fastq::Writer<X>) -> PairWriter<W, X> {
         PairWriter { writer_1, writer_2 }
     }
 
-    pub fn write(
-        &mut self,
-        mut generator: Generator,
-        iterations: i32,
-    ) -> io::Result<()> {
+    pub fn write(&mut self, mut generator: Generator, iterations: i32) -> io::Result<()> {
         let mut r = Record::default();
         let mut s = Record::default();
 

@@ -160,13 +160,20 @@ impl Generator {
         write!(
             record.name_mut(),
             "@{}:{}:{}:{}:{}:{}:{}",
-            self.instrument, self.run_number, self.flow_cell_id,
-            lane, tile, x_pos, y_pos,
-        ).unwrap();
+            self.instrument,
+            self.run_number,
+            self.flow_cell_id,
+            lane,
+            tile,
+            x_pos,
+            y_pos,
+        )
+        .unwrap();
     }
 
     fn next_sequence(&mut self, record: &mut Record) {
-        let iter = self.rng
+        let iter = self
+            .rng
             .sample_iter(&self.sequence_distribution)
             .take(READ_LEN);
 
@@ -178,7 +185,8 @@ impl Generator {
     }
 
     fn next_quality(&mut self, record: &mut Record) {
-        let iter = self.rng
+        let iter = self
+            .rng
             .sample_iter(&self.quality_distribution)
             .take(READ_LEN);
 
@@ -188,7 +196,6 @@ impl Generator {
             quality.push(c);
         }
     }
-
 }
 
 impl Default for Generator {
@@ -217,8 +224,8 @@ mod tests {
     use super::*;
 
     static SEED: [u8; 16] = [
-        0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
-        0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
+        0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03, 0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b,
+        0x44,
     ];
 
     #[test]
@@ -228,7 +235,10 @@ mod tests {
         let mut record = Record::default();
         generator.next_block(&mut record);
 
-        assert_eq!(record.name(), "@fqlib1:950:DFZYAUO:3:33:7515:3404".as_bytes());
+        assert_eq!(
+            record.name(),
+            "@fqlib1:950:DFZYAUO:3:33:7515:3404".as_bytes()
+        );
         assert_eq!(record.sequence(), "TTGATTGAAAATTAGATAATACATCAATTCGGGGCCTAATAGTTGGGGTAAGCAAAGGCAGTCATTGACATGGTATCGTTTGCCCTTCACAGCTTACAACG".as_bytes());
         assert_eq!(record.quality(), "FFI@@AEFEGJG@DDDBBCCIJE@DDCACIDFFJE@GIB@@J@AFEDBCGBB@BAAGDFBJHGA@CEBBGGBJHFGG@C@A@HCAFGGGCFIHIFFAEHDC".as_bytes());
     }

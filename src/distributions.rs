@@ -1,5 +1,5 @@
-use rand::Rng;
 use rand::distributions::{Distribution, Uniform};
+use rand::Rng;
 
 /// Sample a `char`, uniformly distributed over a given character set.
 ///
@@ -36,8 +36,8 @@ impl Distribution<u8> for Character {
 
 #[cfg(test)]
 mod tests {
-    use rand::Rng;
     use rand::rngs::mock::StepRng;
+    use rand::Rng;
 
     use super::Character;
 

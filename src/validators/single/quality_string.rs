@@ -43,8 +43,8 @@ impl SingleReadValidator for QualityStringValidator {
 mod tests {
     use noodles::formats::fastq::Record;
 
-    use crate::validators::{SingleReadValidator, ValidationLevel};
     use super::QualityStringValidator;
+    use crate::validators::{SingleReadValidator, ValidationLevel};
     #[test]
     fn test_code() {
         let validator = QualityStringValidator;

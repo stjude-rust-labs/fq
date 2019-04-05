@@ -27,7 +27,11 @@ use noodles::formats::fastq::Record;
 /// assert_eq!(r.name(), b"@fqlib");
 /// ```
 pub fn reset(record: &mut Record) {
-    let pos = record.name().iter().rev().position(|&b| b == b'/' || b == b' ');
+    let pos = record
+        .name()
+        .iter()
+        .rev()
+        .position(|&b| b == b'/' || b == b' ');
 
     if let Some(i) = pos {
         let len = record.name().len();
