@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+  * New `filter` command. This accepts a whitelist of record read names to keep
+    in the output FASTQ.
+
 ## [0.2.0] - 2018-11-28
 
 ### Added

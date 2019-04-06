@@ -1,8 +1,24 @@
 use clap::{crate_name, crate_version, App, AppSettings, Arg, SubCommand};
-use fqlib::commands::{generate, lint};
+use fqlib::commands::{filter, generate, lint};
 use log::LevelFilter;
 
 fn main() {
+    let filter_cmd = SubCommand::with_name("filter")
+        .about("Filters a FASTQ from a whitelist of names")
+        .arg(
+            Arg::with_name("names")
+                .long("names")
+                .value_name("PATH")
+                .help("Whitelist of record names")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("src")
+                .help("Source FASTQ")
+                .index(1)
+                .required(true),
+        );
+
     let generate_cmd = SubCommand::with_name("generate")
         .about("Generates a random FASTQ file pair")
         .arg(
@@ -81,6 +97,7 @@ fn main() {
                 .long("verbose")
                 .help("Use verbose logging"),
         )
+        .subcommand(filter_cmd)
         .subcommand(generate_cmd)
         .subcommand(lint_cmd)
         .get_matches();
@@ -93,7 +110,9 @@ fn main() {
         env_logger::init();
     }
 
-    if let Some(m) = matches.subcommand_matches("generate") {
+    if let Some(m) = matches.subcommand_matches("filter") {
+        filter(m);
+    } else if let Some(m) = matches.subcommand_matches("generate") {
         generate(m);
     } else if let Some(m) = matches.subcommand_matches("lint") {
         lint(m);
