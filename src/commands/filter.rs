@@ -26,7 +26,9 @@ where
             break;
         }
 
-        if names.contains(record.name()) {
+        let id = name_id(record.name());
+
+        if names.contains(id) {
             writer.write_record(&record)?;
         }
     }
@@ -46,6 +48,24 @@ where
     }
 
     Ok(names)
+}
+
+// Names always begin with an `@` character.
+const ID_START_OFFSET: usize = 1;
+
+fn name_id(name: &[u8]) -> &[u8] {
+    let pos = name
+        .iter()
+        .rev()
+        .position(|&b| b == b'/' || b == b' ');
+
+    if let Some(i) = pos {
+        let len = name.len();
+        let end = len - i - 1;
+        &name[ID_START_OFFSET..end]
+    } else {
+        &name[ID_START_OFFSET..]
+    }
 }
 
 pub fn filter(matches: &ArgMatches) {
@@ -83,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_copy_filtered() {
-        let names = [b"@fqlib:2/1".to_vec()].iter().cloned().collect();
+        let names = [b"fqlib:2".to_vec()].iter().cloned().collect();
 
         let data = "\
 @fqlib:1/1\nAGCT\n+\nabcd
@@ -112,5 +132,12 @@ mod tests {
         assert!(names.contains("@fqlib:1/1".as_bytes()));
         assert!(names.contains("@fqlib:2/1".as_bytes()));
         assert!(names.contains("@fqlib:3/1".as_bytes()));
+    }
+
+    #[test]
+    fn test_name_id() {
+        assert_eq!(name_id("@fqlib:1/1".as_bytes()), b"fqlib:1");
+        assert_eq!(name_id("@fqlib:1 1".as_bytes()), b"fqlib:1");
+        assert_eq!(name_id("@fqlib:1".as_bytes()), b"fqlib:1");
     }
 }
