@@ -18,6 +18,7 @@ codegen-units = 1
 bloom = { git = "https://github.com/zaeleus/bloom.git" }
 clap = "2.31.2"
 env_logger = "0.6.0"
+git-testament = "0.1.6"
 log = "0.4.1"
 noodles = { git = "https://github.com/zaeleus/noodles.git" }
 rand = "0.6.0"

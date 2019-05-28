@@ -1,6 +1,10 @@
-use clap::{crate_name, crate_version, App, AppSettings, Arg, SubCommand};
+use clap::{crate_name, App, AppSettings, Arg, SubCommand};
 use fqlib::commands::{filter, generate, lint};
 use log::LevelFilter;
+
+use git_testament::{git_testament, render_testament};
+
+git_testament!(TESTAMENT);
 
 fn main() {
     let filter_cmd = SubCommand::with_name("filter")
@@ -89,7 +93,7 @@ fn main() {
         );
 
     let matches = App::new("fq")
-        .version(crate_version!())
+        .version(render_testament!(TESTAMENT).as_str())
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(
             Arg::with_name("verbose")

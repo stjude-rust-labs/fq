@@ -7,6 +7,10 @@
   * New `filter` command. This accepts a whitelist of record read names to keep
     in the output FASTQ.
 
+  * Show git commit ID and date in display version, e.g., when using
+    `--version`. This makes it easier to know the exact build of fqlib being
+    used.
+
 ## [0.2.0] - 2018-11-28
 
 ### Added
