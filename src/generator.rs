@@ -3,7 +3,7 @@ use std::io::Write;
 use noodles::formats::fastq::Record;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
-use rand::{FromEntropy, Rng, SeedableRng};
+use rand::{Rng, SeedableRng};
 
 use crate::distributions::Character;
 
@@ -83,7 +83,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use rand::{FromEntropy, rngs::SmallRng};
+    /// # use rand::{SeedableRng, rngs::SmallRng};
     /// #
     /// # fn main() {
     /// use fqlib::Generator;
@@ -184,8 +184,7 @@ where
     }
 
     fn next_sequence(&mut self, record: &mut Record) {
-        let iter = self
-            .rng
+        let iter = (&mut self.rng)
             .sample_iter(&self.sequence_distribution)
             .take(READ_LEN);
 
@@ -197,8 +196,7 @@ where
     }
 
     fn next_quality(&mut self, record: &mut Record) {
-        let iter = self
-            .rng
+        let iter = (&mut self.rng)
             .sample_iter(&self.quality_distribution)
             .take(READ_LEN);
 
