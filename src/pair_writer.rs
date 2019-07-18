@@ -1,6 +1,7 @@
 use std::io::{self, Write};
 
 use noodles::formats::fastq::{self, Record};
+use rand::Rng;
 
 use crate::Generator;
 
@@ -20,7 +21,10 @@ where
         PairWriter { writer_1, writer_2 }
     }
 
-    pub fn write(&mut self, mut generator: Generator, iterations: i32) -> io::Result<()> {
+    pub fn write<R>(&mut self, mut generator: Generator<R>, iterations: i32) -> io::Result<()>
+    where
+        R: Rng,
+    {
         let mut r = Record::default();
         let mut s = Record::default();
 
