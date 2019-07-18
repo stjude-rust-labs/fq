@@ -20,12 +20,12 @@ const MAX_X: u32 = 10000;
 const MAX_Y: u32 = 10000;
 
 /// A FASTQ block generator.
-pub struct Generator {
+pub struct Generator<R> {
     instrument: String,
     run_number: i32,
     flow_cell_id: String,
 
-    rng: SmallRng,
+    rng: R,
     lane_range: Uniform<u32>,
     tile_range: Uniform<u32>,
     x_pos_range: Uniform<u32>,
@@ -34,8 +34,51 @@ pub struct Generator {
     quality_distribution: Character,
 }
 
-impl Generator {
-    /// Creates a new `Generator` with a given `SmallRng`.
+impl Generator<SmallRng> {
+    /// Creates a `Generator<SmallRng>` seeded by the system.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::Generator;
+    /// let _ = Generator::new();
+    /// ```
+    pub fn new() -> Generator<SmallRng> {
+        Generator::default()
+    }
+
+    /// Creates a `Generator<SmallRng>` from a given seed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::Generator;
+    ///
+    /// let seed = [
+    ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
+    ///     0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
+    /// ];
+    ///
+    /// let _ = Generator::from_seed(seed);
+    /// ```
+    pub fn from_seed(seed: [u8; 16]) -> Generator<SmallRng> {
+        let rng = SmallRng::from_seed(seed);
+        Generator::from_rng(rng)
+    }
+}
+
+impl Default for Generator<SmallRng> {
+    fn default() -> Generator<SmallRng> {
+        let rng = SmallRng::from_entropy();
+        Generator::from_rng(rng)
+    }
+}
+
+impl<R> Generator<R>
+where
+    R: Rng,
+{
+    /// Creates a new `Generator` with a given `Rng`.
     ///
     /// # Examples
     ///
@@ -48,7 +91,7 @@ impl Generator {
     /// let _ = Generator::from_rng(rng);
     /// # }
     /// ```
-    pub fn from_rng(mut rng: SmallRng) -> Generator {
+    pub fn from_rng(mut rng: R) -> Generator<R> {
         let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
         let run_number = rng.gen_range(1, 1000 + 1);
         let flow_cell_id = gen_flow_cell_id(&mut rng, FLOW_CELL_ID_LEN);
@@ -74,37 +117,6 @@ impl Generator {
             sequence_distribution,
             quality_distribution,
         }
-    }
-
-    /// Creates a `Generator` from a given seed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fqlib::Generator;
-    ///
-    /// let seed = [
-    ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
-    ///     0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
-    /// ];
-    ///
-    /// let _ = Generator::from_seed(seed);
-    /// ```
-    pub fn from_seed(seed: [u8; 16]) -> Generator {
-        let rng = SmallRng::from_seed(seed);
-        Generator::from_rng(rng)
-    }
-
-    /// Creates a `Generator` seeded by the system.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fqlib::Generator;
-    /// let _ = Generator::new();
-    /// ```
-    pub fn new() -> Generator {
-        Generator::default()
     }
 
     /// Returns a freshly generated block.
@@ -198,20 +210,16 @@ impl Generator {
     }
 }
 
-impl Default for Generator {
-    fn default() -> Generator {
-        let rng = SmallRng::from_entropy();
-        Generator::from_rng(rng)
-    }
-}
-
 fn clear_record(record: &mut Record) {
     record.name_mut().clear();
     record.sequence_mut().clear();
     record.quality_mut().clear();
 }
 
-fn gen_flow_cell_id(rng: &mut SmallRng, len: usize) -> String {
+fn gen_flow_cell_id<R>(rng: &mut R, len: usize) -> String
+where
+    R: Rng,
+{
     let distribution = Character::new(UPPER_ALPHA_CHARSET);
     let bytes = rng.sample_iter(&distribution).take(len).collect();
     String::from_utf8(bytes).unwrap()
