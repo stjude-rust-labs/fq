@@ -54,10 +54,7 @@ where
 const ID_START_OFFSET: usize = 1;
 
 fn name_id(name: &[u8]) -> &[u8] {
-    let pos = name
-        .iter()
-        .rev()
-        .position(|&b| b == b'/' || b == b' ');
+    let pos = name.iter().rev().position(|&b| b == b'/' || b == b' ');
 
     if let Some(i) = pos {
         let len = name.len();
