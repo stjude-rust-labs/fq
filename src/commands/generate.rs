@@ -26,21 +26,17 @@ pub fn generate(matches: &ArgMatches) {
 
     let generator = Generator::new();
 
-    let w1 = match fastq::writer::create(r1_output_pathname) {
-        Ok(w) => w,
-        Err(e) => exit_with_io_error(&e, Some(r1_output_pathname)),
-    };
+    let w1 = fastq::writer::create(r1_output_pathname)
+        .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_output_pathname)));
 
-    let w2 = match fastq::writer::create(r2_output_pathname) {
-        Ok(w) => w,
-        Err(e) => exit_with_io_error(&e, Some(r2_output_pathname)),
-    };
+    let w2 = fastq::writer::create(r2_output_pathname)
+        .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_output_pathname)));
 
     let mut writer = PairWriter::new(w1, w2);
 
-    if let Err(e) = writer.write(generator, num_blocks) {
-        exit_with_io_error(&e, None);
-    }
+    writer
+        .write(generator, num_blocks)
+        .unwrap_or_else(|e| exit_with_io_error(&e, None));
 
     info!("fq-generate end");
 }

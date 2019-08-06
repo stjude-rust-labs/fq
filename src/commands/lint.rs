@@ -80,10 +80,9 @@ fn validate_single(
     let mut block_no = 0;
 
     loop {
-        let bytes_read = match reader.read_record(&mut block) {
-            Ok(len) => len,
-            Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
-        };
+        let bytes_read = reader
+            .read_record(&mut block)
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
         if bytes_read == 0 {
             break;
@@ -92,9 +91,9 @@ fn validate_single(
         record::reset(&mut block);
 
         for validator in &single_read_validators {
-            if let Err(e) = validator.validate(&block) {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
-            }
+            validator.validate(&block).unwrap_or_else(|e| {
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no)
+            });
         }
 
         block_no += 1;
@@ -141,15 +140,13 @@ fn validate_pair(
     let mut block_no = 0;
 
     loop {
-        let r1_len = match reader_1.read_record(&mut b) {
-            Ok(len) => len,
-            Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
-        };
+        let r1_len = reader_1
+            .read_record(&mut b)
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
-        let r2_len = match reader_2.read_record(&mut d) {
-            Ok(len) => len,
-            Err(e) => exit_with_io_error(&e, Some(r2_input_pathname)),
-        };
+        let r2_len = reader_2
+            .read_record(&mut d)
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_input_pathname)));
 
         if r1_len == 0 && r2_len > 0 {
             exit_with_io_error(&unexpected_eof(), Some(r1_input_pathname));
@@ -167,19 +164,19 @@ fn validate_pair(
         }
 
         for validator in &single_read_validators {
-            if let Err(e) = validator.validate(&b) {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
-            }
+            validator.validate(&b).unwrap_or_else(|e| {
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no)
+            });
 
-            if let Err(e) = validator.validate(&d) {
-                handle_validation_error(lint_mode, e, r2_input_pathname, block_no);
-            }
+            validator.validate(&d).unwrap_or_else(|e| {
+                handle_validation_error(lint_mode, e, r2_input_pathname, block_no)
+            });
         }
 
         for validator in &paired_read_validators {
-            if let Err(e) = validator.validate(&b, &d) {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
-            }
+            validator.validate(&b, &d).unwrap_or_else(|e| {
+                handle_validation_error(lint_mode, e, r1_input_pathname, block_no)
+            });
         }
 
         block_no += 1;
@@ -192,19 +189,16 @@ fn validate_pair(
         return;
     }
 
-    let mut reader = match fastq::reader::open(r1_input_pathname) {
-        Ok(r) => r,
-        Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
-    };
+    let mut reader = fastq::reader::open(r1_input_pathname)
+        .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
     let mut block = Record::default();
     let mut block_no = 0;
 
     loop {
-        let bytes_read = match reader.read_record(&mut block) {
-            Ok(len) => len,
-            Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
-        };
+        let bytes_read = reader
+            .read_record(&mut block)
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
         if bytes_read == 0 {
             break;
@@ -212,9 +206,9 @@ fn validate_pair(
 
         record::reset(&mut block);
 
-        if let Err(e) = duplicate_name_validator.validate(&block) {
-            handle_validation_error(lint_mode, e, r1_input_pathname, block_no);
-        }
+        duplicate_name_validator
+            .validate(&block)
+            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_input_pathname, block_no));
 
         block_no += 1;
     }
@@ -244,18 +238,14 @@ pub fn lint(matches: &ArgMatches) {
 
     info!("fq-lint start");
 
-    let r1 = match fastq::reader::open(r1_input_pathname) {
-        Ok(r) => r,
-        Err(e) => exit_with_io_error(&e, Some(r1_input_pathname)),
-    };
+    let r1 = fastq::reader::open(r1_input_pathname)
+        .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
     if let Some(r2_input_pathname) = r2_input_pathname {
         info!("validating paired end reads");
 
-        let r2 = match fastq::reader::open(r2_input_pathname) {
-            Ok(r) => r,
-            Err(e) => exit_with_io_error(&e, Some(r2_input_pathname)),
-        };
+        let r2 = fastq::reader::open(r2_input_pathname)
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_input_pathname)));
 
         validate_pair(
             r1,
