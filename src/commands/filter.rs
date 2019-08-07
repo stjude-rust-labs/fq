@@ -8,6 +8,8 @@ use clap::ArgMatches;
 use log::info;
 use noodles::formats::fastq;
 
+use super::exit_with_io_error;
+
 fn copy_filtered<R, W>(
     mut reader: fastq::Reader<R>,
     names: &HashSet<Vec<u8>>,
@@ -73,9 +75,9 @@ pub fn filter(matches: &ArgMatches) {
 
     info!("reading names");
 
-    let file = File::open(names_src).unwrap();
+    let file = File::open(names_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(names_src)));
     let reader = BufReader::new(file);
-    let names = read_names(reader).unwrap();
+    let names = read_names(reader).unwrap_or_else(|e| exit_with_io_error(&e, Some(names_src)));
 
     info!("read {} names", names.len());
 
@@ -86,8 +88,8 @@ pub fn filter(matches: &ArgMatches) {
 
     info!("filtering fastq");
 
-    let reader = fastq::reader::open(src).unwrap();
-    copy_filtered(reader, &names, writer).unwrap();
+    let reader = fastq::reader::open(src).unwrap_or_else(|e| exit_with_io_error(&e, Some(src)));
+    copy_filtered(reader, &names, writer).unwrap_or_else(|e| exit_with_io_error(&e, None));
 
     info!("fq-filter end");
 }
