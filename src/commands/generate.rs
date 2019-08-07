@@ -1,20 +1,10 @@
-use std::io;
-use std::process;
-
 use clap::{value_t, ArgMatches};
 use log::info;
 use noodles::formats::fastq;
 
 use crate::{Generator, PairWriter};
 
-fn exit_with_io_error(error: &io::Error, pathname: Option<&str>) -> ! {
-    match pathname {
-        Some(p) => eprintln!("{}: {}", error, p),
-        None => eprintln!("{}", error),
-    }
-
-    process::exit(1);
-}
+use super::exit_with_io_error;
 
 pub fn generate(matches: &ArgMatches) {
     let r1_output_pathname = matches.value_of("out1").unwrap();

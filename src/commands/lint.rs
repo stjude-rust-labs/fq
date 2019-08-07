@@ -9,6 +9,8 @@ use crate::record;
 use crate::validators::single::DuplicateNameValidator;
 use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
+use super::exit_with_io_error;
+
 fn unexpected_eof() -> io::Error {
     io::Error::new(io::ErrorKind::UnexpectedEof, "unexpected EOF")
 }
@@ -53,15 +55,6 @@ fn handle_validation_error(
         LintMode::Panic => exit_with_validation_error(error, pathname, block_no),
         LintMode::Log => log_validation_error(error, pathname, block_no),
     }
-}
-
-fn exit_with_io_error(error: &io::Error, pathname: Option<&str>) -> ! {
-    match pathname {
-        Some(p) => eprintln!("{}: {}", error, p),
-        None => eprintln!("{}", error),
-    }
-
-    process::exit(1);
 }
 
 fn validate_single(
