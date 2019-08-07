@@ -7,6 +7,9 @@
   * New `filter` command. This accepts a whitelist of record read names to keep
     in the output FASTQ.
 
+  * Add `Dockerfile` to build a self-contained image for `fq`. Build with
+    `docker build --tag fqlib .`.
+
   * Show git commit ID and date in display version, e.g., when using
     `--version`. This makes it easier to know the exact build of fqlib being
     used.
