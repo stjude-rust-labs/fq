@@ -42,14 +42,10 @@ fn read_names<R>(reader: R) -> io::Result<HashSet<Vec<u8>>>
 where
     R: BufRead,
 {
-    let mut names = HashSet::new();
-
-    for result in reader.lines() {
-        let line = result?;
-        names.insert(line.into_bytes());
-    }
-
-    Ok(names)
+    reader
+        .lines()
+        .map(|res| res.map(|line| line.into_bytes()))
+        .collect()
 }
 
 // Names always begin with an `@` character.
