@@ -26,7 +26,40 @@ $ docker build --tag fqlib fqlib
 
 ## Usage
 
-fqlib provides two subcommands for FASTQ generation and validation.
+fqlib provides subcommands for filtering, generating, and validating FASTQ
+files.
+
+### filter
+
+**fq filter** takes a whitelist of record names and filters a given FASTQ file.
+The result includes only the records in the whitelist.
+
+#### Usage
+
+```
+fq-filter
+Filters a FASTQ from a whitelist of names
+
+USAGE:
+    fq filter <src> --names <PATH>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --names <PATH>    Whitelist of record names
+
+ARGS:
+    <src>    Source FASTQ
+```
+
+#### Examples
+
+```sh
+# Filters an input FASTQ using the given whitelist.
+$ fq filter --names whitelist.txt in.fastq
+```
 
 ### generate
 
