@@ -2,7 +2,7 @@ use noodles::formats::fastq::Record;
 
 use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
-/// [S004] (low) Validator to check if all four block lines (name, sequence, plus line, and
+/// [S004] (low) Validator to check if all four record lines (name, sequence, plus line, and
 /// quality) are present.
 pub struct CompleteValidator;
 
@@ -12,7 +12,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete block: name is empty"),
+                &String::from("Incomplete record: name is empty"),
                 LineType::Name,
                 Some(1),
             ))
@@ -26,7 +26,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete block: sequence is empty"),
+                &String::from("Incomplete record: sequence is empty"),
                 LineType::Sequence,
                 Some(1),
             ))
@@ -40,7 +40,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete block: plus line is empty"),
+                &String::from("Incomplete record: plus line is empty"),
                 LineType::PlusLine,
                 Some(1),
             ))
@@ -54,7 +54,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete block: quality is empty"),
+                &String::from("Incomplete record: quality is empty"),
                 LineType::Quality,
                 Some(1),
             ))

@@ -107,8 +107,8 @@ ARGS:
 
 #### Validators
 
-_validate_ includes a set of validators that run on single blocks or block
-pairs. By default, blocks are validated with all rules, but validators can be
+_validate_ includes a set of validators that run on single or paired records.
+By default, records are validated with all rules, but validators can be
 disabled using `--disable-valdiator CODE`, where `CODE` is one of validators
 listed below.
 
@@ -119,10 +119,10 @@ listed below.
 | S001 | low    | PlusLine          | Plus line starts with a "+".
 | S002 | medium | Alphabet          | All characters in sequence line are one of "ACGTN", case-insensitive.
 | S003 | high   | Name              | Name line starts with an "@".
-| S004 | low    | Complete          | All four block lines (name, sequence, plus line, and quality) are present.
+| S004 | low    | Complete          | All four record lines (name, sequence, plus line, and quality) are present.
 | S005 | high   | ConsistentSeqQual | Sequence and quality lengths are the same.
 | S006 | medium | QualityString     | All characters in quality line are between "!" and "~" (ordinal values).
-| S007 | high   | DuplicateName     | All block names are unique.
+| S007 | high   | DuplicateName     | All record names are unique.
 
 ##### Paired
 

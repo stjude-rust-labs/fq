@@ -1,4 +1,4 @@
-//! Validators that use blocks from a single read.
+//! Validators that use records from a single read.
 
 use noodles::formats::fastq::Record;
 

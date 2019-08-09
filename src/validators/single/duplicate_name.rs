@@ -8,7 +8,7 @@ use crate::validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel
 const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
 const INITIAL_CAPACITY: usize = 10_000_000;
 
-/// [S007] (high) Validator to check if all block names are unique.
+/// [S007] (high) Validator to check if all record names are unique.
 ///
 /// The implementation of this validator uses a Bloom filter, a probabilistic data structure.
 /// Because of this, it must be used in two passes: the first to add all names to the set
@@ -53,7 +53,7 @@ impl DuplicateNameValidator {
 }
 
 impl DuplicateNameValidator {
-    /// Adds a block name to the set.
+    /// Adds a record name to the set.
     ///
     /// This also records possible duplicates to be used in the validation pass.
     ///

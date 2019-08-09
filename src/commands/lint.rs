@@ -15,11 +15,11 @@ fn unexpected_eof() -> io::Error {
     io::Error::new(io::ErrorKind::UnexpectedEof, "unexpected EOF")
 }
 
-fn build_error_message(error: validators::Error, pathname: &str, block_no: usize) -> String {
+fn build_error_message(error: validators::Error, pathname: &str, record_no: usize) -> String {
     let mut message = String::new();
 
     let line_offset = error.line_type as usize;
-    let line_no = block_no * 4 + line_offset + 1;
+    let line_no = record_no * 4 + line_offset + 1;
     message.push_str(&format!("{}:{}:", pathname, line_no));
 
     if let Some(col_no) = error.col_no {
@@ -34,14 +34,14 @@ fn build_error_message(error: validators::Error, pathname: &str, block_no: usize
     message
 }
 
-fn exit_with_validation_error(error: validators::Error, pathname: &str, block_no: usize) -> ! {
-    let message = build_error_message(error, pathname, block_no);
+fn exit_with_validation_error(error: validators::Error, pathname: &str, record_no: usize) -> ! {
+    let message = build_error_message(error, pathname, record_no);
     eprintln!("{}", message);
     process::exit(1);
 }
 
-fn log_validation_error(error: validators::Error, pathname: &str, block_no: usize) {
-    let message = build_error_message(error, pathname, block_no);
+fn log_validation_error(error: validators::Error, pathname: &str, record_no: usize) {
+    let message = build_error_message(error, pathname, record_no);
     error!("{}", message);
 }
 
@@ -49,11 +49,11 @@ fn handle_validation_error(
     lint_mode: LintMode,
     error: validators::Error,
     pathname: &str,
-    block_no: usize,
+    record_no: usize,
 ) {
     match lint_mode {
-        LintMode::Panic => exit_with_validation_error(error, pathname, block_no),
-        LintMode::Log => log_validation_error(error, pathname, block_no),
+        LintMode::Panic => exit_with_validation_error(error, pathname, record_no),
+        LintMode::Log => log_validation_error(error, pathname, record_no),
     }
 }
 
@@ -69,30 +69,30 @@ fn validate_single(
 
     info!("starting validation");
 
-    let mut block = Record::default();
-    let mut block_no = 0;
+    let mut record = Record::default();
+    let mut record_no = 0;
 
     loop {
         let bytes_read = reader
-            .read_record(&mut block)
+            .read_record(&mut record)
             .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
         if bytes_read == 0 {
             break;
         }
 
-        record::reset(&mut block);
+        record::reset(&mut record);
 
         for validator in &single_read_validators {
-            validator.validate(&block).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no)
+            validator.validate(&record).unwrap_or_else(|e| {
+                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
             });
         }
 
-        block_no += 1;
+        record_no += 1;
     }
 
-    info!("read {} blocks", block_no);
+    info!("read {} records", record_no);
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -130,7 +130,7 @@ fn validate_pair(
 
     let mut b = Record::default();
     let mut d = Record::default();
-    let mut block_no = 0;
+    let mut record_no = 0;
 
     loop {
         let r1_len = reader_1
@@ -158,24 +158,24 @@ fn validate_pair(
 
         for validator in &single_read_validators {
             validator.validate(&b).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no)
+                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
             });
 
             validator.validate(&d).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r2_input_pathname, block_no)
+                handle_validation_error(lint_mode, e, r2_input_pathname, record_no)
             });
         }
 
         for validator in &paired_read_validators {
             validator.validate(&b, &d).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, block_no)
+                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
             });
         }
 
-        block_no += 1;
+        record_no += 1;
     }
 
-    info!("read {} * 2 blocks", block_no);
+    info!("read {} * 2 records", record_no);
     info!("starting validation (pass 2)");
 
     if !use_special_validator {
@@ -185,28 +185,28 @@ fn validate_pair(
     let mut reader = fastq::reader::open(r1_input_pathname)
         .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
-    let mut block = Record::default();
-    let mut block_no = 0;
+    let mut record = Record::default();
+    let mut record_no = 0;
 
     loop {
         let bytes_read = reader
-            .read_record(&mut block)
+            .read_record(&mut record)
             .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
 
         if bytes_read == 0 {
             break;
         }
 
-        record::reset(&mut block);
+        record::reset(&mut record);
 
         duplicate_name_validator
-            .validate(&block)
-            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_input_pathname, block_no));
+            .validate(&record)
+            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_input_pathname, record_no));
 
-        block_no += 1;
+        record_no += 1;
     }
 
-    info!("read {} blocks", block_no);
+    info!("read {} records", record_no);
 }
 
 pub fn lint(matches: &ArgMatches) {

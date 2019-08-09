@@ -32,8 +32,8 @@ where
         s.plus_line_mut().extend_from_slice(PLUS_LINE);
 
         for _ in 0..iterations {
-            generator.next_block(&mut r);
-            generator.next_block_with_name(r.name(), &mut s);
+            generator.next_record(&mut r);
+            generator.next_record_with_name(r.name(), &mut s);
 
             r.name_mut().extend_from_slice(b"/1");
             s.name_mut().extend_from_slice(b"/2");

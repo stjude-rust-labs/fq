@@ -19,7 +19,7 @@ const TILES: u32 = 60;
 const MAX_X: u32 = 10000;
 const MAX_Y: u32 = 10000;
 
-/// A FASTQ block generator.
+/// A FASTQ record generator.
 pub struct Generator<R> {
     instrument: String,
     run_number: i32,
@@ -119,7 +119,7 @@ where
         }
     }
 
-    /// Returns a freshly generated block.
+    /// Returns a freshly generated record.
     ///
     /// # Examples
     ///
@@ -129,9 +129,9 @@ where
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
-    /// generator.next_block(&mut record);
+    /// generator.next_record(&mut record);
     /// ```
-    pub fn next_block(&mut self, record: &mut Record) {
+    pub fn next_record(&mut self, record: &mut Record) {
         clear_record(record);
 
         self.next_name(record);
@@ -139,7 +139,7 @@ where
         self.next_quality(record);
     }
 
-    /// Returns a freshly generated block, setting the name to the given input.
+    /// Returns a freshly generated record, setting the name to the given input.
     ///
     /// # Examples
     ///
@@ -149,10 +149,10 @@ where
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
-    /// generator.next_block_with_name(b"@fqlib", &mut record);
+    /// generator.next_record_with_name(b"@fqlib", &mut record);
     /// assert_eq!(record.name(), b"@fqlib");
     /// ```
-    pub fn next_block_with_name(&mut self, name: &[u8], record: &mut Record) {
+    pub fn next_record_with_name(&mut self, name: &[u8], record: &mut Record) {
         clear_record(record);
 
         record.name_mut().extend_from_slice(name);
@@ -235,11 +235,11 @@ mod tests {
     ];
 
     #[test]
-    fn test_next_block() {
+    fn test_next_record() {
         let mut generator = Generator::from_seed(SEED);
 
         let mut record = Record::default();
-        generator.next_block(&mut record);
+        generator.next_record(&mut record);
 
         assert_eq!(
             record.name(),
