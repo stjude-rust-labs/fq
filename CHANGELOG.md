@@ -14,6 +14,10 @@
     `--version`. This makes it easier to know the exact build of fqlib being
     used.
 
+### Changed
+
+  * [BREAKING] `generate`: Renamed `--num-blocks` to `--n-records`.
+
 ## [0.2.0] - 2018-11-28
 
 ### Added

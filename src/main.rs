@@ -26,10 +26,10 @@ fn main() {
     let generate_cmd = SubCommand::with_name("generate")
         .about("Generates a random FASTQ file pair")
         .arg(
-            Arg::with_name("num-blocks")
+            Arg::with_name("n-records")
                 .short("n")
-                .long("num-blocks")
-                .help("Number of blocks to generate")
+                .long("n-records")
+                .help("Number of records to generate")
                 .value_name("N")
                 .default_value("10000"),
         )

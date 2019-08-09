@@ -42,17 +42,17 @@ completely random. The sequences do not align to any genome.
 
 ```
 fq-generate
-Generate a random FASTQ file pair
+Generates a random FASTQ file pair
 
 USAGE:
-    fq generate [FLAGS] [OPTIONS] <out1> <out2>
+    fq generate [OPTIONS] <out1> <out2>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -n, --num-blocks <N>    Number of blocks to generate [default: 10000]
+    -n, --n-records <N>    Number of records to generate [default: 10000]
 
 ARGS:
     <out1>    Read 1 output pathname. Output will be gzipped if ends in `.gz`.
@@ -62,11 +62,11 @@ ARGS:
 #### Examples
 
 ```sh
-# Generates the default number of blocks, written to uncompressed files.
+# Generates the default number of records, written to uncompressed files.
 $ fq generate /tmp/r1.fastq /tmp/r2.fastq
 
-# Generates FASTQ paired reads with 32 blocks, written to gzipped outputs.
-$ fq generate --num-blocks 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
+# Generates FASTQ paired reads with 32 records, written to gzipped outputs.
+$ fq generate --n-records 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 ```
 
 ### lint

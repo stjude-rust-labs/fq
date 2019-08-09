@@ -10,7 +10,7 @@ pub fn generate(matches: &ArgMatches) {
     let r1_output_pathname = matches.value_of("out1").unwrap();
     let r2_output_pathname = matches.value_of("out2").unwrap();
 
-    let num_blocks = value_t!(matches, "num-blocks", i32).unwrap_or_else(|e| e.exit());
+    let n_records = value_t!(matches, "n-records", i32).unwrap_or_else(|e| e.exit());
 
     info!("fq-generate start");
 
@@ -25,7 +25,7 @@ pub fn generate(matches: &ArgMatches) {
     let mut writer = PairWriter::new(w1, w2);
 
     writer
-        .write(generator, num_blocks)
+        .write(generator, n_records)
         .unwrap_or_else(|e| exit_with_io_error(&e, None));
 
     info!("fq-generate end");
