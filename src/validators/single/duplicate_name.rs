@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bloom::ScalableBloomFilter;
+use bbloom::ScalableBloomFilter;
 use noodles::formats::fastq::Record;
 
 use crate::validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};

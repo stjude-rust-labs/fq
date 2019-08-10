@@ -15,7 +15,7 @@ lto = "fat"
 codegen-units = 1
 
 [dependencies]
-bloom = { git = "https://github.com/zaeleus/bloom.git" }
+bbloom = { git = "https://github.com/zaeleus/bbloom.git" }
 clap = "2.31.2"
 env_logger = "0.6.0"
 git-testament = "0.1.6"
