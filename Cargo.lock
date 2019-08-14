@@ -167,7 +167,7 @@ dependencies = [
 
 [[package]]
 name = "fqlib"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "bbloom 0.1.0 (git+https://github.com/zaeleus/bbloom.git)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
