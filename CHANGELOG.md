@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.3.1] - 2019-08-14
+
+### Changed
+
+  * Updated dependency `bloom` --> `bbloom` to reflect a name change in the library.
+
 ## [0.3.0] - 2019-08-09
 
 ### Added
