@@ -18,7 +18,7 @@ Alternatively, build the [Docker] image.
 
 ```
 $ git clone https://github.com/stjude/fqlib.git
-$ docker build --tag fqlib fqlib
+$ docker image build --tag fqlib fqlib
 ```
 
 [Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
