@@ -1,4 +1,4 @@
-FROM rust:1.38.0 AS builder
+FROM rust:1.39.0 AS builder
 
 RUN apt-get update \
     && apt-get --yes install --no-install-recommends \
