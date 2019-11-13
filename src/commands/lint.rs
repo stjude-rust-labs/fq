@@ -201,7 +201,9 @@ fn validate_pair(
 
         duplicate_name_validator
             .validate(&record)
-            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_input_pathname, record_no));
+            .unwrap_or_else(|e| {
+                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
+            });
 
         record_no += 1;
     }
