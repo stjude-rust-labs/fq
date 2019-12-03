@@ -10,7 +10,7 @@ use self::single::{
 pub mod paired;
 pub mod single;
 
-use std::str::FromStr;
+use std::{error, fmt, str::FromStr};
 
 use log::info;
 
@@ -54,6 +54,14 @@ impl Error {
         }
     }
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}] {}", self.code, self.message)
+    }
+}
+
+impl error::Error for Error {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LintMode {
