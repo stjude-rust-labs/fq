@@ -38,14 +38,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "bbloom"
 version = "0.1.0"
-source = "git+https://github.com/zaeleus/bbloom.git#52286091c7374ba23ff85631829b76df08ed3067"
+source = "git+https://github.com/zaeleus/bbloom.git?tag=v0.1.0#2c9f61637cfa1a5ea456045a5811f1d5ec601ba1"
 dependencies = [
- "bit-vec 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bit-vec 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "bit-vec"
-version = "0.6.1"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -168,12 +169,12 @@ dependencies = [
 name = "fqlib"
 version = "0.3.1"
 dependencies = [
- "bbloom 0.1.0 (git+https://github.com/zaeleus/bbloom.git)",
+ "bbloom 0.1.0 (git+https://github.com/zaeleus/bbloom.git?tag=v0.1.0)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "git-testament 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "noodles 0.1.0 (git+https://github.com/zaeleus/noodles.git)",
+ "noodles 0.1.0 (git+https://github.com/zaeleus/noodles.git?rev=29afcb400370b3f2124794a43c119b5a8ee3acd3)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -265,7 +266,7 @@ dependencies = [
 [[package]]
 name = "noodles"
 version = "0.1.0"
-source = "git+https://github.com/zaeleus/noodles.git#29afcb400370b3f2124794a43c119b5a8ee3acd3"
+source = "git+https://github.com/zaeleus/noodles.git?rev=29afcb400370b3f2124794a43c119b5a8ee3acd3#29afcb400370b3f2124794a43c119b5a8ee3acd3"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "csv 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -512,8 +513,8 @@ dependencies = [
 "checksum ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
 "checksum atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)" = "1803c647a3ec87095e7ae7acfca019e98de5ec9a7d01343f611cf3152ed71a90"
 "checksum autocfg 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "b671c8fb71b457dd4ae18c4ba1e59aa81793daacc361d82fcd410cef0d491875"
-"checksum bbloom 0.1.0 (git+https://github.com/zaeleus/bbloom.git)" = "<none>"
-"checksum bit-vec 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a4523a10839ffae575fb08aa3423026c8cb4687eef43952afb956229d4f246f7"
+"checksum bbloom 0.1.0 (git+https://github.com/zaeleus/bbloom.git?tag=v0.1.0)" = "<none>"
+"checksum bit-vec 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f59bbe95d4e52a6398ec21238d31577f2b28a9d86807f06ca59d191d8440d0bb"
 "checksum bitflags 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8a606a02debe2813760609f57a64a2ffd27d9fdf5b2f133eaca0b248dd92cdd2"
 "checksum bstr 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "8d6c2c5b58ab920a4f5aeaaca34b4488074e8cc7596af94e6f8c6ff247c60245"
 "checksum byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a7c3dd8985a7111efc5c80b44e23ecdd8c007de8ade3b96595387e812b957cf5"
@@ -538,7 +539,7 @@ dependencies = [
 "checksum memchr 2.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "88579771288728879b57485cc7d6b07d648c9f0141eb955f8ab7f9d45394468e"
 "checksum miniz-sys 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)" = "1e9e3ae51cea1576ceba0dde3d484d30e6e5b86dee0b2d412fe3a16a15c98202"
 "checksum miniz_oxide 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7108aff85b876d06f22503dcce091e29f76733b2bfdd91eebce81f5e68203a10"
-"checksum noodles 0.1.0 (git+https://github.com/zaeleus/noodles.git)" = "<none>"
+"checksum noodles 0.1.0 (git+https://github.com/zaeleus/noodles.git?rev=29afcb400370b3f2124794a43c119b5a8ee3acd3)" = "<none>"
 "checksum num-integer 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)" = "b85e541ef8255f6cf42bbfe4ef361305c6c135d10919ecc26126c4e5ae94bc09"
 "checksum num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "6ba9a427cfca2be13aa6f6403b0b7e7368fe982bfa16fccc450ce74c46cd9b32"
 "checksum ppv-lite86 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "e3cbf9f658cdb5000fcf6f362b8ea2ba154b9f146a61c7a20d647034c6b6561b"

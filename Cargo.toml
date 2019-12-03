@@ -16,10 +16,10 @@ lto = "fat"
 codegen-units = 1
 
 [dependencies]
-bbloom = { git = "https://github.com/zaeleus/bbloom.git" }
+bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 clap = "2.31.2"
 env_logger = "0.7.0"
 git-testament = "0.1.6"
 log = "0.4.1"
-noodles = { git = "https://github.com/zaeleus/noodles.git" }
+noodles = { git = "https://github.com/zaeleus/noodles.git", rev = "29afcb400370b3f2124794a43c119b5a8ee3acd3" }
 rand = { version = "0.7.0", features = ["small_rng"] }
