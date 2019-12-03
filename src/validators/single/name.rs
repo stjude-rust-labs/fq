@@ -24,7 +24,7 @@ impl SingleReadValidator for NameValidator {
             _ => Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Does not start with an '@'"),
+                String::from("Does not start with an '@'"),
                 LineType::Name,
                 Some(1),
             )),

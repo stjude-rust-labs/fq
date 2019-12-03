@@ -24,7 +24,7 @@ impl SingleReadValidator for PlusLineValidator {
             _ => Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Does not start with a '+'"),
+                String::from("Does not start with a '+'"),
                 LineType::PlusLine,
                 Some(1),
             )),

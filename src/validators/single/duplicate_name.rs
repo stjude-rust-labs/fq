@@ -116,7 +116,7 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
                 return Err(Error::new(
                     code,
                     name,
-                    &format!("Duplicate found: '{}'", String::from_utf8_lossy(r.name())),
+                    format!("Duplicate found: '{}'", String::from_utf8_lossy(r.name())),
                     LineType::Name,
                     Some(1),
                 ));

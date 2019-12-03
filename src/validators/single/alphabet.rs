@@ -37,7 +37,7 @@ impl SingleReadValidator for AlphabetValidator {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
-                    &format!("Invalid character: {}", b as char),
+                    format!("Invalid character: {}", b as char),
                     LineType::Sequence,
                     Some(i + 1),
                 ));

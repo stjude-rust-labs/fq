@@ -28,7 +28,7 @@ impl SingleReadValidator for QualityStringValidator {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
-                    &format!("Invalid character '{}'", b as char),
+                    format!("Invalid character '{}'", b as char),
                     LineType::Quality,
                     Some(i + 1),
                 ));

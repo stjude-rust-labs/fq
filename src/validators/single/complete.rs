@@ -12,7 +12,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete record: name is empty"),
+                String::from("Incomplete record: name is empty"),
                 LineType::Name,
                 Some(1),
             ))
@@ -26,7 +26,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete record: sequence is empty"),
+                String::from("Incomplete record: sequence is empty"),
                 LineType::Sequence,
                 Some(1),
             ))
@@ -40,7 +40,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete record: plus line is empty"),
+                String::from("Incomplete record: plus line is empty"),
                 LineType::PlusLine,
                 Some(1),
             ))
@@ -54,7 +54,7 @@ impl CompleteValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &String::from("Incomplete record: quality is empty"),
+                String::from("Incomplete record: quality is empty"),
                 LineType::Quality,
                 Some(1),
             ))

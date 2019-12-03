@@ -38,13 +38,16 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(
+    pub fn new<I>(
         code: &str,
         name: &str,
-        message: &str,
+        message: I,
         line_type: LineType,
         col_no: Option<usize>,
-    ) -> Error {
+    ) -> Error
+    where
+        I: Into<String>,
+    {
         Error {
             code: code.into(),
             name: name.into(),

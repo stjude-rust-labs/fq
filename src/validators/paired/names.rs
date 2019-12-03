@@ -23,7 +23,7 @@ impl PairedReadValidator for NamesValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &format!(
+                format!(
                     "Names do not match (expected '{}', got '{}')",
                     String::from_utf8_lossy(r.name()),
                     String::from_utf8_lossy(s.name()),
