@@ -7,14 +7,14 @@ RUN apt-get update \
 
 RUN rustup target add x86_64-unknown-linux-musl
 
-COPY Cargo.lock Cargo.toml /tmp/fqlib/
-COPY src/ /tmp/fqlib/src/
+COPY Cargo.lock Cargo.toml /app/
+COPY src/ /app/src/
 
 RUN cargo build \
       --release \
-      --manifest-path /tmp/fqlib/Cargo.toml \
+      --manifest-path /app/Cargo.toml \
       --target x86_64-unknown-linux-musl
 
 FROM alpine:3.10
 
-COPY --from=builder /tmp/fqlib/target/x86_64-unknown-linux-musl/release/fq /usr/local/bin/
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/fq /usr/local/bin/
