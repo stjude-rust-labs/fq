@@ -7,6 +7,7 @@ RUN apt-get update \
 
 RUN rustup target add x86_64-unknown-linux-musl
 
+COPY .git /app/.git
 COPY Cargo.lock Cargo.toml /app/
 COPY src/ /app/src/
 
