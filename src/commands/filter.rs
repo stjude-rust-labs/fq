@@ -6,7 +6,7 @@ use std::{
 
 use clap::ArgMatches;
 use log::info;
-use noodles::formats::fastq;
+use noodles_fastq as fastq;
 
 use super::exit_with_io_error;
 
@@ -94,7 +94,7 @@ pub fn filter(matches: &ArgMatches) {
 mod tests {
     use super::*;
 
-    use noodles::formats::fastq;
+    use noodles_fastq as fastq;
 
     #[test]
     fn test_copy_filtered() {

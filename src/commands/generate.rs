@@ -1,6 +1,6 @@
 use clap::{value_t, ArgMatches};
 use log::info;
-use noodles::formats::fastq;
+use noodles_fastq as fastq;
 
 use crate::{Generator, PairWriter};
 

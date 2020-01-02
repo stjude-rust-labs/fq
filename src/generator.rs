@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
@@ -125,7 +125,7 @@ where
     ///
     /// ```
     /// use fqlib::Generator;
-    /// use noodles::formats::fastq::Record;
+    /// use noodles_fastq::Record;
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
@@ -145,7 +145,7 @@ where
     ///
     /// ```
     /// use fqlib::Generator;
-    /// use noodles::formats::fastq::Record;
+    /// use noodles_fastq::Record;
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
@@ -225,7 +225,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use noodles::formats::fastq::Record;
+    use noodles_fastq::Record;
 
     use super::*;
 

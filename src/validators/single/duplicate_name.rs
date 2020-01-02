@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bbloom::ScalableBloomFilter;
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 
 use crate::validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};
 
@@ -19,7 +19,7 @@ const INITIAL_CAPACITY: usize = 10_000_000;
 ///
 /// ```
 /// use fqlib::validators::single::{DuplicateNameValidator, SingleReadValidatorMut};
-/// use noodles::formats::fastq::Record;
+/// use noodles_fastq::Record;
 ///
 /// let mut validator = DuplicateNameValidator::new();
 ///
@@ -61,7 +61,7 @@ impl DuplicateNameValidator {
     ///
     /// ```
     /// use fqlib::validators::single::DuplicateNameValidator;
-    /// use noodles::formats::fastq::Record;
+    /// use noodles_fastq::Record;
     ///
     /// let mut validator = DuplicateNameValidator::new();
     /// let record = Record::new("@fqlib:1", "", "", "");

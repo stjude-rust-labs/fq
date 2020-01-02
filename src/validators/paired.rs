@@ -1,6 +1,6 @@
 //! Validators that use records from paired reads.
 
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 
 use crate::validators::{Error, ValidationLevel};
 

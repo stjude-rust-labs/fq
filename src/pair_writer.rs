@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use noodles::formats::fastq::{self, Record};
+use noodles_fastq::{self as fastq, Record};
 use rand::Rng;
 
 use crate::Generator;

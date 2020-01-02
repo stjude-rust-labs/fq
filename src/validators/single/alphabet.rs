@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 
 use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
@@ -57,7 +57,7 @@ impl Default for AlphabetValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles::formats::fastq::Record;
+    use noodles_fastq::Record;
 
     use super::AlphabetValidator;
     use crate::validators::{SingleReadValidator, ValidationLevel};

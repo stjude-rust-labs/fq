@@ -1,4 +1,4 @@
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 
 use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
@@ -41,7 +41,7 @@ impl SingleReadValidator for QualityStringValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles::formats::fastq::Record;
+    use noodles_fastq::Record;
 
     use super::QualityStringValidator;
     use crate::validators::{SingleReadValidator, ValidationLevel};

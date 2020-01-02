@@ -1,4 +1,4 @@
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 
 use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
 
@@ -34,7 +34,7 @@ impl SingleReadValidator for PlusLineValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles::formats::fastq::Record;
+    use noodles_fastq::Record;
 
     use super::PlusLineValidator;
     use crate::validators::{SingleReadValidator, ValidationLevel};

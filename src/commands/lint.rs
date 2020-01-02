@@ -3,7 +3,7 @@ use std::process;
 
 use clap::{value_t, ArgMatches};
 use log::{error, info};
-use noodles::formats::fastq::{self, Record};
+use noodles_fastq::{self as fastq, Record};
 
 use crate::record;
 use crate::validators::single::DuplicateNameValidator;

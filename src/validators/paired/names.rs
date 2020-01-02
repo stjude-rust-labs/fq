@@ -1,4 +1,4 @@
-use noodles::formats::fastq::Record;
+use noodles_fastq::Record;
 
 use crate::validators::{Error, LineType, PairedReadValidator, ValidationLevel};
 
@@ -39,7 +39,7 @@ impl PairedReadValidator for NamesValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles::formats::fastq::Record;
+    use noodles_fastq::Record;
 
     use super::NamesValidator;
     use crate::validators::{PairedReadValidator, ValidationLevel};
