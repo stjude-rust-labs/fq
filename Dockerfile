@@ -16,6 +16,6 @@ RUN cargo build \
       --manifest-path /app/Cargo.toml \
       --target x86_64-unknown-linux-musl
 
-FROM alpine:3.10
+FROM alpine:3.11
 
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/fq /usr/local/bin/
