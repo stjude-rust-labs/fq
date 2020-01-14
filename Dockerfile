@@ -1,9 +1,9 @@
 FROM rust:1.40.0-buster AS builder
 
 RUN apt-get update \
-    && apt-get --yes install --no-install-recommends \
-      musl-tools \
-    && rm -r /var/lib/apt/lists/*
+      && apt-get --yes install --no-install-recommends \
+        musl-tools \
+      && rm -r /var/lib/apt/lists/*
 
 RUN rustup target add x86_64-unknown-linux-musl
 
