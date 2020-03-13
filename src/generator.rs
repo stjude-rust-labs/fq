@@ -84,12 +84,9 @@ where
     ///
     /// ```
     /// # use rand::{SeedableRng, rngs::SmallRng};
-    /// #
-    /// # fn main() {
     /// use fqlib::Generator;
     /// let rng = SmallRng::from_entropy();
     /// let _ = Generator::from_rng(rng);
-    /// # }
     /// ```
     pub fn from_rng(mut rng: R) -> Generator<R> {
         let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
