@@ -1,4 +1,4 @@
-FROM rust:1.42.0-buster AS builder
+FROM rust:1.43.0-buster AS builder
 
 RUN apt-get update \
       && apt-get --yes install --no-install-recommends \
