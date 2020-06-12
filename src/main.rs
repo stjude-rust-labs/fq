@@ -26,6 +26,12 @@ fn main() {
     let generate_cmd = SubCommand::with_name("generate")
         .about("Generates a random FASTQ file pair")
         .arg(
+            Arg::with_name("seed")
+                .long("seed")
+                .value_name("N")
+                .help("Seed to use for the random number generator"),
+        )
+        .arg(
             Arg::with_name("n-records")
                 .short("n")
                 .long("n-records")

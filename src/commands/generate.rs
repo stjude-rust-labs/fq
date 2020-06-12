@@ -14,7 +14,12 @@ pub fn generate(matches: &ArgMatches) {
 
     info!("fq-generate start");
 
-    let generator = Generator::new();
+    let generator = if matches.is_present("seed") {
+        let seed = value_t!(matches, "seed", u64).unwrap_or_else(|e| e.exit());
+        Generator::seed_from_u64(seed)
+    } else {
+        Generator::new()
+    };
 
     let w1 = fastq::writer::create(r1_output_pathname)
         .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_output_pathname)));

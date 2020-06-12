@@ -65,6 +65,11 @@ impl Generator<SmallRng> {
         let rng = SmallRng::from_seed(seed);
         Generator::from_rng(rng)
     }
+
+    pub fn seed_from_u64(seed: u64) -> Generator<SmallRng> {
+        let rng = SmallRng::seed_from_u64(seed);
+        Generator::from_rng(rng)
+    }
 }
 
 impl Default for Generator<SmallRng> {

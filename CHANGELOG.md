@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+  * The `generate` command adds a `--seed <u64>` option to seed the random
+    number generator. This is useful to regenerate the same outputs.
+
 ## [0.3.1] - 2019-08-14
 
 ### Changed
