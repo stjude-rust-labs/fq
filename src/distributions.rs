@@ -1,3 +1,7 @@
+mod quality_scores;
+
+pub use quality_scores::QualityScores;
+
 use rand::distributions::{Distribution, Uniform};
 use rand::Rng;
 

@@ -5,10 +5,9 @@ use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
-use crate::distributions::Character;
+use crate::distributions::{Character, QualityScores};
 
 static UPPER_ALPHA_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static QUALITY_CHARSET: &[u8] = b"@ABCDEFGHIJ";
 static NUCLEOBASE_CHARSET: &[u8] = b"AGTC";
 
 const READ_LEN: usize = 101;
@@ -31,7 +30,7 @@ pub struct Generator<R> {
     x_pos_range: Uniform<u32>,
     y_pos_range: Uniform<u32>,
     sequence_distribution: Character,
-    quality_distribution: Character,
+    quality_distribution: QualityScores,
 }
 
 impl Generator<SmallRng> {
@@ -104,7 +103,7 @@ where
         let y_pos_range = Uniform::new(1, MAX_Y + 1);
 
         let sequence_distribution = Character::new(NUCLEOBASE_CHARSET);
-        let quality_distribution = Character::new(QUALITY_CHARSET);
+        let quality_distribution = QualityScores::default();
 
         Generator {
             instrument,
@@ -200,7 +199,8 @@ where
     fn next_quality(&mut self, record: &mut Record) {
         let iter = (&mut self.rng)
             .sample_iter(&self.quality_distribution)
-            .take(READ_LEN);
+            .take(READ_LEN)
+            .map(|phred| phred + 33);
 
         let quality = record.quality_mut();
 
@@ -248,6 +248,6 @@ mod tests {
             "@fqlib1:950:DFZYAUO:3:33:7515:3404".as_bytes()
         );
         assert_eq!(record.sequence(), "TTGATTGAAAATTAGATAATACATCAATTCGGGGCCTAATAGTTGGGGTAAGCAAAGGCAGTCATTGACATGGTATCGTTTGCCCTTCACAGCTTACAACG".as_bytes());
-        assert_eq!(record.quality(), "FFI@@AEFEGJG@DDDBBCCIJE@DDCACIDFFJE@GIB@@J@AFEDBCGBB@BAAGDFBJHGA@CEBBGGBJHFGG@C@A@HCAFGGGCFIHIFFAEHDC".as_bytes());
+        assert_eq!(record.quality(), "66=.115657:8345532549:64555347576950783428226554573132227563;7731553368399677242129447964689;66359544".as_bytes());
     }
 }

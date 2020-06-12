@@ -7,6 +7,12 @@
   * The `generate` command adds a `--seed <u64>` option to seed the random
     number generator. This is useful to regenerate the same outputs.
 
+### Changed
+
+  * The FASTQ generator now uses the Sanger/Illumina 1.8+ range of
+    quality scores ([0, 41]). It samples scores on a normal distribution (μ =
+    20.5, σ = 2.61).
+
 ## [0.3.1] - 2019-08-14
 
 ### Changed
