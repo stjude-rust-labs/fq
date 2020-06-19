@@ -87,14 +87,14 @@ fn main() {
                 .number_of_values(1),
         )
         .arg(
-            Arg::with_name("in1")
-                .help("Read 1 input pathname. Accepts both raw and gzipped FASTQ inputs.")
+            Arg::with_name("r1-src")
+                .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
                 .required(true),
         )
         .arg(
-            Arg::with_name("in2")
-                .help("Read 2 input pathname. Accepts both raw and gzipped FASTQ inputs.")
+            Arg::with_name("r2-src")
+                .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(2),
         );
 

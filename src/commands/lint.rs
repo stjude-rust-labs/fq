@@ -62,7 +62,7 @@ fn validate_single(
     single_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
-    r1_input_pathname: &str,
+    r1_src: &str,
 ) {
     let (single_read_validators, _) =
         validators::filter_validators(single_read_validation_level, None, disabled_validators);
@@ -75,7 +75,7 @@ fn validate_single(
     loop {
         let bytes_read = reader
             .read_record(&mut record)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
         if bytes_read == 0 {
             break;
@@ -84,9 +84,9 @@ fn validate_single(
         record::reset(&mut record);
 
         for validator in &single_read_validators {
-            validator.validate(&record).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
-            });
+            validator
+                .validate(&record)
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
         }
 
         record_no += 1;
@@ -103,8 +103,8 @@ fn validate_pair(
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
-    r1_input_pathname: &str,
-    r2_input_pathname: &str,
+    r1_src: &str,
+    r2_src: &str,
 ) {
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
@@ -135,16 +135,16 @@ fn validate_pair(
     loop {
         let r1_len = reader_1
             .read_record(&mut b)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
         let r2_len = reader_2
             .read_record(&mut d)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_input_pathname)));
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_src)));
 
         if r1_len == 0 && r2_len > 0 {
-            exit_with_io_error(&unexpected_eof(), Some(r1_input_pathname));
+            exit_with_io_error(&unexpected_eof(), Some(r1_src));
         } else if r2_len == 0 && r1_len > 0 {
-            exit_with_io_error(&unexpected_eof(), Some(r2_input_pathname));
+            exit_with_io_error(&unexpected_eof(), Some(r2_src));
         } else if r1_len == 0 && r2_len == 0 {
             break;
         }
@@ -157,19 +157,19 @@ fn validate_pair(
         }
 
         for validator in &single_read_validators {
-            validator.validate(&b).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
-            });
+            validator
+                .validate(&b)
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
 
-            validator.validate(&d).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r2_input_pathname, record_no)
-            });
+            validator
+                .validate(&d)
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r2_src, record_no));
         }
 
         for validator in &paired_read_validators {
-            validator.validate(&b, &d).unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
-            });
+            validator
+                .validate(&b, &d)
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
         }
 
         record_no += 1;
@@ -182,8 +182,8 @@ fn validate_pair(
         return;
     }
 
-    let mut reader = fastq::reader::open(r1_input_pathname)
-        .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
+    let mut reader =
+        fastq::reader::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
     let mut record = Record::default();
     let mut record_no = 0;
@@ -191,7 +191,7 @@ fn validate_pair(
     loop {
         let bytes_read = reader
             .read_record(&mut record)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
+            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
         if bytes_read == 0 {
             break;
@@ -201,9 +201,7 @@ fn validate_pair(
 
         duplicate_name_validator
             .validate(&record)
-            .unwrap_or_else(|e| {
-                handle_validation_error(lint_mode, e, r1_input_pathname, record_no)
-            });
+            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
 
         record_no += 1;
     }
@@ -214,8 +212,8 @@ fn validate_pair(
 pub fn lint(matches: &ArgMatches) {
     let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
 
-    let r1_input_pathname = matches.value_of("in1").unwrap();
-    let r2_input_pathname = matches.value_of("in2");
+    let r1_src = matches.value_of("r1-src").unwrap();
+    let r2_src = matches.value_of("r2-src");
 
     let single_read_validation_level =
         value_t!(matches, "single-read-validation-level", ValidationLevel)
@@ -233,14 +231,13 @@ pub fn lint(matches: &ArgMatches) {
 
     info!("fq-lint start");
 
-    let r1 = fastq::reader::open(r1_input_pathname)
-        .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_input_pathname)));
+    let r1 = fastq::reader::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
-    if let Some(r2_input_pathname) = r2_input_pathname {
+    if let Some(r2_src) = r2_src {
         info!("validating paired end reads");
 
-        let r2 = fastq::reader::open(r2_input_pathname)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_input_pathname)));
+        let r2 =
+            fastq::reader::open(r2_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_src)));
 
         validate_pair(
             r1,
@@ -249,8 +246,8 @@ pub fn lint(matches: &ArgMatches) {
             paired_read_validation_level,
             &disabled_validators,
             lint_mode,
-            r1_input_pathname,
-            r2_input_pathname,
+            r1_src,
+            r2_src,
         );
     } else {
         info!("validating single end read");
@@ -260,7 +257,7 @@ pub fn lint(matches: &ArgMatches) {
             single_read_validation_level,
             &disabled_validators,
             lint_mode,
-            r1_input_pathname,
+            r1_src,
         );
     }
 
