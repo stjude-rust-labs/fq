@@ -84,7 +84,7 @@ pub fn filter(matches: &ArgMatches) {
 
     info!("filtering fastq");
 
-    let reader = fastq::reader::open(src).unwrap_or_else(|e| exit_with_io_error(&e, Some(src)));
+    let reader = crate::fastq::open(src).unwrap_or_else(|e| exit_with_io_error(&e, Some(src)));
     copy_filtered(reader, &names, writer).unwrap_or_else(|e| exit_with_io_error(&e, None));
 
     info!("fq-filter end");

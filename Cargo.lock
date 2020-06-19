@@ -141,6 +141,7 @@ dependencies = [
  "bbloom",
  "clap",
  "env_logger",
+ "flate2",
  "git-testament",
  "log",
  "noodles-fastq",

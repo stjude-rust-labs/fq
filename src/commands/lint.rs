@@ -183,7 +183,7 @@ fn validate_pair(
     }
 
     let mut reader =
-        fastq::reader::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+        crate::fastq::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
     let mut record = Record::default();
     let mut record_no = 0;
@@ -231,13 +231,13 @@ pub fn lint(matches: &ArgMatches) {
 
     info!("fq-lint start");
 
-    let r1 = fastq::reader::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+    let r1 = crate::fastq::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
 
     if let Some(r2_src) = r2_src {
         info!("validating paired end reads");
 
         let r2 =
-            fastq::reader::open(r2_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_src)));
+            crate::fastq::open(r2_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_src)));
 
         validate_pair(
             r1,
