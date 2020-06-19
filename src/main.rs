@@ -6,7 +6,7 @@ use git_testament::{git_testament, render_testament};
 
 git_testament!(TESTAMENT);
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let filter_cmd = SubCommand::with_name("filter")
         .about("Filters a FASTQ from a whitelist of names")
         .arg(
@@ -121,10 +121,12 @@ fn main() {
     }
 
     if let Some(m) = matches.subcommand_matches("filter") {
-        filter(m);
+        filter(m)
     } else if let Some(m) = matches.subcommand_matches("generate") {
-        generate(m);
+        generate(m)
     } else if let Some(m) = matches.subcommand_matches("lint") {
-        lint(m);
+        lint(m)
+    } else {
+        unreachable!();
     }
 }

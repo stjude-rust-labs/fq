@@ -1,11 +1,10 @@
+use anyhow::Context;
 use clap::{value_t, ArgMatches};
 use log::info;
 
 use crate::{Generator, PairWriter};
 
-use super::exit_with_io_error;
-
-pub fn generate(matches: &ArgMatches) {
+pub fn generate(matches: &ArgMatches) -> anyhow::Result<()> {
     let r1_dst = matches.value_of("r1-dst").unwrap();
     let r2_dst = matches.value_of("r2-dst").unwrap();
 
@@ -20,13 +19,19 @@ pub fn generate(matches: &ArgMatches) {
         Generator::new()
     };
 
-    let w1 = crate::fastq::create(r1_dst).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_dst)));
-    let w2 = crate::fastq::create(r2_dst).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_dst)));
+    let w1 = crate::fastq::create(r1_dst)
+        .with_context(|| format!("Could not create file: {}", r1_dst))?;
+
+    let w2 = crate::fastq::create(r2_dst)
+        .with_context(|| format!("Could not create file: {}", r2_dst))?;
+
     let mut writer = PairWriter::new(w1, w2);
 
     writer
         .write(generator, n_records)
-        .unwrap_or_else(|e| exit_with_io_error(&e, None));
+        .context("Could not write generated records")?;
 
     info!("fq-generate end");
+
+    Ok(())
 }

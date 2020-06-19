@@ -16,6 +16,7 @@ lto = "fat"
 codegen-units = 1
 
 [dependencies]
+anyhow = "1.0.31"
 bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 clap = "2.31.2"
 env_logger = "0.7.0"

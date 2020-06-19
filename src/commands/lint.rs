@@ -1,6 +1,7 @@
 use std::io::{self, BufRead};
 use std::process;
 
+use anyhow::Context;
 use clap::{value_t, ArgMatches};
 use log::{error, info};
 use noodles_fastq::{self as fastq, Record};
@@ -8,12 +9,6 @@ use noodles_fastq::{self as fastq, Record};
 use crate::record;
 use crate::validators::single::DuplicateNameValidator;
 use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
-
-use super::exit_with_io_error;
-
-fn unexpected_eof() -> io::Error {
-    io::Error::new(io::ErrorKind::UnexpectedEof, "unexpected EOF")
-}
 
 fn build_error_message(error: validators::Error, pathname: &str, record_no: usize) -> String {
     let mut message = String::new();
@@ -63,7 +58,7 @@ fn validate_single(
     disabled_validators: &[String],
     lint_mode: LintMode,
     r1_src: &str,
-) {
+) -> anyhow::Result<()> {
     let (single_read_validators, _) =
         validators::filter_validators(single_read_validation_level, None, disabled_validators);
 
@@ -75,7 +70,7 @@ fn validate_single(
     loop {
         let bytes_read = reader
             .read_record(&mut record)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+            .with_context(|| format!("Could not read record from file: {}", r1_src))?;
 
         if bytes_read == 0 {
             break;
@@ -93,6 +88,8 @@ fn validate_single(
     }
 
     info!("read {} records", record_no);
+
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -105,7 +102,7 @@ fn validate_pair(
     lint_mode: LintMode,
     r1_src: &str,
     r2_src: &str,
-) {
+) -> anyhow::Result<()> {
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
         Some(paired_read_validation_level),
@@ -135,16 +132,18 @@ fn validate_pair(
     loop {
         let r1_len = reader_1
             .read_record(&mut b)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+            .with_context(|| format!("Could not read record from file: {}", r1_src))?;
 
         let r2_len = reader_2
             .read_record(&mut d)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_src)));
+            .with_context(|| format!("Could not read record from file: {}", r2_src))?;
 
         if r1_len == 0 && r2_len > 0 {
-            exit_with_io_error(&unexpected_eof(), Some(r1_src));
+            return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
+                .with_context(|| format!("{} unexpectedly ended before {}", r1_src, r2_src));
         } else if r2_len == 0 && r1_len > 0 {
-            exit_with_io_error(&unexpected_eof(), Some(r2_src));
+            return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
+                .with_context(|| format!("{} unexpectedly ended before {}", r2_src, r1_src));
         } else if r1_len == 0 && r2_len == 0 {
             break;
         }
@@ -179,11 +178,11 @@ fn validate_pair(
     info!("starting validation (pass 2)");
 
     if !use_special_validator {
-        return;
+        return Ok(());
     }
 
     let mut reader =
-        crate::fastq::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+        crate::fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
 
     let mut record = Record::default();
     let mut record_no = 0;
@@ -191,7 +190,7 @@ fn validate_pair(
     loop {
         let bytes_read = reader
             .read_record(&mut record)
-            .unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+            .with_context(|| format!("Could not read record from file: {}", r1_src))?;
 
         if bytes_read == 0 {
             break;
@@ -207,9 +206,11 @@ fn validate_pair(
     }
 
     info!("read {} records", record_no);
+
+    Ok(())
 }
 
-pub fn lint(matches: &ArgMatches) {
+pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
     let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
 
     let r1_src = matches.value_of("r1-src").unwrap();
@@ -231,13 +232,14 @@ pub fn lint(matches: &ArgMatches) {
 
     info!("fq-lint start");
 
-    let r1 = crate::fastq::open(r1_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_src)));
+    let r1 =
+        crate::fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
 
     if let Some(r2_src) = r2_src {
         info!("validating paired end reads");
 
-        let r2 =
-            crate::fastq::open(r2_src).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_src)));
+        let r2 = crate::fastq::open(r2_src)
+            .with_context(|| format!("Could not open file: {}", r2_src))?;
 
         validate_pair(
             r1,
@@ -248,7 +250,7 @@ pub fn lint(matches: &ArgMatches) {
             lint_mode,
             r1_src,
             r2_src,
-        );
+        )?;
     } else {
         info!("validating single end read");
 
@@ -258,10 +260,12 @@ pub fn lint(matches: &ArgMatches) {
             &disabled_validators,
             lint_mode,
             r1_src,
-        );
+        )?;
     }
 
     info!("fq-lint end");
+
+    Ok(())
 }
 
 #[cfg(test)]
