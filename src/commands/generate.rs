@@ -1,6 +1,5 @@
 use clap::{value_t, ArgMatches};
 use log::info;
-use noodles_fastq as fastq;
 
 use crate::{Generator, PairWriter};
 
@@ -21,8 +20,8 @@ pub fn generate(matches: &ArgMatches) {
         Generator::new()
     };
 
-    let w1 = fastq::writer::create(r1_dst).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_dst)));
-    let w2 = fastq::writer::create(r2_dst).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_dst)));
+    let w1 = crate::fastq::create(r1_dst).unwrap_or_else(|e| exit_with_io_error(&e, Some(r1_dst)));
+    let w2 = crate::fastq::create(r2_dst).unwrap_or_else(|e| exit_with_io_error(&e, Some(r2_dst)));
     let mut writer = PairWriter::new(w1, w2);
 
     writer
