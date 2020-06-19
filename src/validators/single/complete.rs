@@ -50,7 +50,7 @@ impl CompleteValidator {
     }
 
     fn validate_quality(&self, r: &Record) -> Result<(), Error> {
-        if r.quality().is_empty() {
+        if r.quality_scores().is_empty() {
             Err(Error::new(
                 self.code(),
                 self.name(),

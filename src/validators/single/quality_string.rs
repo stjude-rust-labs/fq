@@ -23,7 +23,7 @@ impl SingleReadValidator for QualityStringValidator {
     }
 
     fn validate(&self, r: &Record) -> Result<(), Error> {
-        for (i, &b) in r.quality().iter().enumerate() {
+        for (i, &b) in r.quality_scores().iter().enumerate() {
             if b < START_OFFSET || b > END_OFFSET {
                 return Err(Error::new(
                     self.code(),

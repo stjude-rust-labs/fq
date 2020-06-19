@@ -63,12 +63,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
-name = "byteorder"
-version = "1.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
-
-[[package]]
 name = "cfg-if"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -237,32 +231,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "noodles-bam"
-version = "0.1.0"
-source = "git+https://github.com/zaeleus/noodles.git?rev=589224e25a22cb2a09d5c4955e86d098ed63439a#589224e25a22cb2a09d5c4955e86d098ed63439a"
-dependencies = [
- "byteorder",
- "flate2",
- "noodles-bgzf",
-]
-
-[[package]]
-name = "noodles-bgzf"
-version = "0.1.0"
-source = "git+https://github.com/zaeleus/noodles.git?rev=589224e25a22cb2a09d5c4955e86d098ed63439a#589224e25a22cb2a09d5c4955e86d098ed63439a"
-dependencies = [
- "byteorder",
- "flate2",
-]
-
-[[package]]
 name = "noodles-fastq"
 version = "0.1.0"
-source = "git+https://github.com/zaeleus/noodles.git?rev=589224e25a22cb2a09d5c4955e86d098ed63439a#589224e25a22cb2a09d5c4955e86d098ed63439a"
-dependencies = [
- "flate2",
- "noodles-bam",
-]
+source = "git+https://github.com/zaeleus/noodles.git?rev=df7f99536b74d1e3be4c7d47587402f0fe0043d0#df7f99536b74d1e3be4c7d47587402f0fe0043d0"
 
 [[package]]
 name = "num-integer"

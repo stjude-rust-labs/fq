@@ -19,11 +19,11 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
     }
 
     fn validate(&self, r: &Record) -> Result<(), Error> {
-        if r.sequence().len() != r.quality().len() {
+        if r.sequence().len() != r.quality_scores().len() {
             let message = format!(
                 "Name and quality lengths do not match (expected {}, got {})",
                 r.sequence().len(),
-                r.quality().len(),
+                r.quality_scores().len(),
             );
 
             Err(Error::new(

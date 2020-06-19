@@ -202,7 +202,7 @@ where
             .take(READ_LEN)
             .map(|phred| phred + 33);
 
-        let quality = record.quality_mut();
+        let quality = record.quality_scores_mut();
 
         for c in iter {
             quality.push(c);
@@ -213,7 +213,7 @@ where
 fn clear_record(record: &mut Record) {
     record.name_mut().clear();
     record.sequence_mut().clear();
-    record.quality_mut().clear();
+    record.quality_scores_mut().clear();
 }
 
 fn gen_flow_cell_id<R>(rng: &mut R, len: usize) -> String
@@ -248,6 +248,6 @@ mod tests {
             "@fqlib1:950:DFZYAUO:3:33:7515:3404".as_bytes()
         );
         assert_eq!(record.sequence(), "TTGATTGAAAATTAGATAATACATCAATTCGGGGCCTAATAGTTGGGGTAAGCAAAGGCAGTCATTGACATGGTATCGTTTGCCCTTCACAGCTTACAACG".as_bytes());
-        assert_eq!(record.quality(), "66=.115657:8345532549:64555347576950783428226554573132227563;7731553368399677242129447964689;66359544".as_bytes());
+        assert_eq!(record.quality_scores(), "66=.115657:8345532549:64555347576950783428226554573132227563;7731553368399677242129447964689;66359544".as_bytes());
     }
 }
