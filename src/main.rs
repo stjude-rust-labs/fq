@@ -40,14 +40,14 @@ fn main() {
                 .default_value("10000"),
         )
         .arg(
-            Arg::with_name("out1")
-                .help("Read 1 output pathname. Output will be gzipped if ends in `.gz`.")
+            Arg::with_name("r1-dst")
+                .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .index(1)
                 .required(true),
         )
         .arg(
-            Arg::with_name("out2")
-                .help("Read 2 output pathname. Output will be gzipped if ends in `.gz`.")
+            Arg::with_name("r2-dst")
+                .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
                 .index(2)
                 .required(true),
         );
