@@ -78,7 +78,7 @@ fq-generate
 Generates a random FASTQ file pair
 
 USAGE:
-    fq generate [OPTIONS] <out1> <out2>
+    fq generate [OPTIONS] <r1-dst> <r2-dst>
 
 FLAGS:
     -h, --help       Prints help information
@@ -86,10 +86,11 @@ FLAGS:
 
 OPTIONS:
     -n, --n-records <N>    Number of records to generate [default: 10000]
+        --seed <N>         Seed to use for the random number generator
 
 ARGS:
-    <out1>    Read 1 output pathname. Output will be gzipped if ends in `.gz`.
-    <out2>    Read 2 output pathname. Output will be gzipped if ends in `.gz`.
+    <r1-dst>    Read 1 destination. Output will be gzipped if ends in `.gz`.
+    <r2-dst>    Read 2 destination. Output will be gzipped if ends in `.gz`.
 ```
 
 #### Examples
@@ -110,10 +111,10 @@ $ fq generate --n-records 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 
 ```
 fq-lint
-Validate a FASTQ file pair
+Validates a FASTQ file pair
 
 USAGE:
-    fq lint [OPTIONS] <in1> [--] [in2]
+    fq lint [OPTIONS] <r1-src> [--] [r2-src]
 
 FLAGS:
     -h, --help       Prints help information
@@ -134,8 +135,8 @@ OPTIONS:
 
 
 ARGS:
-    <in1>    Read 1 input pathname. Accepts both raw and gzipped FASTQ inputs.
-    <in2>    Read 2 input pathname. Accepts both raw and gzipped FASTQ inputs.
+    <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
+    <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
 ```
 
 #### Validators
