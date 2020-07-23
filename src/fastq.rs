@@ -5,7 +5,8 @@ use std::{
 };
 
 use flate2::{bufread::MultiGzDecoder, write::GzEncoder, Compression};
-use noodles_fastq::{Reader, Writer};
+
+pub use noodles_fastq::{Reader, Record, Writer};
 
 pub fn create<P>(dst: P) -> io::Result<Writer<Box<dyn Write>>>
 where

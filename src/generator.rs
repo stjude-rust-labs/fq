@@ -1,11 +1,13 @@
 use std::io::Write;
 
-use noodles_fastq::Record;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
-use crate::distributions::{Character, QualityScores};
+use crate::{
+    distributions::{Character, QualityScores},
+    fastq::Record,
+};
 
 static UPPER_ALPHA_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static NUCLEOBASE_CHARSET: &[u8] = b"AGTC";
@@ -125,8 +127,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use fqlib::Generator;
-    /// use noodles_fastq::Record;
+    /// use fqlib::{fastq::Record, Generator};
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
@@ -145,8 +146,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use fqlib::Generator;
-    /// use noodles_fastq::Record;
+    /// use fqlib::{fastq::Record, Generator};
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
@@ -227,8 +227,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use noodles_fastq::Record;
-
     use super::*;
 
     static SEED: [u8; 16] = [

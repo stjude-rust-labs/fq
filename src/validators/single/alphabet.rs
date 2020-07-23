@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
-use noodles_fastq::Record;
-
-use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+};
 
 /// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
 /// given character set.
@@ -57,10 +58,7 @@ impl Default for AlphabetValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles_fastq::Record;
-
-    use super::AlphabetValidator;
-    use crate::validators::{SingleReadValidator, ValidationLevel};
+    use super::*;
 
     #[test]
     fn test_new() {

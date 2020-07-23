@@ -1,4 +1,4 @@
-use noodles_fastq::Record;
+use super::fastq::Record;
 
 /// Prepares a record after initialization.
 ///
@@ -11,8 +11,7 @@ use noodles_fastq::Record;
 /// # Examples
 ///
 /// ```
-/// use fqlib::record;
-/// use noodles_fastq::Record;
+/// use fqlib::{fastq::Record, record};
 ///
 /// let mut r = Record::default();
 /// r.name_mut().extend_from_slice(b"@fqlib/1");

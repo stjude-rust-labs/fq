@@ -1,6 +1,7 @@
-use noodles_fastq::Record;
-
-use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+};
 
 /// [S005] (high) Validator to check if the sequence and quality lengths are the same.
 pub struct ConsistentSeqQualValidator;
@@ -41,10 +42,7 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles_fastq::Record;
-
-    use super::ConsistentSeqQualValidator;
-    use crate::validators::{SingleReadValidator, ValidationLevel};
+    use super::*;
 
     #[test]
     fn test_code() {

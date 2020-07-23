@@ -1,6 +1,7 @@
-use noodles_fastq::Record;
-
-use crate::validators::{Error, LineType, PairedReadValidator, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, LineType, PairedReadValidator, ValidationLevel},
+};
 
 /// [P001] (medium) Validator to check if each paired read name is the same, excluding interleave.
 pub struct NamesValidator;
@@ -39,10 +40,7 @@ impl PairedReadValidator for NamesValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles_fastq::Record;
-
-    use super::NamesValidator;
-    use crate::validators::{PairedReadValidator, ValidationLevel};
+    use super::*;
 
     #[test]
     fn test_code() {

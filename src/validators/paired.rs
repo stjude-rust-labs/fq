@@ -1,8 +1,9 @@
 //! Validators that use records from paired reads.
 
-use noodles_fastq::Record;
-
-use crate::validators::{Error, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, ValidationLevel},
+};
 
 pub use self::names::NamesValidator;
 

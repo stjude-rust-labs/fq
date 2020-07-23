@@ -1,8 +1,9 @@
 //! Validators that use records from a single read.
 
-use noodles_fastq::Record;
-
-use crate::validators::{Error, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, ValidationLevel},
+};
 
 pub use self::alphabet::AlphabetValidator;
 pub use self::complete::CompleteValidator;

@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
 use bbloom::ScalableBloomFilter;
-use noodles_fastq::Record;
 
-use crate::validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel},
+};
 
 const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
 const INITIAL_CAPACITY: usize = 10_000_000;
@@ -18,8 +20,7 @@ const INITIAL_CAPACITY: usize = 10_000_000;
 /// # Examples
 ///
 /// ```
-/// use fqlib::validators::single::{DuplicateNameValidator, SingleReadValidatorMut};
-/// use noodles_fastq::Record;
+/// use fqlib::{fastq::Record, validators::single::{DuplicateNameValidator, SingleReadValidatorMut}};
 ///
 /// let mut validator = DuplicateNameValidator::new();
 ///
@@ -60,8 +61,7 @@ impl DuplicateNameValidator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::validators::single::DuplicateNameValidator;
-    /// use noodles_fastq::Record;
+    /// use fqlib::{fastq::Record, validators::single::DuplicateNameValidator};
     ///
     /// let mut validator = DuplicateNameValidator::new();
     /// let record = Record::new("@fqlib:1", "", "", "");
@@ -140,8 +140,7 @@ impl Default for DuplicateNameValidator {
 
 #[cfg(test)]
 mod tests {
-    use super::DuplicateNameValidator;
-    use crate::validators::{SingleReadValidatorMut, ValidationLevel};
+    use super::*;
 
     #[test]
     fn test_is_empty() {

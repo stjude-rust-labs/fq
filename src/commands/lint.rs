@@ -4,11 +4,13 @@ use std::process;
 use anyhow::Context;
 use clap::{value_t, ArgMatches};
 use log::{error, info};
-use noodles_fastq::{self as fastq, Record};
 
-use crate::record;
 use crate::validators::single::DuplicateNameValidator;
 use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
+use crate::{
+    fastq::{self, Record},
+    record,
+};
 
 fn build_error_message(error: validators::Error, pathname: &str, record_no: usize) -> String {
     let mut message = String::new();

@@ -7,7 +7,8 @@ use std::{
 use anyhow::Context;
 use clap::ArgMatches;
 use log::info;
-use noodles_fastq as fastq;
+
+use crate::fastq;
 
 fn copy_filtered<R, W>(
     mut reader: fastq::Reader<R>,
@@ -101,8 +102,6 @@ pub fn filter(matches: &ArgMatches) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use noodles_fastq as fastq;
 
     #[test]
     fn test_copy_filtered() {

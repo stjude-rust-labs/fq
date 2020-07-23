@@ -1,6 +1,7 @@
-use noodles_fastq::Record;
-
-use crate::validators::{Error, LineType, SingleReadValidator, ValidationLevel};
+use crate::{
+    fastq::Record,
+    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+};
 
 /// [S004] (low) Validator to check if all four record lines (name, sequence, plus line, and
 /// quality) are present.
@@ -88,10 +89,7 @@ impl SingleReadValidator for CompleteValidator {
 
 #[cfg(test)]
 mod tests {
-    use noodles_fastq::Record;
-
-    use super::CompleteValidator;
-    use crate::validators::{SingleReadValidator, ValidationLevel};
+    use super::*;
 
     #[test]
     fn test_code() {

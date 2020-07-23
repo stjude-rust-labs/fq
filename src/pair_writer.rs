@@ -1,9 +1,11 @@
 use std::io::{self, Write};
 
-use noodles_fastq::{self as fastq, Record};
 use rand::Rng;
 
-use crate::Generator;
+use crate::{
+    fastq::{self, Record},
+    Generator,
+};
 
 static PLUS_LINE: &[u8] = b"+";
 
