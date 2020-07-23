@@ -1,3 +1,9 @@
+mod reader;
+mod record;
+mod writer;
+
+pub use self::{reader::Reader, record::Record, writer::Writer};
+
 use std::{
     fs::File,
     io::{self, BufRead, BufReader, BufWriter, Write},
@@ -5,8 +11,6 @@ use std::{
 };
 
 use flate2::{bufread::MultiGzDecoder, write::GzEncoder, Compression};
-
-pub use noodles_fastq::{Reader, Record, Writer};
 
 pub fn create<P>(dst: P) -> io::Result<Writer<Box<dyn Write>>>
 where

@@ -145,7 +145,6 @@ dependencies = [
  "flate2",
  "git-testament",
  "log",
- "noodles-fastq",
  "rand",
  "rand_distr",
 ]
@@ -236,11 +235,6 @@ checksum = "be0f75932c1f6cfae3c04000e40114adf955636e19040f9c0a2c380702aa1c7f"
 dependencies = [
  "adler",
 ]
-
-[[package]]
-name = "noodles-fastq"
-version = "0.1.0"
-source = "git+https://github.com/zaeleus/noodles.git?rev=df7f99536b74d1e3be4c7d47587402f0fe0043d0#df7f99536b74d1e3be4c7d47587402f0fe0043d0"
 
 [[package]]
 name = "num-integer"
