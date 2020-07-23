@@ -5,12 +5,9 @@ use anyhow::Context;
 use clap::{value_t, ArgMatches};
 use log::{error, info};
 
+use crate::fastq::{self, Record};
 use crate::validators::single::DuplicateNameValidator;
 use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
-use crate::{
-    fastq::{self, Record},
-    record,
-};
 
 fn build_error_message(error: validators::Error, pathname: &str, record_no: usize) -> String {
     let mut message = String::new();
@@ -78,7 +75,7 @@ fn validate_single(
             break;
         }
 
-        record::reset(&mut record);
+        record.reset();
 
         for validator in &single_read_validators {
             validator
@@ -150,8 +147,8 @@ fn validate_pair(
             break;
         }
 
-        record::reset(&mut b);
-        record::reset(&mut d);
+        b.reset();
+        d.reset();
 
         if use_special_validator {
             duplicate_name_validator.insert(&b);
@@ -198,7 +195,7 @@ fn validate_pair(
             break;
         }
 
-        record::reset(&mut record);
+        record.reset();
 
         duplicate_name_validator
             .validate(&record)

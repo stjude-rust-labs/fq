@@ -60,6 +60,40 @@ impl Record {
         self.plus_line.clear();
         self.quality_scores.clear();
     }
+
+    /// Prepares a record after initialization.
+    ///
+    /// This should be called after clearing and directly writing to the line
+    /// buffers.
+    ///
+    /// Resetting only includes removing the interleave or meta from the name, if
+    /// either is present.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use fqlib::fastq::Record;
+    ///
+    /// let mut r = Record::default();
+    /// r.name_mut().extend_from_slice(b"@fqlib/1");
+    /// assert_eq!(r.name(), b"@fqlib/1");
+    /// r.reset();
+    /// assert_eq!(r.name(), b"@fqlib");
+    ///
+    /// let mut r = Record::default();
+    /// r.name_mut().extend_from_slice(b"@fqlib 1");
+    /// assert_eq!(r.name(), b"@fqlib 1");
+    /// r.reset();
+    /// assert_eq!(r.name(), b"@fqlib");
+    /// ```
+    pub fn reset(&mut self) {
+        let pos = self.name.iter().rev().position(|&b| b == b'/' || b == b' ');
+
+        if let Some(i) = pos {
+            let len = self.name.len();
+            self.name.truncate(len - i - 1);
+        }
+    }
 }
 
 #[cfg(test)]

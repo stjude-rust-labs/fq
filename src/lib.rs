@@ -9,5 +9,4 @@ pub mod distributions;
 pub mod fastq;
 pub mod generator;
 pub mod pair_writer;
-pub mod record;
 pub mod validators;
