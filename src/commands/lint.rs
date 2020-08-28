@@ -209,7 +209,7 @@ fn validate_pair(
     Ok(())
 }
 
-pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
+pub fn lint(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
     let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
 
     let r1_src = matches.value_of("r1-src").unwrap();

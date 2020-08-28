@@ -4,7 +4,7 @@ use log::info;
 
 use crate::{Generator, PairWriter};
 
-pub fn generate(matches: &ArgMatches) -> anyhow::Result<()> {
+pub fn generate(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
     let r1_dst = matches.value_of("r1-dst").unwrap();
     let r2_dst = matches.value_of("r2-dst").unwrap();
 

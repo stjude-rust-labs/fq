@@ -63,7 +63,7 @@ fn name_id(name: &[u8]) -> &[u8] {
     }
 }
 
-pub fn filter(matches: &ArgMatches) -> anyhow::Result<()> {
+pub fn filter(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
     let src = matches.value_of("src").unwrap();
     let names_src = matches.value_of("names").unwrap();
 
