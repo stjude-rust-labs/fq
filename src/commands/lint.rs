@@ -9,11 +9,11 @@ use crate::fastq::{self, Record};
 use crate::validators::single::DuplicateNameValidator;
 use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
 
-fn build_error_message(error: validators::Error, pathname: &str, record_no: usize) -> String {
+fn build_error_message(error: validators::Error, pathname: &str, record_counter: usize) -> String {
     let mut message = String::new();
 
     let line_offset = error.line_type as usize;
-    let line_no = record_no * 4 + line_offset + 1;
+    let line_no = record_counter * 4 + line_offset + 1;
     message.push_str(&format!("{}:{}:", pathname, line_no));
 
     if let Some(col_no) = error.col_no {
@@ -28,14 +28,18 @@ fn build_error_message(error: validators::Error, pathname: &str, record_no: usiz
     message
 }
 
-fn exit_with_validation_error(error: validators::Error, pathname: &str, record_no: usize) -> ! {
-    let message = build_error_message(error, pathname, record_no);
+fn exit_with_validation_error(
+    error: validators::Error,
+    pathname: &str,
+    record_counter: usize,
+) -> ! {
+    let message = build_error_message(error, pathname, record_counter);
     eprintln!("{}", message);
     process::exit(1);
 }
 
-fn log_validation_error(error: validators::Error, pathname: &str, record_no: usize) {
-    let message = build_error_message(error, pathname, record_no);
+fn log_validation_error(error: validators::Error, pathname: &str, record_counter: usize) {
+    let message = build_error_message(error, pathname, record_counter);
     error!("{}", message);
 }
 
@@ -43,11 +47,11 @@ fn handle_validation_error(
     lint_mode: LintMode,
     error: validators::Error,
     pathname: &str,
-    record_no: usize,
+    record_counter: usize,
 ) {
     match lint_mode {
-        LintMode::Panic => exit_with_validation_error(error, pathname, record_no),
-        LintMode::Log => log_validation_error(error, pathname, record_no),
+        LintMode::Panic => exit_with_validation_error(error, pathname, record_counter),
+        LintMode::Log => log_validation_error(error, pathname, record_counter),
     }
 }
 
@@ -64,7 +68,7 @@ fn validate_single(
     info!("starting validation");
 
     let mut record = Record::default();
-    let mut record_no = 0;
+    let mut record_counter = 0;
 
     loop {
         let bytes_read = reader
@@ -80,13 +84,13 @@ fn validate_single(
         for validator in &single_read_validators {
             validator
                 .validate(&record)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
         }
 
-        record_no += 1;
+        record_counter += 1;
     }
 
-    info!("read {} records", record_no);
+    info!("read {} records", record_counter);
 
     Ok(())
 }
@@ -126,7 +130,7 @@ fn validate_pair(
 
     let mut b = Record::default();
     let mut d = Record::default();
-    let mut record_no = 0;
+    let mut record_counter = 0;
 
     loop {
         let r1_len = reader_1
@@ -157,23 +161,23 @@ fn validate_pair(
         for validator in &single_read_validators {
             validator
                 .validate(&b)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
 
             validator
                 .validate(&d)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r2_src, record_no));
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r2_src, record_counter));
         }
 
         for validator in &paired_read_validators {
             validator
                 .validate(&b, &d)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
+                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
         }
 
-        record_no += 1;
+        record_counter += 1;
     }
 
-    info!("read {} * 2 records", record_no);
+    info!("read {} * 2 records", record_counter);
     info!("starting validation (pass 2)");
 
     if !use_special_validator {
@@ -184,7 +188,7 @@ fn validate_pair(
         crate::fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
 
     let mut record = Record::default();
-    let mut record_no = 0;
+    let mut record_counter = 0;
 
     loop {
         let bytes_read = reader
@@ -199,12 +203,12 @@ fn validate_pair(
 
         duplicate_name_validator
             .validate(&record)
-            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_no));
+            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
 
-        record_no += 1;
+        record_counter += 1;
     }
 
-    info!("read {} records", record_no);
+    info!("read {} records", record_counter);
 
     Ok(())
 }
