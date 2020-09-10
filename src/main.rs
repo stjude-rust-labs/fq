@@ -32,9 +32,9 @@ fn main() -> anyhow::Result<()> {
                 .help("Seed to use for the random number generator"),
         )
         .arg(
-            Arg::with_name("n-records")
+            Arg::with_name("record-count")
                 .short("n")
-                .long("n-records")
+                .long("record-count")
                 .help("Number of records to generate")
                 .value_name("N")
                 .default_value("10000"),

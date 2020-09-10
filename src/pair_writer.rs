@@ -23,7 +23,7 @@ where
         PairWriter { writer_1, writer_2 }
     }
 
-    pub fn write<R>(&mut self, mut generator: Generator<R>, iterations: i32) -> io::Result<()>
+    pub fn write<R>(&mut self, mut generator: Generator<R>, record_count: i32) -> io::Result<()>
     where
         R: Rng,
     {
@@ -33,7 +33,7 @@ where
         r.plus_line_mut().extend_from_slice(PLUS_LINE);
         s.plus_line_mut().extend_from_slice(PLUS_LINE);
 
-        for _ in 0..iterations {
+        for _ in 0..record_count {
             generator.next_record(&mut r);
             generator.next_record_with_name(r.name(), &mut s);
 

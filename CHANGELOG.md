@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+  * [BREAKING] `generate`: Renamed `--n-records` to `--record-count`.
+
 ## [0.4.0] - 2020-06-30
 
 ### Added
