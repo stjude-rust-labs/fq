@@ -1,5 +1,6 @@
 pub use self::paired::PairedReadValidator;
 pub use self::single::{SingleReadValidator, SingleReadValidatorMut};
+pub use self::validation_level::ValidationLevel;
 
 use self::paired::NamesValidator;
 use self::single::{
@@ -9,6 +10,7 @@ use self::single::{
 
 pub mod paired;
 pub mod single;
+mod validation_level;
 
 use std::{error, fmt, str::FromStr};
 
@@ -79,26 +81,6 @@ impl FromStr for LintMode {
         match s {
             "panic" => Ok(LintMode::Panic),
             "log" => Ok(LintMode::Log),
-            _ => Err(()),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum ValidationLevel {
-    Low,
-    Medium,
-    High,
-}
-
-impl FromStr for ValidationLevel {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "low" => Ok(ValidationLevel::Low),
-            "medium" => Ok(ValidationLevel::Medium),
-            "high" => Ok(ValidationLevel::High),
             _ => Err(()),
         }
     }
