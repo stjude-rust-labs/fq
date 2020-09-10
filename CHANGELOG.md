@@ -6,6 +6,10 @@
 
   * [BREAKING] `generate`: Renamed `--n-records` to `--record-count`.
 
+  * `generate`: `--record-count` is parsed as a `u64` rather than an `i32`. The
+    argument parser never allowed negative numbers, so this change still
+    includes the entire previous input set.
+
 ## [0.4.0] - 2020-06-30
 
 ### Added

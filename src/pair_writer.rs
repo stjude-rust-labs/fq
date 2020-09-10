@@ -23,7 +23,7 @@ where
         PairWriter { writer_1, writer_2 }
     }
 
-    pub fn write<R>(&mut self, mut generator: Generator<R>, record_count: i32) -> io::Result<()>
+    pub fn write<R>(&mut self, mut generator: Generator<R>, record_count: u64) -> io::Result<()>
     where
         R: Rng,
     {
