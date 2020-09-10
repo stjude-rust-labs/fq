@@ -43,14 +43,14 @@ fq-filter
 Filters a FASTQ from a whitelist of names
 
 USAGE:
-    fq filter <src> --names <PATH>
+    fq filter <src> --names <path>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-        --names <PATH>    Whitelist of record names
+        --names <path>    Whitelist of record names
 
 ARGS:
     <src>    Source FASTQ
@@ -87,8 +87,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -n, --n-records <N>    Number of records to generate [default: 10000]
-        --seed <N>         Seed to use for the random number generator
+    -n, --record-count <u64>    Number of records to generate [default: 10000]
+        --seed <u64>            Seed to use for the random number generator
 
 ARGS:
     <r1-dst>    Read 1 destination. Output will be gzipped if ends in `.gz`.
@@ -123,18 +123,13 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-        --disable-validator <CODE>...
-            Disable validators by code. Use multiple times to disable more than one.
-
-        --lint-mode <MODE>
-            Panic on first error or log all errors. Logging forces verbose mode. [default: panic]  [possible values:
-            panic, log]
-        --paired-read-validation-level <LEVEL>
-            Only use paired read validators up to a given level [default: high]  [possible values: low, medium, high]
-
-        --single-read-validation-level <LEVEL>
-            Only use single read validators up to a given level [default: high]  [possible values: low, medium, high]
-
+        --disable-validator <str>...            Disable validators by code. Use multiple times to disable more than one.
+        --lint-mode <str>                       Panic on first error or log all errors. Logging forces verbose mode.
+                                                [default: panic]  [possible values: panic, log]
+        --paired-read-validation-level <str>    Only use paired read validators up to a given level [default: high]
+                                                [possible values: low, medium, high]
+        --single-read-validation-level <str>    Only use single read validators up to a given level [default: high]
+                                                [possible values: low, medium, high]
 
 ARGS:
     <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.

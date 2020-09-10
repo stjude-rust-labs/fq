@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
         .arg(
             Arg::with_name("names")
                 .long("names")
-                .value_name("PATH")
+                .value_name("path")
                 .help("Whitelist of record names")
                 .required(true),
         )
@@ -28,7 +28,7 @@ fn main() -> anyhow::Result<()> {
         .arg(
             Arg::with_name("seed")
                 .long("seed")
-                .value_name("N")
+                .value_name("u64")
                 .help("Seed to use for the random number generator"),
         )
         .arg(
@@ -36,7 +36,7 @@ fn main() -> anyhow::Result<()> {
                 .short("n")
                 .long("record-count")
                 .help("Number of records to generate")
-                .value_name("N")
+                .value_name("u64")
                 .default_value("10000"),
         )
         .arg(
@@ -58,7 +58,7 @@ fn main() -> anyhow::Result<()> {
             Arg::with_name("lint-mode")
                 .long("lint-mode")
                 .help("Panic on first error or log all errors. Logging forces verbose mode.")
-                .value_name("MODE")
+                .value_name("str")
                 .possible_values(&["panic", "log"])
                 .default_value("panic"),
         )
@@ -66,7 +66,7 @@ fn main() -> anyhow::Result<()> {
             Arg::with_name("single-read-validation-level")
                 .long("single-read-validation-level")
                 .help("Only use single read validators up to a given level")
-                .value_name("LEVEL")
+                .value_name("str")
                 .possible_values(&["low", "medium", "high"])
                 .default_value("high"),
         )
@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
             Arg::with_name("paired-read-validation-level")
                 .long("paired-read-validation-level")
                 .help("Only use paired read validators up to a given level")
-                .value_name("LEVEL")
+                .value_name("str")
                 .possible_values(&["low", "medium", "high"])
                 .default_value("high"),
         )
@@ -82,7 +82,7 @@ fn main() -> anyhow::Result<()> {
             Arg::with_name("disable-validator")
                 .long("disable-validator")
                 .help("Disable validators by code. Use multiple times to disable more than one.")
-                .value_name("CODE")
+                .value_name("str")
                 .multiple(true)
                 .number_of_values(1),
         )
