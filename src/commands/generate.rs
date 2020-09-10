@@ -31,6 +31,7 @@ pub fn generate(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
         .write(generator, record_count)
         .context("Could not write generated records")?;
 
+    info!("generated {} records", record_count);
     info!("fq-generate end");
 
     Ok(())
