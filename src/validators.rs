@@ -10,7 +10,7 @@ use self::single::{
 
 pub mod paired;
 pub mod single;
-mod validation_level;
+pub mod validation_level;
 
 use std::{error, fmt, str::FromStr};
 
