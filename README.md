@@ -11,7 +11,7 @@
 Use [Cargo] to install fqlib. The binary built is named `fq`.
 
 ```
-$ cargo install --git https://github.com/stjude/fqlib.git --tag v0.4.0
+$ cargo install --git https://github.com/stjude/fqlib.git --tag v0.5.0
 ```
 
 Alternatively, build the [Docker] image.
@@ -19,8 +19,8 @@ Alternatively, build the [Docker] image.
 ```
 $ git clone https://github.com/stjude/fqlib.git
 $ cd fqlib
-$ git switch --detach v0.4.0
-$ docker image build --tag fqlib:0.4.0 .
+$ git switch --detach v0.5.0
+$ docker image build --tag fqlib:0.5.0 .
 ```
 
 [Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
