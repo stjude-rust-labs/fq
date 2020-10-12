@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.0] - 2020-10-09
+## 0.5.0 - 2020-10-09
 
 ### Changed
 
@@ -10,7 +10,7 @@
     argument parser never allowed negative numbers, so this change still
     includes the entire previous input set.
 
-## [0.4.0] - 2020-06-30
+## 0.4.0 - 2020-06-30
 
 ### Added
 
@@ -23,13 +23,13 @@
     quality scores ([0, 41]). It samples scores on a normal distribution (μ =
     20.5, σ = 2.61).
 
-## [0.3.1] - 2019-08-14
+## 0.3.1 - 2019-08-14
 
 ### Changed
 
   * Updated dependency `bloom` --> `bbloom` to reflect a name change in the library.
 
-## [0.3.0] - 2019-08-09
+## 0.3.0 - 2019-08-09
 
 ### Added
 
@@ -47,7 +47,7 @@
 
   * [BREAKING] `generate`: Renamed `--num-blocks` to `--n-records`.
 
-## [0.2.0] - 2018-11-28
+## 0.2.0 - 2018-11-28
 
 ### Added
 
@@ -74,9 +74,3 @@
 ## 0.1.0 - 2018-06-05
 
   * Initial release
-
-[0.5.0]: https://github.com/stjude/fqlib/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/stjude/fqlib/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/stjude/fqlib/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/stjude/fqlib/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/stjude/fqlib/compare/v0.1.0...v0.2.0
