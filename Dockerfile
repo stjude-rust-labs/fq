@@ -1,4 +1,4 @@
-FROM rust:1.47.0-buster AS builder
+FROM rust:1.48.0 AS builder
 
 COPY .git /app/.git
 COPY Cargo.lock Cargo.toml /app/
