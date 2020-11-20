@@ -19,7 +19,7 @@ codegen-units = 1
 anyhow = "1.0.31"
 bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 clap = "2.31.2"
-env_logger = "0.7.0"
+env_logger = "0.8.2"
 flate2 = "1.0.14"
 git-testament = "0.1.6"
 log = "0.4.1"
