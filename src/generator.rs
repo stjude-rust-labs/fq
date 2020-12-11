@@ -44,8 +44,8 @@ impl Generator<SmallRng> {
     /// use fqlib::Generator;
     /// let _ = Generator::new();
     /// ```
-    pub fn new() -> Generator<SmallRng> {
-        Generator::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Creates a `Generator<SmallRng>` from a given seed.
@@ -62,21 +62,21 @@ impl Generator<SmallRng> {
     ///
     /// let _ = Generator::from_seed(seed);
     /// ```
-    pub fn from_seed(seed: [u8; 16]) -> Generator<SmallRng> {
+    pub fn from_seed(seed: [u8; 16]) -> Self {
         let rng = SmallRng::from_seed(seed);
-        Generator::from_rng(rng)
+        Self::from_rng(rng)
     }
 
-    pub fn seed_from_u64(seed: u64) -> Generator<SmallRng> {
+    pub fn seed_from_u64(seed: u64) -> Self {
         let rng = SmallRng::seed_from_u64(seed);
-        Generator::from_rng(rng)
+        Self::from_rng(rng)
     }
 }
 
 impl Default for Generator<SmallRng> {
-    fn default() -> Generator<SmallRng> {
+    fn default() -> Self {
         let rng = SmallRng::from_entropy();
-        Generator::from_rng(rng)
+        Self::from_rng(rng)
     }
 }
 
@@ -94,7 +94,7 @@ where
     /// let rng = SmallRng::from_entropy();
     /// let _ = Generator::from_rng(rng);
     /// ```
-    pub fn from_rng(mut rng: R) -> Generator<R> {
+    pub fn from_rng(mut rng: R) -> Self {
         let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
         let run_number = rng.gen_range(1, 1000 + 1);
         let flow_cell_id = gen_flow_cell_id(&mut rng, FLOW_CELL_ID_LEN);
@@ -107,7 +107,7 @@ where
         let sequence_distribution = Character::new(NUCLEOBASE_CHARSET);
         let quality_distribution = QualityScores::default();
 
-        Generator {
+        Self {
             instrument,
             flow_cell_id,
             run_number,

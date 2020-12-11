@@ -48,8 +48,8 @@ pub struct DuplicateNameValidator {
 }
 
 impl DuplicateNameValidator {
-    pub fn new() -> DuplicateNameValidator {
-        DuplicateNameValidator::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
@@ -130,8 +130,8 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
 }
 
 impl Default for DuplicateNameValidator {
-    fn default() -> DuplicateNameValidator {
-        DuplicateNameValidator {
+    fn default() -> Self {
+        Self {
             filter: ScalableBloomFilter::new(FALSE_POSITIVE_PROBABILITY, INITIAL_CAPACITY),
             possible_duplicates: HashMap::new(),
         }

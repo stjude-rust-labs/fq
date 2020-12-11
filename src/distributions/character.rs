@@ -21,9 +21,9 @@ pub struct Character {
 }
 
 impl Character {
-    pub fn new(alphabet: &'static [u8]) -> Character {
+    pub fn new(alphabet: &'static [u8]) -> Self {
         let range = Uniform::new(0, alphabet.len());
-        Character { alphabet, range }
+        Self { alphabet, range }
     }
 }
 

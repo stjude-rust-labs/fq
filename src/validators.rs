@@ -46,11 +46,11 @@ impl Error {
         message: I,
         line_type: LineType,
         col_no: Option<usize>,
-    ) -> Error
+    ) -> Self
     where
         I: Into<String>,
     {
-        Error {
+        Self {
             code: code.into(),
             name: name.into(),
             message: message.into(),
@@ -79,8 +79,8 @@ impl FromStr for LintMode {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "panic" => Ok(LintMode::Panic),
-            "log" => Ok(LintMode::Log),
+            "panic" => Ok(Self::Panic),
+            "log" => Ok(Self::Log),
             _ => Err(()),
         }
     }

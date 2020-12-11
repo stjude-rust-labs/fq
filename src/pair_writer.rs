@@ -19,8 +19,8 @@ where
     W: Write,
     X: Write,
 {
-    pub fn new(writer_1: fastq::Writer<W>, writer_2: fastq::Writer<X>) -> PairWriter<W, X> {
-        PairWriter { writer_1, writer_2 }
+    pub fn new(writer_1: fastq::Writer<W>, writer_2: fastq::Writer<X>) -> Self {
+        Self { writer_1, writer_2 }
     }
 
     pub fn write<R>(&mut self, mut generator: Generator<R>, record_count: u64) -> io::Result<()>

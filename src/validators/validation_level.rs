@@ -23,9 +23,9 @@ impl FromStr for ValidationLevel {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "low" => Ok(ValidationLevel::Low),
-            "medium" => Ok(ValidationLevel::Medium),
-            "high" => Ok(ValidationLevel::High),
+            "low" => Ok(Self::Low),
+            "medium" => Ok(Self::Medium),
+            "high" => Ok(Self::High),
             _ => Err(ParseError(s.into())),
         }
     }

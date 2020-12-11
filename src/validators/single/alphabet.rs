@@ -12,8 +12,8 @@ pub struct AlphabetValidator {
 }
 
 impl AlphabetValidator {
-    pub fn new(characters: &[u8]) -> AlphabetValidator {
-        AlphabetValidator {
+    pub fn new(characters: &[u8]) -> Self {
+        Self {
             alphabet: characters.iter().cloned().collect(),
         }
     }
@@ -51,8 +51,8 @@ impl SingleReadValidator for AlphabetValidator {
 
 impl Default for AlphabetValidator {
     /// Creates a validator with the alphabet "ACGTN", case-insensitive.
-    fn default() -> AlphabetValidator {
-        AlphabetValidator::new(b"ACGTNacgtn")
+    fn default() -> Self {
+        Self::new(b"ACGTNacgtn")
     }
 }
 
