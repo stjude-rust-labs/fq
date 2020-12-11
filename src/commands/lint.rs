@@ -1,13 +1,18 @@
-use std::io::{self, BufRead};
-use std::process;
+use std::{
+    io::{self, BufRead},
+    process,
+};
 
 use anyhow::Context;
 use clap::{value_t, ArgMatches};
 use log::{error, info};
 
-use crate::fastq::{self, Record};
-use crate::validators::single::DuplicateNameValidator;
-use crate::validators::{self, LintMode, SingleReadValidatorMut, ValidationLevel};
+use crate::{
+    fastq::{self, Record},
+    validators::{
+        self, single::DuplicateNameValidator, LintMode, SingleReadValidatorMut, ValidationLevel,
+    },
+};
 
 fn build_error_message(error: validators::Error, pathname: &str, record_counter: usize) -> String {
     let mut message = String::new();

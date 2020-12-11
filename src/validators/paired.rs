@@ -1,13 +1,13 @@
 //! Validators that use records from paired reads.
 
+mod names;
+
+pub use self::names::NamesValidator;
+
 use crate::{
     fastq::Record,
     validators::{Error, ValidationLevel},
 };
-
-pub use self::names::NamesValidator;
-
-mod names;
 
 pub trait PairedReadValidator {
     fn code(&self) -> &'static str;

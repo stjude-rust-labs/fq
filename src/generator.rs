@@ -1,10 +1,12 @@
 use std::io::Write;
 
-use rand::distributions::{Distribution, Uniform};
-use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+use rand::{
+    distributions::{Distribution, Uniform},
+    rngs::SmallRng,
+    Rng, SeedableRng,
+};
 
-use crate::{
+use super::{
     distributions::{Character, QualityScores},
     fastq::Record,
 };

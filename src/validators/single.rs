@@ -1,18 +1,5 @@
 //! Validators that use records from a single read.
 
-use crate::{
-    fastq::Record,
-    validators::{Error, ValidationLevel},
-};
-
-pub use self::alphabet::AlphabetValidator;
-pub use self::complete::CompleteValidator;
-pub use self::consistent_seq_qual::ConsistentSeqQualValidator;
-pub use self::duplicate_name::DuplicateNameValidator;
-pub use self::name::NameValidator;
-pub use self::plus_line::PlusLineValidator;
-pub use self::quality_string::QualityStringValidator;
-
 mod alphabet;
 mod complete;
 mod consistent_seq_qual;
@@ -20,6 +7,17 @@ mod duplicate_name;
 mod name;
 mod plus_line;
 mod quality_string;
+
+pub use self::{
+    alphabet::AlphabetValidator, complete::CompleteValidator,
+    consistent_seq_qual::ConsistentSeqQualValidator, duplicate_name::DuplicateNameValidator,
+    name::NameValidator, plus_line::PlusLineValidator, quality_string::QualityStringValidator,
+};
+
+use crate::{
+    fastq::Record,
+    validators::{Error, ValidationLevel},
+};
 
 pub trait SingleReadValidator {
     fn code(&self) -> &'static str;

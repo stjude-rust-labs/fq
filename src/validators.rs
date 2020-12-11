@@ -1,16 +1,15 @@
-pub use self::paired::PairedReadValidator;
-pub use self::single::{SingleReadValidator, SingleReadValidatorMut};
-pub use self::validation_level::ValidationLevel;
-
-use self::paired::NamesValidator;
-use self::single::{
-    AlphabetValidator, CompleteValidator, ConsistentSeqQualValidator, NameValidator,
-    PlusLineValidator, QualityStringValidator,
-};
-
 pub mod paired;
 pub mod single;
 pub mod validation_level;
+
+pub use self::{
+    paired::{NamesValidator, PairedReadValidator},
+    single::{
+        AlphabetValidator, CompleteValidator, ConsistentSeqQualValidator, NameValidator,
+        PlusLineValidator, QualityStringValidator, SingleReadValidator, SingleReadValidatorMut,
+    },
+    validation_level::ValidationLevel,
+};
 
 use std::{error, fmt, str::FromStr};
 

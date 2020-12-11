@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use rand::Rng;
 
-use crate::{
+use super::{
     fastq::{self, Record},
     Generator,
 };
