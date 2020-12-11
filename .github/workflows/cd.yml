@@ -1,0 +1,44 @@
+name: Continuous deployment
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  publish:
+    name: Publish assets for ${{ matrix.job.os }}
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      matrix:
+        job:
+          - { os: macos-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install toolchain
+        run: |
+          rustup set profile minimal
+          rustup toolchain install stable-${{ matrix.job.target }}
+
+      - name: Build
+        run: |
+          cargo build --release --target ${{ matrix.job.target }}
+
+      - name: Package
+        env:
+          TARGET: ${{ matrix.job.target }}
+          PROJECT_NAME: fqlib
+          OS_NAME: ${{ matrix.job.os }}
+        shell: bash
+        run: .github/scripts/before_deploy.sh
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: fqlib-*-${{ matrix.job.target }}.*
