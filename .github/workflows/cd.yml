@@ -32,6 +32,7 @@ jobs:
         env:
           TARGET: ${{ matrix.job.target }}
           PROJECT_NAME: fqlib
+          BIN_NAME: fq
           OS_NAME: ${{ matrix.job.os }}
         shell: bash
         run: .github/scripts/before_deploy.sh

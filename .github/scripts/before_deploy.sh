@@ -15,7 +15,7 @@ main() {
 
     mkdir "$working_prefix"
 
-    cp "target/$TARGET/release/$PROJECT_NAME" "$working_prefix"
+    cp "target/$TARGET/release/$BIN_NAME" "$working_prefix"
     cp LICENSE README.md "$working_prefix"
 
     pushd "$staging_prefix"
