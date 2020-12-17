@@ -2,6 +2,7 @@ use std::io::{self, BufRead};
 
 use super::Record;
 
+const LINE_FEED: u8 = b'\n';
 const CARRIAGE_RETURN: u8 = b'\r';
 
 pub struct Reader<R>
@@ -40,10 +41,12 @@ fn read_line<R: BufRead>(reader: &mut R, buf: &mut Vec<u8>) -> io::Result<usize>
     match reader.read_until(b'\n', buf) {
         Ok(0) => Ok(0),
         Ok(n) => {
-            buf.pop();
-
-            if buf.ends_with(&[CARRIAGE_RETURN]) {
+            if buf.ends_with(&[LINE_FEED]) {
                 buf.pop();
+
+                if buf.ends_with(&[CARRIAGE_RETURN]) {
+                    buf.pop();
+                }
             }
 
             Ok(n)
@@ -90,6 +93,12 @@ FQLB
         assert_eq!(buf, b"@fqlib");
 
         let data = b"@fqlib\r\n";
+        let mut reader = &data[..];
+        buf.clear();
+        read_line(&mut reader, &mut buf)?;
+        assert_eq!(buf, b"@fqlib");
+
+        let data = b"@fqlib";
         let mut reader = &data[..];
         buf.clear();
         read_line(&mut reader, &mut buf)?;

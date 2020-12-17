@@ -4,7 +4,8 @@
 
 ### Added
 
-  * The FASTQ reader handles files with CRLF (Windows) newlines.
+  * The FASTQ reader handles files with CRLF (Windows) newlines and no final
+    newline.
 
 ## 0.5.0 - 2020-10-09
 
