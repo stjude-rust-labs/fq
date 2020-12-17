@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+  * The FASTQ reader handles files with CRLF (Windows) newlines.
+
 ## 0.5.0 - 2020-10-09
 
 ### Changed
