@@ -50,25 +50,6 @@ impl Generator<SmallRng> {
         Self::default()
     }
 
-    /// Creates a `Generator<SmallRng>` from a given seed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fqlib::Generator;
-    ///
-    /// let seed = [
-    ///     0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03,
-    ///     0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b, 0x44,
-    /// ];
-    ///
-    /// let _ = Generator::from_seed(seed);
-    /// ```
-    pub fn from_seed(seed: [u8; 16]) -> Self {
-        let rng = SmallRng::from_seed(seed);
-        Self::from_rng(rng)
-    }
-
     pub fn seed_from_u64(seed: u64) -> Self {
         let rng = SmallRng::seed_from_u64(seed);
         Self::from_rng(rng)
@@ -231,23 +212,18 @@ where
 mod tests {
     use super::*;
 
-    static SEED: [u8; 16] = [
-        0x28, 0x8f, 0x28, 0x22, 0x5e, 0x8b, 0x18, 0x03, 0x8a, 0x08, 0x9a, 0x77, 0x1d, 0x8f, 0x0b,
-        0x44,
-    ];
-
     #[test]
     fn test_next_record() {
-        let mut generator = Generator::from_seed(SEED);
+        let mut generator = Generator::seed_from_u64(0);
 
         let mut record = Record::default();
         generator.next_record(&mut record);
 
         assert_eq!(
             record.name(),
-            "@fqlib1:950:DFZYAUO:3:33:7515:3404".as_bytes()
+            "@fqlib3:914:JRDKAHA:6:25:7633:4419".as_bytes()
         );
-        assert_eq!(record.sequence(), "TTGATTGAAAATTAGATAATACATCAATTCGGGGCCTAATAGTTGGGGTAAGCAAAGGCAGTCATTGACATGGTATCGTTTGCCCTTCACAGCTTACAACG".as_bytes());
-        assert_eq!(record.quality_scores(), "66=.115657:8345532549:64555347576950783428226554573132227563;7731553368399677242129447964689;66359544".as_bytes());
+        assert_eq!(record.sequence(), "TCAGTTGGGAAGTTCTCAGCATCTAAACACCTTACAGTGTGCCTAGGCCAGCTTGCGAGGCTACTTTATTGGCTATTAATAACTGGCGAGCTCTTGTTGTT".as_bytes());
+        assert_eq!(record.quality_scores(), "967566895474631:8<;971666774603=921881646525952963::865393655758525365:574295334976337748832;63335735".as_bytes());
     }
 }
