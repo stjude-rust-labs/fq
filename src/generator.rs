@@ -78,8 +78,8 @@ where
     /// let _ = Generator::from_rng(rng);
     /// ```
     pub fn from_rng(mut rng: R) -> Self {
-        let instrument = format!("fqlib{}", rng.gen_range(1, 10 + 1));
-        let run_number = rng.gen_range(1, 1000 + 1);
+        let instrument = format!("fqlib{}", rng.gen_range(1..=10));
+        let run_number = rng.gen_range(1..=1000);
         let flow_cell_id = gen_flow_cell_id(&mut rng, FLOW_CELL_ID_LEN);
 
         let lane_range = Uniform::new(1, LANES + 1);
@@ -221,9 +221,9 @@ mod tests {
 
         assert_eq!(
             record.name(),
-            "@fqlib3:914:JRDKAHA:6:25:7633:4419".as_bytes()
+            "@fqlib5:440:ZMXYPLK:7:15:9764:6446".as_bytes()
         );
-        assert_eq!(record.sequence(), "TCAGTTGGGAAGTTCTCAGCATCTAAACACCTTACAGTGTGCCTAGGCCAGCTTGCGAGGCTACTTTATTGGCTATTAATAACTGGCGAGCTCTTGTTGTT".as_bytes());
-        assert_eq!(record.quality_scores(), "967566895474631:8<;971666774603=921881646525952963::865393655758525365:574295334976337748832;63335735".as_bytes());
+        assert_eq!(record.sequence(), "ACAAGCTTAGCGCCACGCAGCGGGTGATCGAGTGGGCTAACAATTAAACTTTGAAGTACCGGCCCCTCCTGATGCATCCGGCGGTCCTTGTAGAATGACCC".as_bytes());
+        assert_eq!(record.quality_scores(), "6547759627579>3111:817:585;87246;6;425;773656:857836434354769:6574745887;74348774:7358566335664964387".as_bytes());
     }
 }
