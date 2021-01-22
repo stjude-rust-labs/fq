@@ -108,7 +108,7 @@ ARGS:
 $ fq generate /tmp/r1.fastq /tmp/r2.fastq
 
 # Generates FASTQ paired reads with 32 records, written to gzipped outputs.
-$ fq generate --n-records 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
+$ fq generate --record-count 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 ```
 
 ### lint
