@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Context;
 use clap::ArgMatches;
-use log::info;
+use tracing::info;
 
 use crate::fastq;
 

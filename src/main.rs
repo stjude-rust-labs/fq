@@ -1,6 +1,5 @@
-use clap::{crate_name, App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 use fqlib::commands::{filter, generate, lint};
-use log::LevelFilter;
 
 use git_testament::{git_testament, render_testament};
 
@@ -113,11 +112,11 @@ fn main() -> anyhow::Result<()> {
         .get_matches();
 
     if matches.is_present("verbose") {
-        env_logger::Builder::from_default_env()
-            .filter(Some(crate_name!()), LevelFilter::Info)
+        tracing_subscriber::fmt()
+            .with_env_filter("fqlib=info")
             .init();
     } else {
-        env_logger::init();
+        tracing_subscriber::fmt::init();
     }
 
     if let Some(m) = matches.subcommand_matches("filter") {

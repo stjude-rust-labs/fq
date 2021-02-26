@@ -13,7 +13,7 @@ pub use self::{
 
 use std::{error, fmt, str::FromStr};
 
-use log::info;
+use tracing::info;
 
 pub type SingleAndPairedValidators = (
     Vec<Box<dyn SingleReadValidator>>,

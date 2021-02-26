@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::Context;
 use clap::{value_t, ArgMatches};
-use log::{error, info};
+use tracing::{error, info};
 
 use crate::{
     fastq::{self, Record},

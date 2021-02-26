@@ -1,6 +1,6 @@
 use anyhow::Context;
 use clap::{value_t, ArgMatches};
-use log::info;
+use tracing::info;
 
 use crate::{Generator, PairWriter};
 
