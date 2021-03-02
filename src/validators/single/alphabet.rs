@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use crate::{
     fastq::Record,
     validators::{Error, LineType, SingleReadValidator, ValidationLevel},
@@ -8,14 +6,18 @@ use crate::{
 /// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
 /// given character set.
 pub struct AlphabetValidator {
-    alphabet: HashSet<u8>,
+    alphabet: [bool; 256],
 }
 
 impl AlphabetValidator {
     pub fn new(characters: &[u8]) -> Self {
-        Self {
-            alphabet: characters.iter().cloned().collect(),
+        let mut alphabet = [false; 256];
+
+        for &b in characters {
+            alphabet[usize::from(b)] = true;
         }
+
+        Self { alphabet }
     }
 }
 
@@ -34,7 +36,7 @@ impl SingleReadValidator for AlphabetValidator {
 
     fn validate(&self, r: &Record) -> Result<(), Error> {
         for (i, &b) in r.sequence().iter().enumerate() {
-            if !self.alphabet.contains(&b) {
+            if !self.alphabet[usize::from(b)] {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
@@ -63,10 +65,9 @@ mod tests {
     #[test]
     fn test_new() {
         let validator = AlphabetValidator::new(b"abc");
-        assert_eq!(validator.alphabet.len(), 3);
-        assert!(validator.alphabet.contains(&b'a'));
-        assert!(validator.alphabet.contains(&b'b'));
-        assert!(validator.alphabet.contains(&b'c'));
+        assert!(validator.alphabet[usize::from(b'a')]);
+        assert!(validator.alphabet[usize::from(b'b')]);
+        assert!(validator.alphabet[usize::from(b'c')]);
     }
 
     #[test]
