@@ -1,3 +1,7 @@
+mod builder;
+
+pub use self::builder::Builder;
+
 use std::io::Write;
 
 use rand::{
@@ -35,9 +39,15 @@ pub struct Generator<R> {
     y_pos_range: Uniform<u32>,
     sequence_distribution: Character,
     quality_distribution: QualityScores,
+
+    read_length: usize,
 }
 
 impl Generator<SmallRng> {
+    pub fn builder() -> Builder<SmallRng> {
+        Builder::default()
+    }
+
     /// Creates a `Generator<SmallRng>` seeded by the system.
     ///
     /// # Examples
@@ -52,14 +62,13 @@ impl Generator<SmallRng> {
 
     pub fn seed_from_u64(seed: u64) -> Self {
         let rng = SmallRng::seed_from_u64(seed);
-        Self::from_rng(rng)
+        Self::from_rng(rng, READ_LEN)
     }
 }
 
 impl Default for Generator<SmallRng> {
     fn default() -> Self {
-        let rng = SmallRng::from_entropy();
-        Self::from_rng(rng)
+        Self::builder().build()
     }
 }
 
@@ -67,7 +76,7 @@ impl<R> Generator<R>
 where
     R: Rng,
 {
-    /// Creates a new `Generator` with a given `Rng`.
+    /// Creates a new `Generator` with a given `Rng` and read length.
     ///
     /// # Examples
     ///
@@ -75,9 +84,9 @@ where
     /// # use rand::{SeedableRng, rngs::SmallRng};
     /// use fqlib::Generator;
     /// let rng = SmallRng::from_entropy();
-    /// let _ = Generator::from_rng(rng);
+    /// let _ = Generator::from_rng(rng, 101);
     /// ```
-    pub fn from_rng(mut rng: R) -> Self {
+    pub fn from_rng(mut rng: R, read_length: usize) -> Self {
         let instrument = format!("fqlib{}", rng.gen_range(1..=10));
         let run_number = rng.gen_range(1..=1000);
         let flow_cell_id = gen_flow_cell_id(&mut rng, FLOW_CELL_ID_LEN);
@@ -102,6 +111,8 @@ where
             y_pos_range,
             sequence_distribution,
             quality_distribution,
+
+            read_length,
         }
     }
 
@@ -170,7 +181,7 @@ where
     fn next_sequence(&mut self, record: &mut Record) {
         let iter = (&mut self.rng)
             .sample_iter(&self.sequence_distribution)
-            .take(READ_LEN);
+            .take(self.read_length);
 
         let sequence = record.sequence_mut();
 
@@ -182,7 +193,7 @@ where
     fn next_quality(&mut self, record: &mut Record) {
         let iter = (&mut self.rng)
             .sample_iter(&self.quality_distribution)
-            .take(READ_LEN)
+            .take(self.read_length)
             .map(|phred| phred + 33);
 
         let quality = record.quality_scores_mut();
@@ -225,5 +236,19 @@ mod tests {
         );
         assert_eq!(record.sequence(), "ACAAGCTTAGCGCCACGCAGCGGGTGATCGAGTGGGCTAACAATTAAACTTTGAAGTACCGGCCCCTCCTGATGCATCCGGCGGTCCTTGTAGAATGACCC".as_bytes());
         assert_eq!(record.quality_scores(), "6547759627579>3111:817:585;87246;6;425;773656:857836434354769:6574745887;74348774:7358566335664964387".as_bytes());
+    }
+
+    #[test]
+    fn test_next_record_with_read_length() {
+        const READ_LENGTH: usize = 4;
+
+        let rng = SmallRng::seed_from_u64(0);
+        let mut generator = Generator::from_rng(rng, READ_LENGTH);
+
+        let mut record = Record::default();
+        generator.next_record(&mut record);
+
+        assert_eq!(record.sequence().len(), READ_LENGTH);
+        assert_eq!(record.quality_scores().len(), READ_LENGTH);
     }
 }

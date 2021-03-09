@@ -39,6 +39,13 @@ fn main() -> anyhow::Result<()> {
                 .default_value("10000"),
         )
         .arg(
+            Arg::with_name("read-length")
+                .long("read-length")
+                .help("Number of bases in the sequence")
+                .value_name("usize")
+                .default_value("101"),
+        )
+        .arg(
             Arg::with_name("r1-dst")
                 .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .index(1)

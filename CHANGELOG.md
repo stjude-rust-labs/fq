@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+  * `generate`: Added `--read-length` option to set the number of bases to
+    generate in each record's sequence.
+
 ## 0.6.0 - 2020-12-17
 
 ### Added
