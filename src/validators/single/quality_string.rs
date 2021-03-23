@@ -24,12 +24,12 @@ impl SingleReadValidator for QualityStringValidator {
     }
 
     fn validate(&self, r: &Record) -> Result<(), Error> {
-        for (i, &b) in r.quality_scores().iter().enumerate() {
-            if b < START_OFFSET || b > END_OFFSET {
+        for (i, b) in r.quality_scores().iter().enumerate() {
+            if !(START_OFFSET..=END_OFFSET).contains(b) {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
-                    format!("Invalid character '{}'", b as char),
+                    format!("Invalid character '{}'", *b as char),
                     LineType::Quality,
                     Some(i + 1),
                 ));
