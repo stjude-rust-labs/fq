@@ -38,7 +38,7 @@ where
 }
 
 fn read_line<R: BufRead>(reader: &mut R, buf: &mut Vec<u8>) -> io::Result<usize> {
-    match reader.read_until(b'\n', buf) {
+    match reader.read_until(LINE_FEED, buf) {
         Ok(0) => Ok(0),
         Ok(n) => {
             if buf.ends_with(&[LINE_FEED]) {
