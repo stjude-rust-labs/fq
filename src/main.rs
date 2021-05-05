@@ -7,12 +7,12 @@ git_testament!(TESTAMENT);
 
 fn main() -> anyhow::Result<()> {
     let filter_cmd = SubCommand::with_name("filter")
-        .about("Filters a FASTQ from a whitelist of names")
+        .about("Filters a FASTQ from an allowlist of names")
         .arg(
             Arg::with_name("names")
                 .long("names")
                 .value_name("path")
-                .help("Whitelist of record names")
+                .help("Allowlist of record names")
                 .required(true),
         )
         .arg(

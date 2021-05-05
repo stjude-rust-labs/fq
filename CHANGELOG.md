@@ -47,8 +47,8 @@
 
 ### Added
 
-  * New `filter` command. This accepts a whitelist of record read names to keep
-    in the output FASTQ.
+  * New `filter` command. This accepts an allowlist of record read names to
+    keep in the output FASTQ.
 
   * Add `Dockerfile` to build a self-contained image for `fq`. Build with
     `docker build --tag fqlib .`.

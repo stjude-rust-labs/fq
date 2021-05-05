@@ -39,14 +39,14 @@ files.
 
 ### filter
 
-**fq filter** takes a whitelist of record names and filters a given FASTQ file.
-The result includes only the records in the whitelist.
+**fq filter** takes an allowlist of record names and filters a given FASTQ
+file. The result includes only the records in the allowlist.
 
 #### Usage
 
 ```
 fq-filter
-Filters a FASTQ from a whitelist of names
+Filters a FASTQ from an allowlist of names
 
 USAGE:
     fq filter <src> --names <path>
@@ -56,7 +56,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-        --names <path>    Whitelist of record names
+        --names <path>    Allowlist of record names
 
 ARGS:
     <src>    Source FASTQ
@@ -65,8 +65,8 @@ ARGS:
 #### Examples
 
 ```sh
-# Filters an input FASTQ using the given whitelist.
-$ fq filter --names whitelist.txt in.fastq
+# Filters an input FASTQ using the given allowlist.
+$ fq filter --names allowlist.txt in.fastq
 ```
 
 ### generate
