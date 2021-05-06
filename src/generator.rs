@@ -101,8 +101,8 @@ where
 
         Self {
             instrument,
-            flow_cell_id,
             run_number,
+            flow_cell_id,
 
             rng,
             lane_range,
