@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM rust:1.51.0-buster AS builder
 
 COPY .git /app/.git
