@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM rust:1.51.0-buster AS builder
+FROM rust:1.52.0-buster AS builder
 
 COPY .git /app/.git
 COPY Cargo.lock Cargo.toml /app/
