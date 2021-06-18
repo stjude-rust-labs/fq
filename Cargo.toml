@@ -20,7 +20,7 @@ anyhow = "1.0.31"
 bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 clap = "2.31.2"
 flate2 = "1.0.14"
-git-testament = "0.1.6"
+git-testament = "0.2.0"
 rand = { version = "0.8.1", features = ["small_rng"] }
 rand_distr = { version = "0.4.0" }
 tracing = "0.1.25"
