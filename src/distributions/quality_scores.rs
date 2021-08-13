@@ -27,31 +27,7 @@ impl Distribution<u8> for QualityScores {
         R: Rng + ?Sized,
     {
         let n = self.distribution.sample(rng);
-        let score = clamp(n, MIN, MAX).round();
+        let score = n.clamp(MIN, MAX).round();
         score as u8
-    }
-}
-
-fn clamp(n: f64, min: f64, max: f64) -> f64 {
-    if n < min {
-        min
-    } else if n > max {
-        max
-    } else {
-        n
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_clamp() {
-        assert_eq!(clamp(0.0, 0.0, 1.0), 0.0);
-        assert_eq!(clamp(0.5, 0.0, 1.0), 0.5);
-        assert_eq!(clamp(1.0, 0.0, 1.0), 1.0);
-        assert_eq!(clamp(-1.0, 0.0, 1.0), 0.0);
-        assert_eq!(clamp(2.0, 0.0, 1.0), 1.0);
     }
 }
