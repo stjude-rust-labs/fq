@@ -7,9 +7,6 @@ use crate::{
 /// "~" (ordinal values).
 pub struct QualityStringValidator;
 
-const START_OFFSET: u8 = b'!';
-const END_OFFSET: u8 = b'~';
-
 impl SingleReadValidator for QualityStringValidator {
     fn code(&self) -> &'static str {
         "S006"
@@ -25,7 +22,7 @@ impl SingleReadValidator for QualityStringValidator {
 
     fn validate(&self, r: &Record) -> Result<(), Error> {
         for (i, b) in r.quality_scores().iter().enumerate() {
-            if !(START_OFFSET..=END_OFFSET).contains(b) {
+            if !b.is_ascii_graphic() {
                 return Err(Error::new(
                     self.code(),
                     self.name(),
