@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+  * main: Show global version in subcommands ([#20]).
+
+    This allows subcommands to show the global version, e.g., `fq lint
+    --version`.
+
+[#20]: https://github.com/stjude/fqlib/issues/20
+
 ## 0.7.0 - 2021-05-07
 
 ### Added

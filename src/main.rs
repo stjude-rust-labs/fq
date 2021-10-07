@@ -106,6 +106,7 @@ fn main() -> anyhow::Result<()> {
 
     let matches = App::new("fq")
         .version(render_testament!(TESTAMENT).as_str())
+        .setting(AppSettings::GlobalVersion)
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(
             Arg::with_name("verbose")
