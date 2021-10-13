@@ -8,8 +8,20 @@
 
 ## Install
 
-Clone the repository and use [Cargo] to install fqlib. The binary built is
-named `fq`.
+There are different methods to install fqlib. The binary is named `fq`.
+
+### Releases
+
+[Precompiled binaries are built][releases] for modern Linux distributions
+(`x86_64-unknown-linux-gnu`), macOS (`x86_64-apple-darwin`), and Windows
+(`x86_64-pc-windows-msvc`). The Linux binaries require glibc 2.18+ (CentOS/RHEL
+8+, Debian 8+, Ubuntu 14.04+, etc.).
+
+[releases]: https://github.com/stjude/fqlib/releases
+
+### Manual
+
+Clone the repository and use [Cargo] to install fqlib.
 
 ```
 $ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fqlib.git
@@ -17,22 +29,18 @@ $ cd fqlib
 $ cargo install --path .
 ```
 
-[Precompiled binaries are built][releases] for modern Linux distributions
-(`x86_64-unknown-linux-gnu`), macOS (`x86_64-apple-darwin`), and Windows
-(`x86_64-pc-windows-msvc`). The Linux binaries require glibc 2.18+ (CentOS/RHEL
-8+, Debian 8+, Ubuntu 14.04+, etc.).
+[Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
 
-Alternatively, build the [Docker] image.
+### Container image
+
+Alternatively, build the container image, e.g., using [Docker]:
 
 ```
-$ git clone https://github.com/stjude/fqlib.git
+$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fqlib.git
 $ cd fqlib
-$ git switch --detach v0.7.1
 $ docker image build --tag fqlib:0.7.1 .
 ```
 
-[Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
-[releases]: https://github.com/stjude/fqlib/releases
 [Docker]: https://www.docker.com/
 
 ## Usage
