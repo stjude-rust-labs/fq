@@ -8,10 +8,13 @@
 
 ## Install
 
-Use [Cargo] to install fqlib. The binary built is named `fq`.
+Clone the repository and use [Cargo] to install fqlib. The binary built is
+named `fq`.
 
 ```
-$ cargo install --git https://github.com/stjude/fqlib.git --tag v0.7.1
+$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fqlib.git
+$ cd fqlib
+$ cargo install --path .
 ```
 
 [Precompiled binaries are built][releases] for modern Linux distributions
