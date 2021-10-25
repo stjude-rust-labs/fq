@@ -2,6 +2,7 @@ use clap::{App, AppSettings, Arg, SubCommand};
 use fqlib::commands::{filter, generate, lint};
 
 use git_testament::{git_testament, render_testament};
+use tracing::Level;
 
 git_testament!(TESTAMENT);
 
@@ -120,9 +121,7 @@ fn main() -> anyhow::Result<()> {
         .get_matches();
 
     if matches.is_present("verbose") {
-        tracing_subscriber::fmt()
-            .with_env_filter("fqlib=info")
-            .init();
+        tracing_subscriber::fmt().with_max_level(Level::INFO).init();
     } else {
         tracing_subscriber::fmt::init();
     }
