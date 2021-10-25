@@ -10,10 +10,18 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
     let src = matches.value_of("src").unwrap();
     let dst = matches.value_of("dst").unwrap();
 
+    let mut rng = if matches.is_present("seed") {
+        let seed = value_t!(matches, "seed", u64).unwrap_or_else(|e| e.exit());
+        info!("initializing rng from seed = {}", seed);
+        SmallRng::seed_from_u64(seed)
+    } else {
+        info!("initializing rng from entropy");
+        SmallRng::from_entropy()
+    };
+
     let mut reader = fastq::open(src).with_context(|| format!("Could not open file: {}", src))?;
     let mut writer =
         fastq::create(dst).with_context(|| format!("Could not create file: {}", dst))?;
-    let mut rng = SmallRng::from_entropy();
 
     let mut record = Record::default();
     let mut n: u64 = 0;

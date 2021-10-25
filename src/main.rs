@@ -115,6 +115,12 @@ fn main() -> anyhow::Result<()> {
                 .required(true),
         )
         .arg(
+            Arg::with_name("seed")
+                .long("seed")
+                .value_name("u64")
+                .help("Seed to use for the random number generator"),
+        )
+        .arg(
             Arg::with_name("dst")
                 .help("The output destination. Writes either raw or gzipped output depending on a `gz` extension.")
                 .short("o")
