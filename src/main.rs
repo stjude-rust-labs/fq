@@ -1,5 +1,5 @@
 use clap::{App, AppSettings, Arg, SubCommand};
-use fqlib::commands::{filter, generate, lint};
+use fqlib::commands::{filter, generate, lint, subsample};
 
 use git_testament::{git_testament, render_testament};
 use tracing::Level;
@@ -105,6 +105,30 @@ fn main() -> anyhow::Result<()> {
                 .index(2),
         );
 
+    let subsample_cmd = SubCommand::with_name("subsample")
+        .about("Outputs a proportional subset of reads")
+        .arg(
+            Arg::with_name("probability")
+                .short("p")
+                .long("probability")
+                .value_name("f64")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("dst")
+                .help("The output destination. Writes either raw or gzipped output depending on a `gz` extension.")
+                .short("o")
+                .long("output")
+                .value_name("path")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("src")
+                .help("Read source. Accepts both raw and gzipped FASTQ inputs.")
+                .index(1)
+                .required(true),
+        );
+
     let matches = App::new("fq")
         .version(render_testament!(TESTAMENT).as_str())
         .setting(AppSettings::GlobalVersion)
@@ -118,6 +142,7 @@ fn main() -> anyhow::Result<()> {
         .subcommand(filter_cmd)
         .subcommand(generate_cmd)
         .subcommand(lint_cmd)
+        .subcommand(subsample_cmd)
         .get_matches();
 
     if matches.is_present("verbose") {
@@ -132,6 +157,8 @@ fn main() -> anyhow::Result<()> {
         generate(m)
     } else if let Some(m) = matches.subcommand_matches("lint") {
         lint(m)
+    } else if let Some(m) = matches.subcommand_matches("subsample") {
+        subsample(m)
     } else {
         unreachable!();
     }
