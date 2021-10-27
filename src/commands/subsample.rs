@@ -1,12 +1,13 @@
+use std::io::{BufRead, Write};
+
 use anyhow::Context;
 use clap::{value_t, ArgMatches};
-use rand::{rngs::SmallRng, Rng, SeedableRng};
+use rand::{rngs::SmallRng, SeedableRng};
 use tracing::info;
 
 use crate::fastq::{self, Record};
 
 pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
-    let probability = value_t!(matches, "probability", f64).unwrap_or_else(|e| e.exit());
     let src = matches.value_of("src").unwrap();
     let dst = matches.value_of("dst").unwrap();
 
@@ -19,35 +20,16 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
         SmallRng::from_entropy()
     };
 
+    let probability = value_t!(matches, "probability", f64).unwrap_or_else(|e| e.exit());
+
     let mut reader = fastq::open(src).with_context(|| format!("Could not open file: {}", src))?;
     let mut writer =
         fastq::create(dst).with_context(|| format!("Could not create file: {}", dst))?;
 
-    let mut record = Record::default();
-    let mut n: u64 = 0;
-    let mut total: u64 = 0;
-
     info!("fq-subsample start");
     info!("probability (p) = {}", probability);
 
-    loop {
-        match reader.read_record(&mut record) {
-            Ok(0) => break,
-            Ok(_) => {
-                let q: f64 = rng.gen();
-
-                if q <= probability {
-                    writer.write_record(&record)?;
-                    n += 1;
-                }
-
-                total += 1;
-            }
-            Err(e) => {
-                return Err(e).with_context(|| format!("Could not read record from file: {}", src))
-            }
-        }
-    }
+    let (n, total) = subsample_single(&mut reader, &mut writer, &mut rng, probability)?;
 
     let percentage = (n as f64) / (total as f64) * 100.0;
     info!("sampled {}/{} ({:.4}%) records", n, total, percentage);
@@ -55,4 +37,39 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
     info!("fq-subsample end");
 
     Ok(())
+}
+
+fn subsample_single<R, W, Rng>(
+    reader: &mut fastq::Reader<R>,
+    writer: &mut fastq::Writer<W>,
+    rng: &mut Rng,
+    p: f64,
+) -> anyhow::Result<(u64, u64)>
+where
+    R: BufRead,
+    W: Write,
+    Rng: rand::Rng,
+{
+    let mut record = Record::default();
+
+    let mut n = 0;
+    let mut total = 0;
+
+    loop {
+        match reader.read_record(&mut record)? {
+            0 => break,
+            _ => {
+                let q: f64 = rng.gen();
+
+                if q <= p {
+                    writer.write_record(&record)?;
+                    n += 1;
+                }
+
+                total += 1;
+            }
+        }
+    }
+
+    Ok((n, total))
 }
