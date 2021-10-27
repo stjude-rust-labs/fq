@@ -121,18 +121,28 @@ fn main() -> anyhow::Result<()> {
                 .help("Seed to use for the random number generator"),
         )
         .arg(
-            Arg::with_name("dst")
-                .help("The output destination. Writes either raw or gzipped output depending on a `gz` extension.")
-                .short("o")
-                .long("output")
+            Arg::with_name("r1-dst")
+                .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
+                .long("r1-dst")
                 .value_name("path")
                 .required(true),
         )
         .arg(
-            Arg::with_name("src")
-                .help("Read source. Accepts both raw and gzipped FASTQ inputs.")
+            Arg::with_name("r2-dst")
+                .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
+                .long("r2-dst")
+                .value_name("path"),
+        )
+        .arg(
+            Arg::with_name("r1-src")
+                .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
                 .required(true),
+        )
+        .arg(
+            Arg::with_name("r2-src")
+                .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
+                .index(2),
         );
 
     let matches = App::new("fq")
