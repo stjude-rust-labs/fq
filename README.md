@@ -45,8 +45,8 @@ $ docker image build --tag fqlib:0.7.1 .
 
 ## Usage
 
-fqlib provides subcommands for filtering, generating, and validating FASTQ
-files.
+fqlib provides subcommands for filtering, generating, subsampling, and
+validating FASTQ files.
 
 ### filter
 
@@ -194,4 +194,57 @@ $ fq lint --lint-mode log r1.fastq r2.fastq
 
 # Disable validators S004 and S007.
 $ fq lint --disable-validator S004 --disable-validator S007 r1.fastq r2.fastq
+```
+
+### lint
+
+**fq subsample** outputs a proportional subset of reads from single or paired
+FASTQ files.
+
+This works by selecting a subset of reads using a given probability (`-p,
+--probability`). Given the randomness used when sampling a uniform
+distribution, the output record count will not be exact but (statistically)
+close. A seed (`-s, --seed`) can be provided to influence the results, e.g.,
+for a deterministic subset of reads.
+
+For paired input, the sampling is applied to each pair.
+
+#### Usage
+
+```
+fq-subsample
+Outputs a proportional subset of reads
+
+USAGE:
+    fq subsample [OPTIONS] <r1-src> --probability <f64> --r1-dst <path> [r2-src]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -p, --probability <f64>
+        --r1-dst <path>        Read 1 destination. Output will be gzipped if ends in `.gz`.
+        --r2-dst <path>        Read 2 destination. Output will be gzipped if ends in `.gz`.
+    -s, --seed <u64>           Seed to use for the random number generator
+
+ARGS:
+    <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
+    <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
+```
+
+#### Examples
+
+```sh
+# Sample ~50% of reads from a single FASTQ file
+$ fq subsample --probability 0.5 --r1-dst r1.50pct.fastq r1.fastq
+
+# Sample ~50% of reads from a single FASTQ file and seed the RNG
+$ fq subsample --probability --seed 13 --r1-dst r1.50pct.fastq r1.fastq
+
+# Sample ~25% of reads from paired FASTQ files
+$ fq subsample --probability 0.25 --r1-dst r1.25pct.fastq --r2-dst r2.25pct.fastq r1.fastq r2.fastq
+
+# Sample ~10% of reads from a gzipped FASTQ file and compress output
+$ fq subsample --probability 0.1 --r1-dst r1.10pct.fastq.gz r1.fastq.gz
 ```
