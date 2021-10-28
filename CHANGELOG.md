@@ -6,7 +6,10 @@
 
   * commands/generate: Add `-s` short option for `--seed`.
 
-  * commands: Add subsample command.
+  * commands: Add `subsample` command.
+
+    `subsample` outputs a proportional subset of records from single or paired
+    FASTQ files.
 
 ## 0.7.1 - 2021-10-07
 
