@@ -113,6 +113,7 @@ fn main() -> anyhow::Result<()> {
                 .short("p")
                 .long("probability")
                 .value_name("f64")
+                .help("The probability a read is kept, as a percentage [0, 1]")
                 .required(true),
         )
         .arg(

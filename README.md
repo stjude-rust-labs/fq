@@ -223,7 +223,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -p, --probability <f64>
+    -p, --probability <f64>    The probability a read is kept, as a percentage [0, 1]
         --r1-dst <path>        Read 1 destination. Output will be gzipped if ends in `.gz`.
         --r2-dst <path>        Read 2 destination. Output will be gzipped if ends in `.gz`.
     -s, --seed <u64>           Seed to use for the random number generator
