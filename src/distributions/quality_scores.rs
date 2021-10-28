@@ -4,7 +4,7 @@ use rand_distr::Normal;
 const MIN: f64 = 0.0;
 const MAX: f64 = 41.0;
 
-const MEAN: f64 = (MIN + MAX) as f64 / 2.0;
+const MEAN: f64 = (MIN + MAX) / 2.0;
 // std_dev = sqrt(MEAN / 3.0)
 const STD_DEV: f64 = 2.61;
 
