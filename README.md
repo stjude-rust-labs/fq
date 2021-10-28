@@ -142,8 +142,8 @@ FLAGS:
 
 OPTIONS:
         --disable-validator <str>...            Disable validators by code. Use multiple times to disable more than one.
-        --lint-mode <str>                       Panic on first error or log all errors. Logging forces verbose mode.
-                                                [default: panic]  [possible values: panic, log]
+        --lint-mode <str>                       Panic on first error or log all errors [default: panic]  [possible
+                                                values: panic, log]
         --paired-read-validation-level <str>    Only use paired read validators up to a given level [default: high]
                                                 [possible values: low, medium, high]
         --single-read-validation-level <str>    Only use single read validators up to a given level [default: high]
@@ -185,9 +185,6 @@ listed below.
 # Validate both reads using all validators. Exits cleanly (0) if no validation
 # errors occur.
 $ fq lint r1.fastq r2.fastq
-
-# Enable log messages.
-$ fq --verbose lint r1.fastq r2.fastq
 
 # Log errors instead of quitting on first error.
 $ fq lint --lint-mode log r1.fastq r2.fastq

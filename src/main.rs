@@ -2,7 +2,7 @@ use clap::{App, AppSettings, Arg, SubCommand};
 use fqlib::commands::{filter, generate, lint, subsample};
 
 use git_testament::{git_testament, render_testament};
-use tracing::Level;
+use tracing::warn;
 
 git_testament!(TESTAMENT);
 
@@ -65,7 +65,7 @@ fn main() -> anyhow::Result<()> {
         .arg(
             Arg::with_name("lint-mode")
                 .long("lint-mode")
-                .help("Panic on first error or log all errors. Logging forces verbose mode.")
+                .help("Panic on first error or log all errors")
                 .value_name("str")
                 .possible_values(&["panic", "log"])
                 .default_value("panic"),
@@ -156,7 +156,7 @@ fn main() -> anyhow::Result<()> {
             Arg::with_name("verbose")
                 .short("v")
                 .long("verbose")
-                .help("Use verbose logging"),
+                .hidden(true),
         )
         .subcommand(filter_cmd)
         .subcommand(generate_cmd)
@@ -164,10 +164,10 @@ fn main() -> anyhow::Result<()> {
         .subcommand(subsample_cmd)
         .get_matches();
 
+    tracing_subscriber::fmt::init();
+
     if matches.is_present("verbose") {
-        tracing_subscriber::fmt().with_max_level(Level::INFO).init();
-    } else {
-        tracing_subscriber::fmt::init();
+        warn!("`--verbose` is deprecated and will be removed in a future version. Logging is now always enabled.");
     }
 
     if let Some(m) = matches.subcommand_matches("filter") {

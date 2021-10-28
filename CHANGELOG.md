@@ -11,6 +11,12 @@
     `subsample` outputs a proportional subset of records from single or paired
     FASTQ files.
 
+### Deprecated
+
+  * Deprecate `--verbose` flag.
+
+    Logging is now always enabled.
+
 ## 0.7.1 - 2021-10-07
 
 ### Fixed
