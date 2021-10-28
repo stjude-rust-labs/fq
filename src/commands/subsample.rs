@@ -27,6 +27,11 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
 
     let probability = value_t!(matches, "probability", f64).unwrap_or_else(|e| e.exit());
 
+    if !(0.0..=1.0).contains(&probability) {
+        return Err(io::Error::from(io::ErrorKind::InvalidInput))
+            .with_context(|| format!("invalid probability = {}", probability));
+    }
+
     let mut r1 = fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
     let mut w1 =
         fastq::create(r1_dst).with_context(|| format!("Could not create file: {}", r1_dst))?;
