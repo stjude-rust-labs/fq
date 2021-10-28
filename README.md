@@ -196,7 +196,7 @@ $ fq lint --lint-mode log r1.fastq r2.fastq
 $ fq lint --disable-validator S004 --disable-validator S007 r1.fastq r2.fastq
 ```
 
-### lint
+### subsample
 
 **fq subsample** outputs a proportional subset of reads from single or paired
 FASTQ files.
