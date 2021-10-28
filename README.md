@@ -106,7 +106,7 @@ FLAGS:
 OPTIONS:
         --read-length <usize>    Number of bases in the sequence [default: 101]
     -n, --record-count <u64>     Number of records to generate [default: 10000]
-        --seed <u64>             Seed to use for the random number generator
+    -s, --seed <u64>             Seed to use for the random number generator
 
 ARGS:
     <r1-dst>    Read 1 destination. Output will be gzipped if ends in `.gz`.

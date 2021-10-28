@@ -4,6 +4,8 @@
 
 ### Added
 
+  * commands/generate: Add `-s` short option for `--seed`.
+
   * commands: Add subsample command.
 
 ## 0.7.1 - 2021-10-07

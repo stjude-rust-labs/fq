@@ -27,6 +27,7 @@ fn main() -> anyhow::Result<()> {
         .about("Generates a random FASTQ file pair")
         .arg(
             Arg::with_name("seed")
+                .short("s")
                 .long("seed")
                 .value_name("u64")
                 .help("Seed to use for the random number generator"),
@@ -116,6 +117,7 @@ fn main() -> anyhow::Result<()> {
         )
         .arg(
             Arg::with_name("seed")
+                .short("s")
                 .long("seed")
                 .value_name("u64")
                 .help("Seed to use for the random number generator"),
