@@ -49,6 +49,14 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
                 probability,
             )?
         }
+        (Some(r2_src), None) => {
+            return Err(io::Error::from(io::ErrorKind::InvalidInput))
+                .with_context(|| format!("Missing r2-dst for {}", r2_src));
+        }
+        (None, Some(r2_dst)) => {
+            return Err(io::Error::from(io::ErrorKind::InvalidInput))
+                .with_context(|| format!("Missing r2-src for {}", r2_dst));
+        }
         _ => {
             info!("sampling single end reads");
             subsample_single(&mut r1, &mut w1, &mut rng, probability)?
