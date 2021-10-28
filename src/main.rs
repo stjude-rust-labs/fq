@@ -107,13 +107,13 @@ fn main() -> anyhow::Result<()> {
         );
 
     let subsample_cmd = SubCommand::with_name("subsample")
-        .about("Outputs a proportional subset of reads")
+        .about("Outputs a proportional subset of records")
         .arg(
             Arg::with_name("probability")
                 .short("p")
                 .long("probability")
                 .value_name("f64")
-                .help("The probability a read is kept, as a percentage [0, 1]")
+                .help("The probability a record is kept, as a percentage [0, 1]")
                 .required(true),
         )
         .arg(
