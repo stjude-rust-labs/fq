@@ -3,7 +3,7 @@
 set -ex
 
 main() {
-    local package_name="$PROJECT_NAME-${GITHUB_REF/refs\/tags\/v/}-$TARGET"
+    local package_name="$CRATE_NAME-${GITHUB_REF/refs\/tags\/v/}-$TARGET"
 
     local staging_prefix
     staging_prefix=$(mktemp -d)
@@ -15,7 +15,7 @@ main() {
 
     mkdir "$working_prefix"
 
-    cp "target/$TARGET/release/$BIN_NAME" "$working_prefix"
+    cp "target/$TARGET/release/$CRATE_NAME" "$working_prefix"
     cp LICENSE.txt README.md "$working_prefix"
 
     pushd "$staging_prefix"

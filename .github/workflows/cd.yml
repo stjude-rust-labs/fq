@@ -31,8 +31,7 @@ jobs:
       - name: Package
         env:
           TARGET: ${{ matrix.job.target }}
-          PROJECT_NAME: fqlib
-          BIN_NAME: fq
+          CRATE_NAME: fq
           OS_NAME: ${{ matrix.job.os }}
         shell: bash
         run: .github/scripts/before_deploy.sh
@@ -42,4 +41,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: fqlib-*-${{ matrix.job.target }}.*
+          files: fq-*-${{ matrix.job.target }}.*
