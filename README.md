@@ -24,7 +24,7 @@ There are different methods to install fq.
 Clone the repository and use [Cargo] to install fq.
 
 ```
-$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude-rust-labs/fq.git
+$ git clone --depth 1 --branch v0.8.0 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
 $ cargo install --path .
 ```
@@ -36,9 +36,9 @@ $ cargo install --path .
 Alternatively, build the container image, e.g., using [Docker]:
 
 ```
-$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude-rust-labs/fq.git
+$ git clone --depth 1 --branch v0.8.0 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
-$ docker image build --tag fq:0.7.1 .
+$ docker image build --tag fq:0.8.0 .
 ```
 
 [Docker]: https://www.docker.com/
