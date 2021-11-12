@@ -72,7 +72,7 @@ impl Record {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::fastq::Record;
+    /// use fq::fastq::Record;
     ///
     /// let mut r = Record::default();
     /// r.name_mut().extend_from_slice(b"@fqlib/1");

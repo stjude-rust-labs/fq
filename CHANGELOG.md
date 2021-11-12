@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+  * Ranamed project to fq.
+
 ### Added
 
   * commands/generate: Add `-s` short option for `--seed`.

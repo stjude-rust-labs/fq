@@ -20,7 +20,7 @@ const INITIAL_CAPACITY: usize = 10_000_000;
 /// # Examples
 ///
 /// ```
-/// use fqlib::{fastq::Record, validators::single::{DuplicateNameValidator, SingleReadValidatorMut}};
+/// use fq::{fastq::Record, validators::single::{DuplicateNameValidator, SingleReadValidatorMut}};
 ///
 /// let mut validator = DuplicateNameValidator::new();
 ///
@@ -61,7 +61,7 @@ impl DuplicateNameValidator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::{fastq::Record, validators::single::DuplicateNameValidator};
+    /// use fq::{fastq::Record, validators::single::DuplicateNameValidator};
     ///
     /// let mut validator = DuplicateNameValidator::new();
     /// let record = Record::new("@fqlib:1", "", "", "");
@@ -84,7 +84,7 @@ impl DuplicateNameValidator {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::validators::single::DuplicateNameValidator;
+    /// use fq::validators::single::DuplicateNameValidator;
     ///
     /// let validator = DuplicateNameValidator::new();
     /// assert!(validator.is_empty());

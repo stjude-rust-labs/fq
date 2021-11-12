@@ -1,5 +1,5 @@
 use clap::{App, AppSettings, Arg, SubCommand};
-use fqlib::commands::{filter, generate, lint, subsample};
+use fq::commands::{filter, generate, lint, subsample};
 
 use git_testament::{git_testament, render_testament};
 use tracing::warn;

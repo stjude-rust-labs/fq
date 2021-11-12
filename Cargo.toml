@@ -1,15 +1,10 @@
 [package]
-name = "fqlib"
+name = "fq"
 version = "0.7.1"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 edition = "2021"
 license = "Apache-2.0"
 publish = false
-autobins = false
-
-[[bin]]
-name = "fq"
-path = "src/main.rs"
 
 [profile.release]
 lto = "fat"

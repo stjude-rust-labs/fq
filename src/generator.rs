@@ -53,7 +53,7 @@ impl Generator<SmallRng> {
     /// # Examples
     ///
     /// ```
-    /// use fqlib::Generator;
+    /// use fq::Generator;
     /// let _ = Generator::new();
     /// ```
     pub fn new() -> Self {
@@ -82,7 +82,7 @@ where
     ///
     /// ```
     /// # use rand::{SeedableRng, rngs::SmallRng};
-    /// use fqlib::Generator;
+    /// use fq::Generator;
     /// let rng = SmallRng::from_entropy();
     /// let _ = Generator::from_rng(rng, 101);
     /// ```
@@ -121,7 +121,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use fqlib::{fastq::Record, Generator};
+    /// use fq::{fastq::Record, Generator};
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();
@@ -140,7 +140,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use fqlib::{fastq::Record, Generator};
+    /// use fq::{fastq::Record, Generator};
     ///
     /// let mut generator = Generator::new();
     /// let mut record = Record::default();

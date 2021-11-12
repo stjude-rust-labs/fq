@@ -1,14 +1,14 @@
-# fqlib
+# fq
 
-[![CI status](https://github.com/stjude/fqlib/workflows/CI/badge.svg)](https://github.com/stjude/fqlib/actions)
+[![CI status](https://github.com/stjude/fq/workflows/CI/badge.svg)](https://github.com/stjude/fq/actions)
 
-**fqlib** is a library to generate and validate [FASTQ] file pairs.
+**fq** is a library to generate and validate [FASTQ] file pairs.
 
 [FASTQ]: https://en.wikipedia.org/wiki/FASTQ_format
 
 ## Install
 
-There are different methods to install fqlib. The binary is named `fq`.
+There are different methods to install fq.
 
 ### Releases
 
@@ -17,15 +17,15 @@ There are different methods to install fqlib. The binary is named `fq`.
 (`x86_64-pc-windows-msvc`). The Linux binaries require glibc 2.18+ (CentOS/RHEL
 8+, Debian 8+, Ubuntu 14.04+, etc.).
 
-[releases]: https://github.com/stjude/fqlib/releases
+[releases]: https://github.com/stjude/fq/releases
 
 ### Manual
 
-Clone the repository and use [Cargo] to install fqlib.
+Clone the repository and use [Cargo] to install fq.
 
 ```
-$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fqlib.git
-$ cd fqlib
+$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fq.git
+$ cd fq
 $ cargo install --path .
 ```
 
@@ -36,16 +36,16 @@ $ cargo install --path .
 Alternatively, build the container image, e.g., using [Docker]:
 
 ```
-$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fqlib.git
-$ cd fqlib
-$ docker image build --tag fqlib:0.7.1 .
+$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fq.git
+$ cd fq
+$ docker image build --tag fq:0.7.1 .
 ```
 
 [Docker]: https://www.docker.com/
 
 ## Usage
 
-fqlib provides subcommands for filtering, generating, subsampling, and
+fq provides subcommands for filtering, generating, subsampling, and
 validating FASTQ files.
 
 ### filter

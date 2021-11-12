@@ -9,7 +9,7 @@ use rand::{
 ///
 /// ```
 /// use rand::{Rng, thread_rng};
-/// use fqlib::distributions::Character;
+/// use fq::distributions::Character;
 ///
 /// let mut rng = thread_rng();
 /// let distribution = Character::new(b"AGTC");
