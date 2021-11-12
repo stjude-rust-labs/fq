@@ -1,6 +1,6 @@
 # fq
 
-[![CI status](https://github.com/stjude/fq/workflows/CI/badge.svg)](https://github.com/stjude/fq/actions)
+[![CI status](https://github.com/stjude-rust-labs/fq/workflows/CI/badge.svg)](https://github.com/stjude-rust-labs/fq/actions)
 
 **fq** is a library to generate and validate [FASTQ] file pairs.
 
@@ -17,14 +17,14 @@ There are different methods to install fq.
 (`x86_64-pc-windows-msvc`). The Linux binaries require glibc 2.18+ (CentOS/RHEL
 8+, Debian 8+, Ubuntu 14.04+, etc.).
 
-[releases]: https://github.com/stjude/fq/releases
+[releases]: https://github.com/stjude-rust-labs/fq/releases
 
 ### Manual
 
 Clone the repository and use [Cargo] to install fq.
 
 ```
-$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fq.git
+$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
 $ cargo install --path .
 ```
@@ -36,7 +36,7 @@ $ cargo install --path .
 Alternatively, build the container image, e.g., using [Docker]:
 
 ```
-$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude/fq.git
+$ git clone --depth 1 --branch v0.7.1 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
 $ docker image build --tag fq:0.7.1 .
 ```
