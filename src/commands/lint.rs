@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::Context;
-use clap::{value_t, ArgMatches};
+use clap::ArgMatches;
 use tracing::{error, info};
 
 use crate::{
@@ -218,19 +218,19 @@ fn validate_pair(
     Ok(())
 }
 
-pub fn lint(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
-    let lint_mode = value_t!(matches, "lint-mode", LintMode).unwrap_or_else(|e| e.exit());
+pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
+    let lint_mode = matches.value_of_t("lint-mode").unwrap_or_else(|e| e.exit());
 
     let r1_src = matches.value_of("r1-src").unwrap();
     let r2_src = matches.value_of("r2-src");
 
-    let single_read_validation_level =
-        value_t!(matches, "single-read-validation-level", ValidationLevel)
-            .unwrap_or_else(|e| e.exit());
+    let single_read_validation_level = matches
+        .value_of_t("single-read-validation-level")
+        .unwrap_or_else(|e| e.exit());
 
-    let paired_read_validation_level =
-        value_t!(matches, "paired-read-validation-level", ValidationLevel)
-            .unwrap_or_else(|e| e.exit());
+    let paired_read_validation_level = matches
+        .value_of_t("paired-read-validation-level")
+        .unwrap_or_else(|e| e.exit());
 
     let disabled_validators: Vec<String> = matches
         .values_of("disable-validator")

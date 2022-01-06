@@ -1,13 +1,13 @@
 use std::io::{self, BufRead, Write};
 
 use anyhow::Context;
-use clap::{value_t, ArgMatches};
+use clap::ArgMatches;
 use rand::{rngs::SmallRng, SeedableRng};
 use tracing::info;
 
 use crate::fastq::{self, Record};
 
-pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
+pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
     let r1_src = matches.value_of("r1-src").unwrap();
     let r1_dst = matches.value_of("r1-dst").unwrap();
 
@@ -17,7 +17,7 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
     info!("fq-subsample start");
 
     let mut rng = if matches.is_present("seed") {
-        let seed = value_t!(matches, "seed", u64).unwrap_or_else(|e| e.exit());
+        let seed = matches.value_of_t("seed").unwrap_or_else(|e| e.exit());
         info!("initializing rng from seed = {}", seed);
         SmallRng::seed_from_u64(seed)
     } else {
@@ -25,7 +25,9 @@ pub fn subsample(matches: &ArgMatches<'_>) -> anyhow::Result<()> {
         SmallRng::from_entropy()
     };
 
-    let probability = value_t!(matches, "probability", f64).unwrap_or_else(|e| e.exit());
+    let probability = matches
+        .value_of_t("probability")
+        .unwrap_or_else(|e| e.exit());
 
     if !(0.0..=1.0).contains(&probability) {
         return Err(io::Error::from(io::ErrorKind::InvalidInput))

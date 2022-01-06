@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg};
 use fq::commands::{filter, generate, lint, subsample};
 
 use git_testament::{git_testament, render_testament};
@@ -7,63 +7,60 @@ use tracing::warn;
 git_testament!(TESTAMENT);
 
 fn main() -> anyhow::Result<()> {
-    let filter_cmd = SubCommand::with_name("filter")
+    let version = render_testament!(TESTAMENT);
+
+    let filter_cmd = App::new("filter")
         .about("Filters a FASTQ from an allowlist of names")
         .arg(
-            Arg::with_name("names")
+            Arg::new("names")
                 .long("names")
                 .value_name("path")
                 .help("Allowlist of record names")
                 .required(true),
         )
-        .arg(
-            Arg::with_name("src")
-                .help("Source FASTQ")
-                .index(1)
-                .required(true),
-        );
+        .arg(Arg::new("src").help("Source FASTQ").index(1).required(true));
 
-    let generate_cmd = SubCommand::with_name("generate")
+    let generate_cmd = App::new("generate")
         .about("Generates a random FASTQ file pair")
         .arg(
-            Arg::with_name("seed")
-                .short("s")
+            Arg::new("seed")
+                .short('s')
                 .long("seed")
                 .value_name("u64")
                 .help("Seed to use for the random number generator"),
         )
         .arg(
-            Arg::with_name("record-count")
-                .short("n")
+            Arg::new("record-count")
+                .short('n')
                 .long("record-count")
                 .help("Number of records to generate")
                 .value_name("u64")
                 .default_value("10000"),
         )
         .arg(
-            Arg::with_name("read-length")
+            Arg::new("read-length")
                 .long("read-length")
                 .help("Number of bases in the sequence")
                 .value_name("usize")
                 .default_value("101"),
         )
         .arg(
-            Arg::with_name("r1-dst")
+            Arg::new("r1-dst")
                 .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .index(1)
                 .required(true),
         )
         .arg(
-            Arg::with_name("r2-dst")
+            Arg::new("r2-dst")
                 .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
                 .index(2)
                 .required(true),
         );
 
-    let lint_cmd = SubCommand::with_name("lint")
+    let lint_cmd = App::new("lint")
         .about("Validates a FASTQ file pair")
         .arg(
-            Arg::with_name("lint-mode")
+            Arg::new("lint-mode")
                 .long("lint-mode")
                 .help("Panic on first error or log all errors")
                 .value_name("str")
@@ -71,7 +68,7 @@ fn main() -> anyhow::Result<()> {
                 .default_value("panic"),
         )
         .arg(
-            Arg::with_name("single-read-validation-level")
+            Arg::new("single-read-validation-level")
                 .long("single-read-validation-level")
                 .help("Only use single read validators up to a given level")
                 .value_name("str")
@@ -79,7 +76,7 @@ fn main() -> anyhow::Result<()> {
                 .default_value("high"),
         )
         .arg(
-            Arg::with_name("paired-read-validation-level")
+            Arg::new("paired-read-validation-level")
                 .long("paired-read-validation-level")
                 .help("Only use paired read validators up to a given level")
                 .value_name("str")
@@ -87,77 +84,72 @@ fn main() -> anyhow::Result<()> {
                 .default_value("high"),
         )
         .arg(
-            Arg::with_name("disable-validator")
+            Arg::new("disable-validator")
                 .long("disable-validator")
                 .help("Disable validators by code. Use multiple times to disable more than one.")
                 .value_name("str")
-                .multiple(true)
+                .multiple_occurrences(true)
                 .number_of_values(1),
         )
         .arg(
-            Arg::with_name("r1-src")
+            Arg::new("r1-src")
                 .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
                 .required(true),
         )
         .arg(
-            Arg::with_name("r2-src")
+            Arg::new("r2-src")
                 .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(2),
         );
 
-    let subsample_cmd = SubCommand::with_name("subsample")
+    let subsample_cmd = App::new("subsample")
         .about("Outputs a proportional subset of records")
         .arg(
-            Arg::with_name("probability")
-                .short("p")
+            Arg::new("probability")
+                .short('p')
                 .long("probability")
                 .value_name("f64")
                 .help("The probability a record is kept, as a percentage [0, 1]")
                 .required(true),
         )
         .arg(
-            Arg::with_name("seed")
-                .short("s")
+            Arg::new("seed")
+                .short('s')
                 .long("seed")
                 .value_name("u64")
                 .help("Seed to use for the random number generator"),
         )
         .arg(
-            Arg::with_name("r1-dst")
+            Arg::new("r1-dst")
                 .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .long("r1-dst")
                 .value_name("path")
                 .required(true),
         )
         .arg(
-            Arg::with_name("r2-dst")
+            Arg::new("r2-dst")
                 .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
                 .long("r2-dst")
                 .value_name("path"),
         )
         .arg(
-            Arg::with_name("r1-src")
+            Arg::new("r1-src")
                 .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
                 .required(true),
         )
         .arg(
-            Arg::with_name("r2-src")
+            Arg::new("r2-src")
                 .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(2),
         );
 
     let matches = App::new("fq")
-        .version(render_testament!(TESTAMENT).as_str())
-        .setting(AppSettings::GlobalVersion)
+        .version(version.as_str())
+        .setting(AppSettings::PropagateVersion)
         .setting(AppSettings::SubcommandRequiredElseHelp)
-        .arg(
-            Arg::with_name("verbose")
-                .short("v")
-                .long("verbose")
-                .hidden(true),
-        )
+        .arg(Arg::new("verbose").short('v').long("verbose").hide(true))
         .subcommand(filter_cmd)
         .subcommand(generate_cmd)
         .subcommand(lint_cmd)

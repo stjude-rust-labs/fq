@@ -60,17 +60,15 @@ fq-filter
 Filters a FASTQ from an allowlist of names
 
 USAGE:
-    fq filter <src> --names <path>
-
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-OPTIONS:
-        --names <path>    Allowlist of record names
+    fq filter --names <path> <src>
 
 ARGS:
     <src>    Source FASTQ
+
+OPTIONS:
+    -h, --help            Print help information
+        --names <path>    Allowlist of record names
+    -V, --version         Print version information
 ```
 
 #### Examples
@@ -99,18 +97,16 @@ Generates a random FASTQ file pair
 USAGE:
     fq generate [OPTIONS] <r1-dst> <r2-dst>
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-OPTIONS:
-        --read-length <usize>    Number of bases in the sequence [default: 101]
-    -n, --record-count <u64>     Number of records to generate [default: 10000]
-    -s, --seed <u64>             Seed to use for the random number generator
-
 ARGS:
     <r1-dst>    Read 1 destination. Output will be gzipped if ends in `.gz`.
     <r2-dst>    Read 2 destination. Output will be gzipped if ends in `.gz`.
+
+OPTIONS:
+    -h, --help                   Print help information
+    -n, --record-count <u64>     Number of records to generate [default: 10000]
+        --read-length <usize>    Number of bases in the sequence [default: 101]
+    -s, --seed <u64>             Seed to use for the random number generator
+    -V, --version                Print version information
 ```
 
 #### Examples
@@ -136,22 +132,30 @@ Validates a FASTQ file pair
 USAGE:
     fq lint [OPTIONS] <r1-src> [--] [r2-src]
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-OPTIONS:
-        --disable-validator <str>...            Disable validators by code. Use multiple times to disable more than one.
-        --lint-mode <str>                       Panic on first error or log all errors [default: panic]  [possible
-                                                values: panic, log]
-        --paired-read-validation-level <str>    Only use paired read validators up to a given level [default: high]
-                                                [possible values: low, medium, high]
-        --single-read-validation-level <str>    Only use single read validators up to a given level [default: high]
-                                                [possible values: low, medium, high]
-
 ARGS:
     <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
     <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
+
+OPTIONS:
+        --disable-validator <str>
+            Disable validators by code. Use multiple times to disable more than one.
+
+    -h, --help
+            Print help information
+
+        --lint-mode <str>
+            Panic on first error or log all errors [default: panic] [possible values: panic, log]
+
+        --paired-read-validation-level <str>
+            Only use paired read validators up to a given level [default: high] [possible values:
+            low, medium, high]
+
+        --single-read-validation-level <str>
+            Only use single read validators up to a given level [default: high] [possible values:
+            low, medium, high]
+
+    -V, --version
+            Print version information
 ```
 
 #### Validators
@@ -213,21 +217,19 @@ fq-subsample
 Outputs a proportional subset of records
 
 USAGE:
-    fq subsample [OPTIONS] <r1-src> --probability <f64> --r1-dst <path> [r2-src]
-
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-OPTIONS:
-    -p, --probability <f64>    The probability a record is kept, as a percentage [0, 1]
-        --r1-dst <path>        Read 1 destination. Output will be gzipped if ends in `.gz`.
-        --r2-dst <path>        Read 2 destination. Output will be gzipped if ends in `.gz`.
-    -s, --seed <u64>           Seed to use for the random number generator
+    fq subsample [OPTIONS] --probability <f64> --r1-dst <path> <r1-src> [r2-src]
 
 ARGS:
     <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
     <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
+
+OPTIONS:
+    -h, --help                 Print help information
+    -p, --probability <f64>    The probability a record is kept, as a percentage [0, 1]
+        --r1-dst <path>        Read 1 destination. Output will be gzipped if ends in `.gz`.
+        --r2-dst <path>        Read 2 destination. Output will be gzipped if ends in `.gz`.
+    -s, --seed <u64>           Seed to use for the random number generator
+    -V, --version              Print version information
 ```
 
 #### Examples

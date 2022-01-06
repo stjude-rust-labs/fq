@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+  * Update argument parser to clap 3.
+
 ## 0.8.0 - 2021-11-12
 
 ### Changed
