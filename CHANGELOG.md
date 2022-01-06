@@ -4,7 +4,7 @@
 
 ### Changed
 
-  * Ranamed project to fq.
+  * Rename project to fq.
 
 ### Added
 
