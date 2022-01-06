@@ -74,13 +74,13 @@ pub enum LintMode {
 }
 
 impl FromStr for LintMode {
-    type Err = ();
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "panic" => Ok(Self::Panic),
             "log" => Ok(Self::Log),
-            _ => Err(()),
+            _ => Err(format!("invalid lint mode: {}", s)),
         }
     }
 }
