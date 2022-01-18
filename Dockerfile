@@ -11,3 +11,5 @@ RUN cargo build --release --manifest-path /app/Cargo.toml
 FROM debian:bullseye
 
 COPY --from=builder /app/target/release/fq /usr/local/bin/
+
+ENTRYPOINT ["/usr/local/bin/fq"]
