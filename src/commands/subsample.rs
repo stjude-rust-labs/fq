@@ -16,7 +16,7 @@ pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
 
     info!("fq-subsample start");
 
-    let mut rng = if matches.is_present("seed") {
+    let rng = if matches.is_present("seed") {
         let seed = matches.value_of_t("seed").unwrap_or_else(|e| e.exit());
         info!("initializing rng from seed = {}", seed);
         SmallRng::seed_from_u64(seed)
@@ -29,6 +29,22 @@ pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
         .value_of_t("probability")
         .unwrap_or_else(|e| e.exit());
 
+    subsample_approximate((r1_src, r1_dst), (r2_src, r2_dst), rng, probability)?;
+
+    info!("fq-subsample end");
+
+    Ok(())
+}
+
+fn subsample_approximate<Rng>(
+    (r1_src, r1_dst): (&str, &str),
+    (r2_src, r2_dst): (Option<&str>, Option<&str>),
+    mut rng: Rng,
+    probability: f64,
+) -> anyhow::Result<()>
+where
+    Rng: rand::Rng,
+{
     if !(0.0..=1.0).contains(&probability) {
         return Err(io::Error::from(io::ErrorKind::InvalidInput))
             .with_context(|| format!("invalid probability = {}", probability));
@@ -72,8 +88,6 @@ pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
 
     let percentage = (n as f64) / (total as f64) * 100.0;
     info!("sampled {}/{} ({:.4}%) records", n, total, percentage);
-
-    info!("fq-subsample end");
 
     Ok(())
 }
