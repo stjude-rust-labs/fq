@@ -104,14 +104,24 @@ fn main() -> anyhow::Result<()> {
         );
 
     let subsample_cmd = App::new("subsample")
-        .about("Outputs a proportional subset of records")
+        .about("Outputs a subset of records")
         .arg(
             Arg::new("probability")
                 .short('p')
                 .long("probability")
                 .value_name("f64")
-                .help("The probability a record is kept, as a percentage [0, 1]")
-                .required(true),
+                .help("The probability a record is kept, as a percentage [0, 1]. Cannot be used with `record-count`.")
+                .required(true)
+                .conflicts_with("record-count"),
+        )
+        .arg(
+            Arg::new("record-count")
+                .short('n')
+                .long("record-count")
+                .value_name("u64")
+                .help("The exact number of records to keep. Cannot be used with `probability`.")
+                .required(true)
+                .conflicts_with("probability"),
         )
         .arg(
             Arg::new("seed")

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+  * commands/subsample: Add exact sampler.
+
+    This writes an exact number of samples to the output. Set the
+    `-n/--record-count` option to use the exact sampler.
+
 ### Changed
 
   * Update argument parser to clap 3.

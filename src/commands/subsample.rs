@@ -1,8 +1,16 @@
-use std::io::{self, BufRead, Write};
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader, Write},
+    path::Path,
+};
 
 use anyhow::Context;
 use clap::ArgMatches;
-use rand::{rngs::SmallRng, SeedableRng};
+use rand::{
+    distributions::{Distribution, Uniform},
+    rngs::SmallRng,
+    SeedableRng,
+};
 use tracing::info;
 
 use crate::fastq::{self, Record};
@@ -25,11 +33,21 @@ pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
         SmallRng::from_entropy()
     };
 
-    let probability = matches
-        .value_of_t("probability")
-        .unwrap_or_else(|e| e.exit());
+    if matches.is_present("probability") {
+        let probability = matches
+            .value_of_t("probability")
+            .unwrap_or_else(|e| e.exit());
 
-    subsample_approximate((r1_src, r1_dst), (r2_src, r2_dst), rng, probability)?;
+        subsample_approximate((r1_src, r1_dst), (r2_src, r2_dst), rng, probability)?;
+    } else if matches.is_present("record-count") {
+        let record_count = matches
+            .value_of_t("record-count")
+            .unwrap_or_else(|e| e.exit());
+
+        subsample_exact((r1_src, r1_dst), (r2_src, r2_dst), rng, record_count)?;
+    } else {
+        unreachable!();
+    }
 
     info!("fq-subsample end");
 
@@ -172,6 +190,93 @@ where
     }
 
     Ok((n, total))
+}
+
+fn subsample_exact<Rng>(
+    (r1_src, r1_dst): (&str, &str),
+    (_r2_src, _r2_dst): (Option<&str>, Option<&str>),
+    mut rng: Rng,
+    record_count: u64,
+) -> anyhow::Result<()>
+where
+    Rng: rand::Rng,
+{
+    use bitvec::vec::BitVec;
+
+    info!("counting records");
+
+    let line_count = count_lines(r1_src)?;
+    let r1_src_record_count = line_count / 4;
+
+    info!("r1_src record count = {}", r1_src_record_count);
+
+    let mut bitmap: BitVec<usize> = BitVec::new();
+    bitmap.resize(r1_src_record_count, false);
+
+    let distribution = Uniform::from(0..r1_src_record_count);
+    let mut n = 0;
+
+    info!("building filter");
+
+    while n < record_count {
+        let i = distribution.sample(&mut rng);
+
+        if !bitmap[i] {
+            bitmap.set(i, true);
+            n += 1;
+        }
+    }
+
+    let mut r1 = fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
+    let mut w1 =
+        fastq::create(r1_dst).with_context(|| format!("Could not create file: {}", r1_dst))?;
+
+    let mut record = Record::default();
+    let mut i = 0;
+
+    info!("filtering records");
+
+    loop {
+        if r1.read_record(&mut record)? == 0 {
+            break;
+        }
+
+        if bitmap[i] {
+            w1.write_record(&record)?;
+        }
+
+        i += 1;
+    }
+
+    Ok(())
+}
+
+fn count_lines<P>(src: P) -> io::Result<usize>
+where
+    P: AsRef<Path>,
+{
+    const LINE_FEED: u8 = b'\n';
+
+    let mut reader = File::open(src).map(BufReader::new)?;
+    let mut n = 0;
+
+    loop {
+        let len = {
+            let buf = reader.fill_buf()?;
+
+            if buf.is_empty() {
+                break;
+            }
+
+            n += bytecount::count(buf, LINE_FEED);
+
+            buf.len()
+        };
+
+        reader.consume(len);
+    }
+
+    Ok(n)
 }
 
 #[cfg(test)]
