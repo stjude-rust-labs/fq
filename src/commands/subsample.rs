@@ -106,7 +106,7 @@ where
     };
 
     let percentage = (n as f64) / (total as f64) * 100.0;
-    info!("sampled {}/{} ({:.4}%) records", n, total, percentage);
+    info!("sampled {}/{} ({:.1}%) records", n, total, percentage);
 
     Ok(())
 }
@@ -257,7 +257,7 @@ where
 
     let percentage = (record_count as f64) / (r1_src_record_count as f64) * 100.0;
     info!(
-        "sampled {}/{} ({:.4}%) records",
+        "sampled {}/{} ({:.1}%) records",
         record_count, r1_src_record_count, percentage
     );
 
