@@ -416,4 +416,57 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_subsample_exact_single() -> anyhow::Result<()> {
+        let data = b"@r1\nACGT\n+\nFQLB
+@r2\nACGT\n+\nFQLB
+@r3\nACGT\n+\nFQLB
+@r4\nACGT\n+\nFQLB
+";
+
+        let mut reader = fastq::Reader::new(&data[..]);
+        let mut writer = fastq::Writer::new(Vec::new());
+
+        let bitmap = BitVec::from_element(0b00000011);
+
+        subsample_exact_single(&mut reader, &mut writer, &bitmap)?;
+
+        let expected = b"@r1\nACGT\n+\nFQLB\n@r2\nACGT\n+\nFQLB\n";
+        assert_eq!(writer.get_ref(), expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subsample_exact_paired() -> anyhow::Result<()> {
+        let r1_data = b"@r1\nACGT\n+\nFQLB
+@r2\nACGT\n+\nFQLB
+@r3\nACGT\n+\nFQLB
+@r4\nACGT\n+\nFQLB
+";
+
+        let r2_data = b"@r1\nTGCA\n+\nBLQF
+@r2\nTGCA\n+\nBLQF
+@r3\nTGCA\n+\nBLQF
+@r4\nTGCA\n+\nBLQF
+";
+
+        let mut r1 = fastq::Reader::new(&r1_data[..]);
+        let mut w1 = fastq::Writer::new(Vec::new());
+        let mut r2 = fastq::Reader::new(&r2_data[..]);
+        let mut w2 = fastq::Writer::new(Vec::new());
+
+        let bitmap = BitVec::from_element(0b00000011);
+
+        subsample_exact_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &bitmap)?;
+
+        let w1_expected = b"@r1\nACGT\n+\nFQLB\n@r2\nACGT\n+\nFQLB\n";
+        assert_eq!(w1.get_ref(), w1_expected);
+
+        let w2_expected = b"@r1\nTGCA\n+\nBLQF\n@r2\nTGCA\n+\nBLQF\n";
+        assert_eq!(w2.get_ref(), w2_expected);
+
+        Ok(())
+    }
 }
