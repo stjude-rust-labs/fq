@@ -1,6 +1,6 @@
 [package]
 name = "fq"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 edition = "2021"
 license = "Apache-2.0"
