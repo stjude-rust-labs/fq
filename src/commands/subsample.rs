@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::Context;
+use bitvec::vec::BitVec;
 use clap::ArgMatches;
 use rand::{
     distributions::{Distribution, Uniform},
@@ -194,15 +195,13 @@ where
 
 fn subsample_exact<Rng>(
     (r1_src, r1_dst): (&str, &str),
-    (_r2_src, _r2_dst): (Option<&str>, Option<&str>),
+    (r2_src, r2_dst): (Option<&str>, Option<&str>),
     mut rng: Rng,
     record_count: u64,
 ) -> anyhow::Result<()>
 where
     Rng: rand::Rng,
 {
-    use bitvec::vec::BitVec;
-
     info!("counting records");
 
     let line_count = count_lines(r1_src)?;
@@ -231,22 +230,36 @@ where
     let mut w1 =
         fastq::create(r1_dst).with_context(|| format!("Could not create file: {}", r1_dst))?;
 
-    let mut record = Record::default();
-    let mut i = 0;
+    match (r2_src, r2_dst) {
+        (Some(r2_src), Some(r2_dst)) => {
+            info!("sampling paired end reads");
 
-    info!("filtering records");
+            let mut r2 =
+                fastq::open(r2_src).with_context(|| format!("Could not open file: {}", r2_src))?;
+            let mut w2 = fastq::create(r2_dst)
+                .with_context(|| format!("Could not create file: {}", r2_dst))?;
 
-    loop {
-        if r1.read_record(&mut record)? == 0 {
-            break;
+            subsample_exact_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &bitmap)?;
         }
-
-        if bitmap[i] {
-            w1.write_record(&record)?;
+        (Some(r2_src), None) => {
+            return Err(io::Error::from(io::ErrorKind::InvalidInput))
+                .with_context(|| format!("Missing r2-dst for {}", r2_src));
         }
-
-        i += 1;
+        (None, Some(r2_dst)) => {
+            return Err(io::Error::from(io::ErrorKind::InvalidInput))
+                .with_context(|| format!("Missing r2-src for {}", r2_dst));
+        }
+        (None, None) => {
+            info!("sampling single end reads");
+            subsample_exact_single(&mut r1, &mut w1, &bitmap)?;
+        }
     }
+
+    let percentage = (record_count as f64) / (r1_src_record_count as f64) * 100.0;
+    info!(
+        "sampled {}/{} ({:.4}%) records",
+        record_count, r1_src_record_count, percentage
+    );
 
     Ok(())
 }
@@ -277,6 +290,74 @@ where
     }
 
     Ok(n)
+}
+
+fn subsample_exact_single<R, W>(
+    reader: &mut fastq::Reader<R>,
+    writer: &mut fastq::Writer<W>,
+    bitmap: &BitVec,
+) -> anyhow::Result<()>
+where
+    R: BufRead,
+    W: Write,
+{
+    let mut record = Record::default();
+    let mut i = 0;
+
+    loop {
+        if reader.read_record(&mut record)? == 0 {
+            break;
+        }
+
+        if bitmap[i] {
+            writer.write_record(&record)?;
+        }
+
+        i += 1;
+    }
+
+    Ok(())
+}
+
+fn subsample_exact_paired<R, S, W, X>(
+    (r1, w1): (&mut fastq::Reader<R>, &mut fastq::Writer<W>),
+    (r2, w2): (&mut fastq::Reader<S>, &mut fastq::Writer<X>),
+    bitmap: &BitVec,
+) -> anyhow::Result<()>
+where
+    R: BufRead,
+    S: BufRead,
+    W: Write,
+    X: Write,
+{
+    let mut s1 = Record::default();
+    let mut s2 = Record::default();
+
+    let mut i = 0;
+
+    loop {
+        match (r1.read_record(&mut s1)?, r2.read_record(&mut s2)?) {
+            (0, 0) => break,
+            (0, len) if len > 0 => {
+                return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
+                    .with_context(|| "r1-src unexpectedly ended before r2-src");
+            }
+            (len, 0) if len > 0 => {
+                return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
+                    .with_context(|| "r2-src unexpectedly ended before r1-src");
+            }
+            (_, _) => {
+                if bitmap[i] {
+                    w1.write_record(&s1)?;
+                    w2.write_record(&s2)?;
+                }
+
+                i += 1;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
