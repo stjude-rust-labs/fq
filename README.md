@@ -199,13 +199,17 @@ $ fq lint --disable-validator S004 --disable-validator S007 r1.fastq r2.fastq
 
 ### subsample
 
-**fq subsample** outputs a proportional subset of records from single or paired
-FASTQ files.
+**fq subsample** outputs a subset of records from single or paired FASTQ files.
 
-This works by selecting a subset of records using a given probability (`-p,
---probability`). Given the randomness used when sampling a uniform
-distribution, the output record count will not be exact but (statistically)
-close. A seed (`-s, --seed`) can be provided to influence the results, e.g.,
+When using a probability (`-p, --probability`), each file is read through once,
+and a subset of records is selected based on that chance. Given the randomness
+used when sampling a uniform distribution, the output record count will not be
+exact but (statistically) close.
+
+When using a record count (`-n, --record-count`), the first input is read
+twice, but it provides an exact number of records to be selected.
+
+A seed (`-s, --seed`) can be provided to influence the results, e.g.,
 for a deterministic subset of records.
 
 For paired input, the sampling is applied to each pair.
@@ -214,22 +218,25 @@ For paired input, the sampling is applied to each pair.
 
 ```
 fq-subsample
-Outputs a proportional subset of records
+Outputs a subset of records
 
 USAGE:
-    fq subsample [OPTIONS] --probability <f64> --r1-dst <path> <r1-src> [r2-src]
+    fq subsample [OPTIONS] --probability <f64> --record-count <u64> --r1-dst <path> <r1-src> [r2-src]
 
 ARGS:
     <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
     <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
 
 OPTIONS:
-    -h, --help                 Print help information
-    -p, --probability <f64>    The probability a record is kept, as a percentage [0, 1]
-        --r1-dst <path>        Read 1 destination. Output will be gzipped if ends in `.gz`.
-        --r2-dst <path>        Read 2 destination. Output will be gzipped if ends in `.gz`.
-    -s, --seed <u64>           Seed to use for the random number generator
-    -V, --version              Print version information
+    -h, --help                  Print help information
+    -n, --record-count <u64>    The exact number of records to keep. Cannot be used with
+                                `probability`.
+    -p, --probability <f64>     The probability a record is kept, as a percentage [0, 1]. Cannot be
+                                used with `record-count`.
+        --r1-dst <path>         Read 1 destination. Output will be gzipped if ends in `.gz`.
+        --r2-dst <path>         Read 2 destination. Output will be gzipped if ends in `.gz`.
+    -s, --seed <u64>            Seed to use for the random number generator
+    -V, --version               Print version information
 ```
 
 #### Examples
@@ -246,4 +253,7 @@ $ fq subsample --probability 0.25 --r1-dst r1.25pct.fastq --r2-dst r2.25pct.fast
 
 # Sample ~10% of records from a gzipped FASTQ file and compress output
 $ fq subsample --probability 0.1 --r1-dst r1.10pct.fastq.gz r1.fastq.gz
+
+# Sample exactly 10000 records from a single FASTQ file
+$ fq subsample --record-count 10000 -r1-dst r1.10k.fastq r1.fastq
 ```
