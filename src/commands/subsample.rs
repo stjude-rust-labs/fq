@@ -208,7 +208,7 @@ where
     let line_count = count_lines(r1_src)?;
     let r1_src_record_count = line_count / 4;
 
-    info!("r1_src record count = {}", r1_src_record_count);
+    info!("r1-src record count = {}", r1_src_record_count);
 
     let mut bitmap: BitVec<usize> = BitVec::new();
     bitmap.resize(r1_src_record_count, false);
