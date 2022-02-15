@@ -13,7 +13,7 @@ use rand::{
     rngs::SmallRng,
     SeedableRng,
 };
-use tracing::info;
+use tracing::{info, warn};
 
 use crate::fastq::{self, Record};
 
@@ -198,7 +198,7 @@ fn subsample_exact<Rng>(
     (r1_src, r1_dst): (&str, &str),
     (r2_src, r2_dst): (Option<&str>, Option<&str>),
     rng: Rng,
-    record_count: u64,
+    mut record_count: u64,
 ) -> anyhow::Result<()>
 where
     Rng: rand::Rng,
@@ -209,6 +209,19 @@ where
     let r1_src_record_count = line_count / 4;
 
     info!("r1-src record count = {}", r1_src_record_count);
+
+    let n = u64::try_from(r1_src_record_count)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+    if record_count > n {
+        warn!(
+            "record count ({}) > r1-src record count ({}). Using record-count = {} instead.",
+            record_count, n, n
+        );
+
+        record_count = n;
+    }
+
     info!("building filter");
 
     let bitmap = build_filter(rng, r1_src_record_count, record_count);

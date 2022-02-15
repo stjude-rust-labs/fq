@@ -10,6 +10,11 @@
     Used in the exact sampler, this previously counted "lines" from the
     compressed input.
 
+  * commands/subsample: Clamp the destination record count to the range of the
+    source record count.
+
+    Otherwise, this would cause the filter to never finish building.
+
 ## 0.9.0 - 2022-02-10
 
 ### Added
