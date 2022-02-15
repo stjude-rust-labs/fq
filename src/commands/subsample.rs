@@ -197,7 +197,7 @@ where
 fn subsample_exact<Rng>(
     (r1_src, r1_dst): (&str, &str),
     (r2_src, r2_dst): (Option<&str>, Option<&str>),
-    mut rng: Rng,
+    rng: Rng,
     record_count: u64,
 ) -> anyhow::Result<()>
 where
@@ -209,23 +209,9 @@ where
     let r1_src_record_count = line_count / 4;
 
     info!("r1-src record count = {}", r1_src_record_count);
-
-    let mut bitmap: BitVec<usize> = BitVec::new();
-    bitmap.resize(r1_src_record_count, false);
-
-    let distribution = Uniform::from(0..r1_src_record_count);
-    let mut n = 0;
-
     info!("building filter");
 
-    while n < record_count {
-        let i = distribution.sample(&mut rng);
-
-        if !bitmap[i] {
-            bitmap.set(i, true);
-            n += 1;
-        }
-    }
+    let bitmap = build_filter(rng, r1_src_record_count, record_count);
 
     let mut r1 = fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
     let mut w1 =
@@ -308,6 +294,28 @@ where
         }
         _ => Ok(Box::new(reader)),
     }
+}
+
+fn build_filter<Rng>(mut rng: Rng, src_record_count: usize, dst_record_count: u64) -> BitVec
+where
+    Rng: rand::Rng,
+{
+    let mut bitmap = BitVec::new();
+    bitmap.resize(src_record_count, false);
+
+    let distribution = Uniform::from(0..src_record_count);
+    let mut n = 0;
+
+    while n < dst_record_count {
+        let i = distribution.sample(&mut rng);
+
+        if !bitmap[i] {
+            bitmap.set(i, true);
+            n += 1;
+        }
+    }
+
+    bitmap
 }
 
 fn subsample_exact_single<R, W>(
