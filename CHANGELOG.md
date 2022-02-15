@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+  * commands/subsample: Count the lines from the decompressed data if the input
+    is gzipped.
+
+    Used in the exact sampler, this previously counted "lines" from the
+    compressed input.
+
 ## 0.9.0 - 2022-02-10
 
 ### Added

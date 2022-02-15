@@ -7,6 +7,7 @@ use std::{
 use anyhow::Context;
 use bitvec::vec::BitVec;
 use clap::ArgMatches;
+use flate2::bufread::MultiGzDecoder;
 use rand::{
     distributions::{Distribution, Uniform},
     rngs::SmallRng,
@@ -270,7 +271,7 @@ where
 {
     const LINE_FEED: u8 = b'\n';
 
-    let mut reader = File::open(src).map(BufReader::new)?;
+    let mut reader = open(src)?;
     let mut n = 0;
 
     loop {
@@ -290,6 +291,23 @@ where
     }
 
     Ok(n)
+}
+
+fn open<P>(src: P) -> io::Result<Box<dyn BufRead>>
+where
+    P: AsRef<Path>,
+{
+    let path = src.as_ref();
+    let extension = path.extension();
+    let reader = File::open(path).map(BufReader::new)?;
+
+    match extension.and_then(|ext| ext.to_str()) {
+        Some("gz") => {
+            let decoder = MultiGzDecoder::new(reader);
+            Ok(Box::new(BufReader::new(decoder)))
+        }
+        _ => Ok(Box::new(reader)),
+    }
 }
 
 fn subsample_exact_single<R, W>(
