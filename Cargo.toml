@@ -15,7 +15,7 @@ anyhow = "1.0.31"
 bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 bitvec = "1.0.0"
 bytecount = { version = "0.6.2", features = ["runtime-dispatch-simd"] }
-clap = "3.0.5"
+clap = "3.1.0"
 flate2 = "1.0.14"
 git-testament = "0.2.0"
 rand = { version = "0.8.1", features = ["small_rng"] }

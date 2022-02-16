@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg};
+use clap::{Arg, Command};
 use fq::commands::{filter, generate, lint, subsample};
 
 use git_testament::{git_testament, render_testament};
@@ -9,7 +9,7 @@ git_testament!(TESTAMENT);
 fn main() -> anyhow::Result<()> {
     let version = render_testament!(TESTAMENT);
 
-    let filter_cmd = App::new("filter")
+    let filter_cmd = Command::new("filter")
         .about("Filters a FASTQ from an allowlist of names")
         .arg(
             Arg::new("names")
@@ -20,7 +20,7 @@ fn main() -> anyhow::Result<()> {
         )
         .arg(Arg::new("src").help("Source FASTQ").index(1).required(true));
 
-    let generate_cmd = App::new("generate")
+    let generate_cmd = Command::new("generate")
         .about("Generates a random FASTQ file pair")
         .arg(
             Arg::new("seed")
@@ -57,7 +57,7 @@ fn main() -> anyhow::Result<()> {
                 .required(true),
         );
 
-    let lint_cmd = App::new("lint")
+    let lint_cmd = Command::new("lint")
         .about("Validates a FASTQ file pair")
         .arg(
             Arg::new("lint-mode")
@@ -103,7 +103,7 @@ fn main() -> anyhow::Result<()> {
                 .index(2),
         );
 
-    let subsample_cmd = App::new("subsample")
+    let subsample_cmd = Command::new("subsample")
         .about("Outputs a subset of records")
         .arg(
             Arg::new("probability")
@@ -155,10 +155,11 @@ fn main() -> anyhow::Result<()> {
                 .index(2),
         );
 
-    let matches = App::new("fq")
+    let matches = Command::new("fq")
         .version(version.as_str())
-        .setting(AppSettings::PropagateVersion)
-        .setting(AppSettings::SubcommandRequiredElseHelp)
+        .propagate_version(true)
+        .subcommand_required(true)
+        .arg_required_else_help(true)
         .arg(Arg::new("verbose").short('v').long("verbose").hide(true))
         .subcommand(filter_cmd)
         .subcommand(generate_cmd)
