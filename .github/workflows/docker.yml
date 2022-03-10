@@ -1,0 +1,16 @@
+name: Create Docker image and push to Dockerhub
+on:
+  push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Build and publish on Dockerhub
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: matmu/fq
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASS }}
+        dockerfile: Dockerfile
+        tags: "v0.9.1"
