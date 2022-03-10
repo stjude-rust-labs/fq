@@ -1,6 +1,8 @@
 name: Create Docker image and push to Dockerhub
 on:
-  push
+  push:
+    tags:        
+      - '*'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,4 +15,4 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
         dockerfile: Dockerfile
-        tags: "v0.9.1"
+        tags: ${{ github.ref_name }}
