@@ -43,7 +43,16 @@ $ cargo install --locked --path .
 
 ### Container image
 
-Alternatively, build the container image, e.g., using [Docker]:
+Container images are managed by Bioconda and available through [Quay.io], e.g.,
+using [Docker]:
+
+```
+$ docker image pull quay.io/biocontainers/fq:<tag>
+```
+
+See [the repository tags] for the available tags.
+
+Alternatively, build the development container image:
 
 ```
 $ git clone --depth 1 --branch v0.9.1 https://github.com/stjude-rust-labs/fq.git
@@ -51,6 +60,8 @@ $ cd fq
 $ docker image build --tag fq:0.9.1 .
 ```
 
+[Quay.io]: https://quay.io/repository/biocontainers/fq
+[the repository tags]: https://quay.io/repository/biocontainers/fq?tab=tags
 [Docker]: https://www.docker.com/
 
 ## Usage
