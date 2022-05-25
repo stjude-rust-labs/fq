@@ -183,11 +183,7 @@ where
             .sample_iter(&self.sequence_distribution)
             .take(self.read_length);
 
-        let sequence = record.sequence_mut();
-
-        for c in iter {
-            sequence.push(c);
-        }
+        record.sequence_mut().extend(iter);
     }
 
     fn next_quality(&mut self, record: &mut Record) {
@@ -196,11 +192,7 @@ where
             .take(self.read_length)
             .map(|phred| phred + 33);
 
-        let quality = record.quality_scores_mut();
-
-        for c in iter {
-            quality.push(c);
-        }
+        record.quality_scores_mut().extend(iter);
     }
 }
 
