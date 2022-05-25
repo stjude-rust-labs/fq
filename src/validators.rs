@@ -190,7 +190,7 @@ mod tests {
         let validators = filter_single_read_validators(ValidationLevel::High, &disabled_validators);
 
         assert_eq!(validators.len(), 5);
-        assert!(validators.iter().find(|v| v.code() == "S001").is_none());
+        assert!(!validators.iter().any(|v| v.code() == "S001"));
     }
 
     #[test]
@@ -214,6 +214,6 @@ mod tests {
         let validators = filter_paired_read_validators(ValidationLevel::High, &disabled_validators);
 
         assert_eq!(validators.len(), 0);
-        assert!(validators.iter().find(|v| v.code() == "P001").is_none());
+        assert!(!validators.iter().any(|v| v.code() == "P001"));
     }
 }
