@@ -19,6 +19,16 @@ There are different methods to install fq.
 
 [releases]: https://github.com/stjude-rust-labs/fq/releases
 
+### Conda
+
+fq is available via Bioconda.
+
+```
+$ conda install fq=0.9.1
+```
+
+[Bioconda]: https://bioconda.github.io/recipes/fq/README.html
+
 ### Manual
 
 Clone the repository and use [Cargo] to install fq.
