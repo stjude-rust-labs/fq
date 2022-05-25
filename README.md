@@ -26,7 +26,7 @@ Clone the repository and use [Cargo] to install fq.
 ```
 $ git clone --depth 1 --branch v0.9.1 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
-$ cargo install --path .
+$ cargo install --locked --path .
 ```
 
 [Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
