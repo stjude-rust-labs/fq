@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+  * commands/subsample: Disallow 0% and 100% as probabilities.
+
+    At these extremes, use `touch` and `cp`, respectively, instead.
+
 ## 0.9.1 - 2022-02-15
 
 ### Fixed

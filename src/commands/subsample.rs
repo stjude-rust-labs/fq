@@ -1,6 +1,7 @@
 use std::{
     fs::File,
     io::{self, BufRead, BufReader, Write},
+    ops::{Bound, RangeBounds},
     path::Path,
 };
 
@@ -16,6 +17,9 @@ use rand::{
 use tracing::{info, warn};
 
 use crate::fastq::{self, Record};
+
+const VALID_PROBABILITY_RANGE: (Bound<f64>, Bound<f64>) =
+    (Bound::Excluded(0.0), Bound::Excluded(1.0));
 
 pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
     let r1_src = matches.value_of("r1-src").unwrap();
@@ -65,9 +69,13 @@ fn subsample_approximate<Rng>(
 where
     Rng: rand::Rng,
 {
-    if !(0.0..=1.0).contains(&probability) {
-        return Err(io::Error::from(io::ErrorKind::InvalidInput))
-            .with_context(|| format!("invalid probability = {}", probability));
+    if !VALID_PROBABILITY_RANGE.contains(&probability) {
+        return Err(io::Error::from(io::ErrorKind::InvalidInput)).with_context(|| {
+            format!(
+                "invalid probability: expected (0.0, 1.0), got {}",
+                probability
+            )
+        });
     }
 
     let mut r1 = fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;

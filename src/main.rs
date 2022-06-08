@@ -110,7 +110,7 @@ fn main() -> anyhow::Result<()> {
                 .short('p')
                 .long("probability")
                 .value_name("f64")
-                .help("The probability a record is kept, as a percentage [0, 1]. Cannot be used with `record-count`.")
+                .help("The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with `record-count`.")
                 .required(true)
                 .conflicts_with("record-count"),
         )
