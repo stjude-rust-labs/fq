@@ -13,6 +13,7 @@ pub use self::{
 
 use std::{error, fmt, str::FromStr};
 
+use clap::PossibleValue;
 use tracing::info;
 
 pub type SingleAndPairedValidators = (
@@ -81,6 +82,19 @@ impl FromStr for LintMode {
             "panic" => Ok(Self::Panic),
             "log" => Ok(Self::Log),
             _ => Err(format!("invalid lint mode: {}", s)),
+        }
+    }
+}
+
+impl clap::ValueEnum for LintMode {
+    fn value_variants<'a>() -> &'a [Self] {
+        &[Self::Panic, Self::Log]
+    }
+
+    fn to_possible_value<'a>(&self) -> Option<clap::PossibleValue<'a>> {
+        match self {
+            Self::Panic => Some(PossibleValue::new("panic")),
+            Self::Log => Some(PossibleValue::new("log")),
         }
     }
 }

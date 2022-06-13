@@ -2,6 +2,7 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufRead, BufReader, BufWriter, Write},
+    path::PathBuf,
 };
 
 use anyhow::Context;
@@ -64,20 +65,20 @@ fn name_id(name: &[u8]) -> &[u8] {
 }
 
 pub fn filter(matches: &ArgMatches) -> anyhow::Result<()> {
-    let src = matches.value_of("src").unwrap();
-    let names_src = matches.value_of("names").unwrap();
+    let src: &PathBuf = matches.get_one("src").unwrap();
+    let names_src: &PathBuf = matches.get_one("names").unwrap();
 
     info!("fq-filter start");
 
     info!("reading names");
 
-    let file =
-        File::open(names_src).with_context(|| format!("Could not open file: {}", names_src))?;
+    let file = File::open(names_src)
+        .with_context(|| format!("Could not open file: {}", names_src.display()))?;
 
     let reader = BufReader::new(file);
 
-    let names =
-        read_names(reader).with_context(|| format!("Could not read file: {}", names_src))?;
+    let names = read_names(reader)
+        .with_context(|| format!("Could not read file: {}", names_src.display()))?;
 
     info!("read {} names", names.len());
 
@@ -88,11 +89,11 @@ pub fn filter(matches: &ArgMatches) -> anyhow::Result<()> {
 
     info!("filtering fastq");
 
-    let reader =
-        crate::fastq::open(src).with_context(|| format!("Could not open file: {}", src))?;
+    let reader = crate::fastq::open(src)
+        .with_context(|| format!("Could not open file: {}", src.display()))?;
 
     copy_filtered(reader, &names, writer)
-        .with_context(|| format!("Could not copy record from {} to stdout", src))?;
+        .with_context(|| format!("Could not copy record from {} to stdout", src.display()))?;
 
     info!("fq-filter end");
 

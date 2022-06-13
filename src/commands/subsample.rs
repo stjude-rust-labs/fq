@@ -2,7 +2,7 @@ use std::{
     fs::File,
     io::{self, BufRead, BufReader, Write},
     ops::{Bound, RangeBounds},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use anyhow::Context;
@@ -22,35 +22,36 @@ const VALID_PROBABILITY_RANGE: (Bound<f64>, Bound<f64>) =
     (Bound::Excluded(0.0), Bound::Excluded(1.0));
 
 pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
-    let r1_src = matches.value_of("r1-src").unwrap();
-    let r1_dst = matches.value_of("r1-dst").unwrap();
+    let r1_src: &PathBuf = matches.get_one("r1-src").unwrap();
+    let r1_dst: &PathBuf = matches.get_one("r1-dst").unwrap();
 
-    let r2_src = matches.value_of("r2-src");
-    let r2_dst = matches.value_of("r2-dst");
+    let r2_src: Option<&PathBuf> = matches.get_one("r2-src");
+    let r2_dst: Option<&PathBuf> = matches.get_one("r2-dst");
 
     info!("fq-subsample start");
 
-    let rng = if matches.is_present("seed") {
-        let seed = matches.value_of_t("seed").unwrap_or_else(|e| e.exit());
+    let rng = if let Some(seed) = matches.get_one("seed") {
         info!("initializing rng from seed = {}", seed);
-        SmallRng::seed_from_u64(seed)
+        SmallRng::seed_from_u64(*seed)
     } else {
         info!("initializing rng from entropy");
         SmallRng::from_entropy()
     };
 
-    if matches.is_present("probability") {
-        let probability = matches
-            .value_of_t("probability")
-            .unwrap_or_else(|e| e.exit());
-
-        subsample_approximate((r1_src, r1_dst), (r2_src, r2_dst), rng, probability)?;
-    } else if matches.is_present("record-count") {
-        let record_count = matches
-            .value_of_t("record-count")
-            .unwrap_or_else(|e| e.exit());
-
-        subsample_exact((r1_src, r1_dst), (r2_src, r2_dst), rng, record_count)?;
+    if let Some(probability) = matches.get_one("probability") {
+        subsample_approximate(
+            (r1_src, r1_dst),
+            (r2_src.map(|p| &**p), r2_dst.map(|p| &**p)),
+            rng,
+            *probability,
+        )?;
+    } else if let Some(record_count) = matches.get_one("record-count") {
+        subsample_exact(
+            (r1_src, r1_dst),
+            (r2_src.map(|p| &**p), r2_dst.map(|p| &**p)),
+            rng,
+            *record_count,
+        )?;
     } else {
         unreachable!();
     }
@@ -61,8 +62,8 @@ pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
 }
 
 fn subsample_approximate<Rng>(
-    (r1_src, r1_dst): (&str, &str),
-    (r2_src, r2_dst): (Option<&str>, Option<&str>),
+    (r1_src, r1_dst): (&Path, &Path),
+    (r2_src, r2_dst): (Option<&Path>, Option<&Path>),
     mut rng: Rng,
     probability: f64,
 ) -> anyhow::Result<()>
@@ -78,9 +79,10 @@ where
         });
     }
 
-    let mut r1 = fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
-    let mut w1 =
-        fastq::create(r1_dst).with_context(|| format!("Could not create file: {}", r1_dst))?;
+    let mut r1 = fastq::open(r1_src)
+        .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
+    let mut w1 = fastq::create(r1_dst)
+        .with_context(|| format!("Could not create file: {}", r1_dst.display()))?;
 
     info!("probability (p) = {}", probability);
 
@@ -88,10 +90,10 @@ where
         (Some(r2_src), Some(r2_dst)) => {
             info!("sampling paired end reads");
 
-            let mut r2 =
-                fastq::open(r2_src).with_context(|| format!("Could not open file: {}", r2_src))?;
+            let mut r2 = fastq::open(r2_src)
+                .with_context(|| format!("Could not open file: {}", r2_src.display()))?;
             let mut w2 = fastq::create(r2_dst)
-                .with_context(|| format!("Could not create file: {}", r2_dst))?;
+                .with_context(|| format!("Could not create file: {}", r2_dst.display()))?;
 
             subsample_paired(
                 (&mut r1, &mut w1),
@@ -102,11 +104,11 @@ where
         }
         (Some(r2_src), None) => {
             return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-dst for {}", r2_src));
+                .with_context(|| format!("Missing r2-dst for {}", r2_src.display()));
         }
         (None, Some(r2_dst)) => {
             return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-src for {}", r2_dst));
+                .with_context(|| format!("Missing r2-src for {}", r2_dst.display()));
         }
         _ => {
             info!("sampling single end reads");
@@ -203,8 +205,8 @@ where
 }
 
 fn subsample_exact<Rng>(
-    (r1_src, r1_dst): (&str, &str),
-    (r2_src, r2_dst): (Option<&str>, Option<&str>),
+    (r1_src, r1_dst): (&Path, &Path),
+    (r2_src, r2_dst): (Option<&Path>, Option<&Path>),
     rng: Rng,
     mut record_count: u64,
 ) -> anyhow::Result<()>
@@ -234,28 +236,29 @@ where
 
     let bitmap = build_filter(rng, r1_src_record_count, record_count);
 
-    let mut r1 = fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
-    let mut w1 =
-        fastq::create(r1_dst).with_context(|| format!("Could not create file: {}", r1_dst))?;
+    let mut r1 = fastq::open(r1_src)
+        .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
+    let mut w1 = fastq::create(r1_dst)
+        .with_context(|| format!("Could not create file: {}", r1_dst.display()))?;
 
     match (r2_src, r2_dst) {
         (Some(r2_src), Some(r2_dst)) => {
             info!("sampling paired end reads");
 
-            let mut r2 =
-                fastq::open(r2_src).with_context(|| format!("Could not open file: {}", r2_src))?;
+            let mut r2 = fastq::open(r2_src)
+                .with_context(|| format!("Could not open file: {}", r2_src.display()))?;
             let mut w2 = fastq::create(r2_dst)
-                .with_context(|| format!("Could not create file: {}", r2_dst))?;
+                .with_context(|| format!("Could not create file: {}", r2_dst.display()))?;
 
             subsample_exact_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &bitmap)?;
         }
         (Some(r2_src), None) => {
             return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-dst for {}", r2_src));
+                .with_context(|| format!("Missing r2-dst for {}", r2_src.display()));
         }
         (None, Some(r2_dst)) => {
             return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-src for {}", r2_dst));
+                .with_context(|| format!("Missing r2-src for {}", r2_dst.display()));
         }
         (None, None) => {
             info!("sampling single end reads");

@@ -1,5 +1,6 @@
 use std::{
     io::{self, BufRead},
+    path::{Path, PathBuf},
     process,
 };
 
@@ -14,12 +15,17 @@ use crate::{
     },
 };
 
-fn build_error_message(error: validators::Error, pathname: &str, record_counter: usize) -> String {
+fn build_error_message<P>(error: validators::Error, pathname: P, record_counter: usize) -> String
+where
+    P: AsRef<Path>,
+{
+    let path = pathname.as_ref();
+
     let mut message = String::new();
 
     let line_offset = error.line_type as usize;
     let line_no = record_counter * 4 + line_offset + 1;
-    message.push_str(&format!("{}:{}:", pathname, line_no));
+    message.push_str(&format!("{}:{}:", path.display(), line_no));
 
     if let Some(col_no) = error.col_no {
         message.push_str(&format!("{}:", col_no));
@@ -33,27 +39,31 @@ fn build_error_message(error: validators::Error, pathname: &str, record_counter:
     message
 }
 
-fn exit_with_validation_error(
-    error: validators::Error,
-    pathname: &str,
-    record_counter: usize,
-) -> ! {
+fn exit_with_validation_error<P>(error: validators::Error, pathname: P, record_counter: usize) -> !
+where
+    P: AsRef<Path>,
+{
     let message = build_error_message(error, pathname, record_counter);
     eprintln!("{}", message);
     process::exit(1);
 }
 
-fn log_validation_error(error: validators::Error, pathname: &str, record_counter: usize) {
+fn log_validation_error<P>(error: validators::Error, pathname: P, record_counter: usize)
+where
+    P: AsRef<Path>,
+{
     let message = build_error_message(error, pathname, record_counter);
     error!("{}", message);
 }
 
-fn handle_validation_error(
+fn handle_validation_error<P>(
     lint_mode: LintMode,
     error: validators::Error,
-    pathname: &str,
+    pathname: P,
     record_counter: usize,
-) {
+) where
+    P: AsRef<Path>,
+{
     match lint_mode {
         LintMode::Panic => exit_with_validation_error(error, pathname, record_counter),
         LintMode::Log => log_validation_error(error, pathname, record_counter),
@@ -65,7 +75,7 @@ fn validate_single(
     single_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
-    r1_src: &str,
+    r1_src: &Path,
 ) -> anyhow::Result<()> {
     let (single_read_validators, _) =
         validators::filter_validators(single_read_validation_level, None, disabled_validators);
@@ -78,7 +88,7 @@ fn validate_single(
     loop {
         let bytes_read = reader
             .read_record(&mut record)
-            .with_context(|| format!("Could not read record from file: {}", r1_src))?;
+            .with_context(|| format!("Could not read record from file: {}", r1_src.display()))?;
 
         if bytes_read == 0 {
             break;
@@ -108,8 +118,8 @@ fn validate_pair(
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
-    r1_src: &str,
-    r2_src: &str,
+    r1_src: &Path,
+    r2_src: &Path,
 ) -> anyhow::Result<()> {
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
@@ -140,18 +150,28 @@ fn validate_pair(
     loop {
         let r1_len = reader_1
             .read_record(&mut b)
-            .with_context(|| format!("Could not read record from file: {}", r1_src))?;
+            .with_context(|| format!("Could not read record from file: {}", r1_src.display()))?;
 
         let r2_len = reader_2
             .read_record(&mut d)
-            .with_context(|| format!("Could not read record from file: {}", r2_src))?;
+            .with_context(|| format!("Could not read record from file: {}", r2_src.display()))?;
 
         if r1_len == 0 && r2_len > 0 {
-            return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
-                .with_context(|| format!("{} unexpectedly ended before {}", r1_src, r2_src));
+            return Err(io::Error::from(io::ErrorKind::UnexpectedEof)).with_context(|| {
+                format!(
+                    "{} unexpectedly ended before {}",
+                    r1_src.display(),
+                    r2_src.display()
+                )
+            });
         } else if r2_len == 0 && r1_len > 0 {
-            return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
-                .with_context(|| format!("{} unexpectedly ended before {}", r2_src, r1_src));
+            return Err(io::Error::from(io::ErrorKind::UnexpectedEof)).with_context(|| {
+                format!(
+                    "{} unexpectedly ended before {}",
+                    r2_src.display(),
+                    r1_src.display()
+                )
+            });
         } else if r1_len == 0 && r2_len == 0 {
             break;
         }
@@ -189,8 +209,8 @@ fn validate_pair(
         return Ok(());
     }
 
-    let mut reader =
-        crate::fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
+    let mut reader = crate::fastq::open(r1_src)
+        .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
 
     let mut record = Record::default();
     let mut record_counter = 0;
@@ -198,7 +218,7 @@ fn validate_pair(
     loop {
         let bytes_read = reader
             .read_record(&mut record)
-            .with_context(|| format!("Could not read record from file: {}", r1_src))?;
+            .with_context(|| format!("Could not read record from file: {}", r1_src.display()))?;
 
         if bytes_read == 0 {
             break;
@@ -219,35 +239,33 @@ fn validate_pair(
 }
 
 pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
-    let lint_mode = matches.value_of_t("lint-mode").unwrap_or_else(|e| e.exit());
+    let lint_mode: LintMode = *matches.get_one("lint-mode").unwrap();
 
-    let r1_src = matches.value_of("r1-src").unwrap();
-    let r2_src = matches.value_of("r2-src");
+    let r1_src: &PathBuf = matches.get_one("r1-src").unwrap();
+    let r2_src: Option<&PathBuf> = matches.get_one("r2-src");
 
-    let single_read_validation_level = matches
-        .value_of_t("single-read-validation-level")
-        .unwrap_or_else(|e| e.exit());
+    let single_read_validation_level: ValidationLevel =
+        *matches.get_one("single-read-validation-level").unwrap();
 
-    let paired_read_validation_level = matches
-        .value_of_t("paired-read-validation-level")
-        .unwrap_or_else(|e| e.exit());
+    let paired_read_validation_level: ValidationLevel =
+        *matches.get_one("paired-read-validation-level").unwrap();
 
     let disabled_validators: Vec<String> = matches
-        .values_of("disable-validator")
-        .unwrap_or_default()
-        .map(String::from)
+        .get_many("disable-validator")
+        .unwrap()
+        .cloned()
         .collect();
 
     info!("fq-lint start");
 
-    let r1 =
-        crate::fastq::open(r1_src).with_context(|| format!("Could not open file: {}", r1_src))?;
+    let r1 = crate::fastq::open(r1_src)
+        .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
 
     if let Some(r2_src) = r2_src {
         info!("validating paired end reads");
 
         let r2 = crate::fastq::open(r2_src)
-            .with_context(|| format!("Could not open file: {}", r2_src))?;
+            .with_context(|| format!("Could not open file: {}", r2_src.display()))?;
 
         validate_pair(
             r1,

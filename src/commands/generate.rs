@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::Context;
 use clap::ArgMatches;
 use rand::{rngs::SmallRng, SeedableRng};
@@ -6,21 +8,16 @@ use tracing::info;
 use crate::{generator::Builder, Generator, PairWriter};
 
 pub fn generate(matches: &ArgMatches) -> anyhow::Result<()> {
-    let r1_dst = matches.value_of("r1-dst").unwrap();
-    let r2_dst = matches.value_of("r2-dst").unwrap();
+    let r1_dst: &PathBuf = matches.get_one("r1-dst").unwrap();
+    let r2_dst: &PathBuf = matches.get_one("r2-dst").unwrap();
 
-    let record_count = matches
-        .value_of_t("record-count")
-        .unwrap_or_else(|e| e.exit());
-    let read_length = matches
-        .value_of_t("read-length")
-        .unwrap_or_else(|e| e.exit());
+    let record_count: u64 = *matches.get_one("record-count").unwrap();
+    let read_length: usize = *matches.get_one("read-length").unwrap();
 
     info!("fq-generate start");
 
-    let builder = if matches.is_present("seed") {
-        let seed = matches.value_of_t("seed").unwrap_or_else(|e| e.exit());
-        let rng = SmallRng::seed_from_u64(seed);
+    let builder = if let Some(seed) = matches.get_one("seed") {
+        let rng = SmallRng::seed_from_u64(*seed);
         Builder::from_rng(rng)
     } else {
         Generator::builder()
@@ -29,10 +26,10 @@ pub fn generate(matches: &ArgMatches) -> anyhow::Result<()> {
     let generator = builder.set_read_length(read_length).build();
 
     let w1 = crate::fastq::create(r1_dst)
-        .with_context(|| format!("Could not create file: {}", r1_dst))?;
+        .with_context(|| format!("Could not create file: {}", r1_dst.display()))?;
 
     let w2 = crate::fastq::create(r2_dst)
-        .with_context(|| format!("Could not create file: {}", r2_dst))?;
+        .with_context(|| format!("Could not create file: {}", r2_dst.display()))?;
 
     let mut writer = PairWriter::new(w1, w2);
 

@@ -1,5 +1,11 @@
-use clap::{Arg, Command};
-use fq::commands::{filter, generate, lint, subsample};
+use std::path::PathBuf;
+
+use clap::{value_parser, Arg, ArgAction, Command};
+use fq::{
+    commands::{filter, generate, lint, subsample},
+    validators::LintMode,
+    ValidationLevel,
+};
 
 use git_testament::{git_testament, render_testament};
 use tracing::warn;
@@ -18,7 +24,13 @@ fn main() -> anyhow::Result<()> {
                 .help("Allowlist of record names")
                 .required(true),
         )
-        .arg(Arg::new("src").help("Source FASTQ").index(1).required(true));
+        .arg(
+            Arg::new("src")
+                .help("Source FASTQ")
+                .index(1)
+                .value_parser(value_parser!(PathBuf))
+                .required(true),
+        );
 
     let generate_cmd = Command::new("generate")
         .about("Generates a random FASTQ file pair")
@@ -27,6 +39,7 @@ fn main() -> anyhow::Result<()> {
                 .short('s')
                 .long("seed")
                 .value_name("u64")
+                .value_parser(value_parser!(u64))
                 .help("Seed to use for the random number generator"),
         )
         .arg(
@@ -35,6 +48,7 @@ fn main() -> anyhow::Result<()> {
                 .long("record-count")
                 .help("Number of records to generate")
                 .value_name("u64")
+                .value_parser(value_parser!(u64))
                 .default_value("10000"),
         )
         .arg(
@@ -42,18 +56,21 @@ fn main() -> anyhow::Result<()> {
                 .long("read-length")
                 .help("Number of bases in the sequence")
                 .value_name("usize")
+                .value_parser(value_parser!(usize))
                 .default_value("101"),
         )
         .arg(
             Arg::new("r1-dst")
                 .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .index(1)
+                .value_parser(value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
             Arg::new("r2-dst")
                 .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
                 .index(2)
+                .value_parser(value_parser!(PathBuf))
                 .required(true),
         );
 
@@ -64,7 +81,7 @@ fn main() -> anyhow::Result<()> {
                 .long("lint-mode")
                 .help("Panic on first error or log all errors")
                 .value_name("str")
-                .possible_values(&["panic", "log"])
+                .value_parser(value_parser!(LintMode))
                 .default_value("panic"),
         )
         .arg(
@@ -72,7 +89,7 @@ fn main() -> anyhow::Result<()> {
                 .long("single-read-validation-level")
                 .help("Only use single read validators up to a given level")
                 .value_name("str")
-                .possible_values(&["low", "medium", "high"])
+                .value_parser(value_parser!(ValidationLevel))
                 .default_value("high"),
         )
         .arg(
@@ -80,7 +97,7 @@ fn main() -> anyhow::Result<()> {
                 .long("paired-read-validation-level")
                 .help("Only use paired read validators up to a given level")
                 .value_name("str")
-                .possible_values(&["low", "medium", "high"])
+                .value_parser(value_parser!(ValidationLevel))
                 .default_value("high"),
         )
         .arg(
@@ -88,18 +105,20 @@ fn main() -> anyhow::Result<()> {
                 .long("disable-validator")
                 .help("Disable validators by code. Use multiple times to disable more than one.")
                 .value_name("str")
-                .multiple_occurrences(true)
+                .action(ArgAction::Append)
                 .number_of_values(1),
         )
         .arg(
             Arg::new("r1-src")
                 .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
+                .value_parser(clap::value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
             Arg::new("r2-src")
                 .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
+                .value_parser(clap::value_parser!(PathBuf))
                 .index(2),
         );
 
@@ -110,6 +129,7 @@ fn main() -> anyhow::Result<()> {
                 .short('p')
                 .long("probability")
                 .value_name("f64")
+                .value_parser(value_parser!(f64))
                 .help("The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with `record-count`.")
                 .required(true)
                 .conflicts_with("record-count"),
@@ -119,6 +139,7 @@ fn main() -> anyhow::Result<()> {
                 .short('n')
                 .long("record-count")
                 .value_name("u64")
+                .value_parser(value_parser!(u64))
                 .help("The exact number of records to keep. Cannot be used with `probability`.")
                 .required(true)
                 .conflicts_with("probability"),
@@ -128,6 +149,7 @@ fn main() -> anyhow::Result<()> {
                 .short('s')
                 .long("seed")
                 .value_name("u64")
+                .value_parser(value_parser!(u64))
                 .help("Seed to use for the random number generator"),
         )
         .arg(
@@ -135,23 +157,27 @@ fn main() -> anyhow::Result<()> {
                 .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .long("r1-dst")
                 .value_name("path")
+                .value_parser(clap::value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
             Arg::new("r2-dst")
                 .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
                 .long("r2-dst")
-                .value_name("path"),
+                .value_name("path")
+                .value_parser(clap::value_parser!(PathBuf))
         )
         .arg(
             Arg::new("r1-src")
                 .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
+                .value_parser(clap::value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
             Arg::new("r2-src")
                 .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
+                .value_parser(clap::value_parser!(PathBuf))
                 .index(2),
         );
 
@@ -160,7 +186,13 @@ fn main() -> anyhow::Result<()> {
         .propagate_version(true)
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .arg(Arg::new("verbose").short('v').long("verbose").hide(true))
+        .arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .action(ArgAction::SetTrue)
+                .hide(true),
+        )
         .subcommand(filter_cmd)
         .subcommand(generate_cmd)
         .subcommand(lint_cmd)
@@ -169,7 +201,7 @@ fn main() -> anyhow::Result<()> {
 
     tracing_subscriber::fmt::init();
 
-    if matches.is_present("verbose") {
+    if let Some(true) = matches.get_one("verbose").copied() {
         warn!("`--verbose` is deprecated and will be removed in a future version. Logging is now always enabled.");
     }
 
