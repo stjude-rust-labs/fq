@@ -19,22 +19,25 @@ fn build_error_message<P>(error: validators::Error, pathname: P, record_counter:
 where
     P: AsRef<Path>,
 {
+    use std::fmt::Write;
+
     let path = pathname.as_ref();
 
     let mut message = String::new();
 
     let line_offset = error.line_type as usize;
     let line_no = record_counter * 4 + line_offset + 1;
-    message.push_str(&format!("{}:{}:", path.display(), line_no));
+    let _ = write!(message, "{}:{}:", path.display(), line_no);
 
     if let Some(col_no) = error.col_no {
-        message.push_str(&format!("{}:", col_no));
+        let _ = write!(message, "{}:", col_no);
     }
 
-    message.push_str(&format!(
+    let _ = write!(
+        message,
         " [{}] {}: {}",
         error.code, error.name, error.message
-    ));
+    );
 
     message
 }
