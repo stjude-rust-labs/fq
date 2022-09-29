@@ -1,7 +1,5 @@
 use std::{error, fmt, str::FromStr};
 
-use clap::PossibleValue;
-
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ValidationLevel {
     Low,
@@ -29,20 +27,6 @@ impl FromStr for ValidationLevel {
             "medium" => Ok(Self::Medium),
             "high" => Ok(Self::High),
             _ => Err(ParseError(s.into())),
-        }
-    }
-}
-
-impl clap::ValueEnum for ValidationLevel {
-    fn value_variants<'a>() -> &'a [Self] {
-        &[Self::Low, Self::Medium, Self::High]
-    }
-
-    fn to_possible_value<'a>(&self) -> Option<clap::PossibleValue<'a>> {
-        match self {
-            Self::Low => Some(PossibleValue::new("low")),
-            Self::Medium => Some(PossibleValue::new("medium")),
-            Self::High => Some(PossibleValue::new("high")),
         }
     }
 }

@@ -106,19 +106,19 @@ fn main() -> anyhow::Result<()> {
                 .help("Disable validators by code. Use multiple times to disable more than one.")
                 .value_name("str")
                 .action(ArgAction::Append)
-                .number_of_values(1),
+                .num_args(1),
         )
         .arg(
             Arg::new("r1-src")
                 .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
             Arg::new("r2-src")
                 .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .index(2),
         );
 
@@ -157,7 +157,7 @@ fn main() -> anyhow::Result<()> {
                 .help("Read 1 destination. Output will be gzipped if ends in `.gz`.")
                 .long("r1-dst")
                 .value_name("path")
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
@@ -165,24 +165,24 @@ fn main() -> anyhow::Result<()> {
                 .help("Read 2 destination. Output will be gzipped if ends in `.gz`.")
                 .long("r2-dst")
                 .value_name("path")
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
         )
         .arg(
             Arg::new("r1-src")
                 .help("Read 1 source. Accepts both raw and gzipped FASTQ inputs.")
                 .index(1)
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .required(true),
         )
         .arg(
             Arg::new("r2-src")
                 .help("Read 2 source. Accepts both raw and gzipped FASTQ inputs.")
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .index(2),
         );
 
     let matches = Command::new("fq")
-        .version(version.as_str())
+        .version(version)
         .propagate_version(true)
         .subcommand_required(true)
         .arg_required_else_help(true)
