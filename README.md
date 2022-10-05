@@ -77,19 +77,17 @@ file. The result includes only the records in the allowlist.
 #### Usage
 
 ```
-fq-filter
 Filters a FASTQ from an allowlist of names
 
-USAGE:
-    fq filter --names <path> <src>
+Usage: fq filter --names <path> <src>
 
-ARGS:
-    <src>    Source FASTQ
+Arguments:
+  <src>  Source FASTQ
 
-OPTIONS:
-    -h, --help            Print help information
-        --names <path>    Allowlist of record names
-    -V, --version         Print version information
+Options:
+      --names <path>  Allowlist of record names
+  -h, --help          Print help information
+  -V, --version       Print version information
 ```
 
 #### Examples
@@ -112,22 +110,20 @@ completely random. The sequences do not align to any genome.
 #### Usage
 
 ```
-fq-generate
 Generates a random FASTQ file pair
 
-USAGE:
-    fq generate [OPTIONS] <r1-dst> <r2-dst>
+Usage: fq generate [OPTIONS] <r1-dst> <r2-dst>
 
-ARGS:
-    <r1-dst>    Read 1 destination. Output will be gzipped if ends in `.gz`.
-    <r2-dst>    Read 2 destination. Output will be gzipped if ends in `.gz`.
+Arguments:
+  <r1-dst>  Read 1 destination. Output will be gzipped if ends in `.gz`.
+  <r2-dst>  Read 2 destination. Output will be gzipped if ends in `.gz`.
 
-OPTIONS:
-    -h, --help                   Print help information
-    -n, --record-count <u64>     Number of records to generate [default: 10000]
-        --read-length <usize>    Number of bases in the sequence [default: 101]
-    -s, --seed <u64>             Seed to use for the random number generator
-    -V, --version                Print version information
+Options:
+  -s, --seed <u64>           Seed to use for the random number generator
+  -n, --record-count <u64>   Number of records to generate [default: 10000]
+      --read-length <usize>  Number of bases in the sequence [default: 101]
+  -h, --help                 Print help information
+  -V, --version              Print version information
 ```
 
 #### Examples
@@ -147,36 +143,27 @@ $ fq generate --record-count 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 #### Usage
 
 ```
-fq-lint
 Validates a FASTQ file pair
 
-USAGE:
-    fq lint [OPTIONS] <r1-src> [--] [r2-src]
+Usage: fq lint [OPTIONS] <r1-src> [r2-src]
 
-ARGS:
-    <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
-    <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
+Arguments:
+  <r1-src>  Read 1 source. Accepts both raw and gzipped FASTQ inputs.
+  [r2-src]  Read 2 source. Accepts both raw and gzipped FASTQ inputs.
 
-OPTIONS:
-        --disable-validator <str>
-            Disable validators by code. Use multiple times to disable more than one.
-
-    -h, --help
-            Print help information
-
-        --lint-mode <str>
-            Panic on first error or log all errors [default: panic] [possible values: panic, log]
-
-        --paired-read-validation-level <str>
-            Only use paired read validators up to a given level [default: high] [possible values:
-            low, medium, high]
-
-        --single-read-validation-level <str>
-            Only use single read validators up to a given level [default: high] [possible values:
-            low, medium, high]
-
-    -V, --version
-            Print version information
+Options:
+      --lint-mode <str>
+          Panic on first error or log all errors [default: panic]
+      --single-read-validation-level <str>
+          Only use single read validators up to a given level [default: high]
+      --paired-read-validation-level <str>
+          Only use paired read validators up to a given level [default: high]
+      --disable-validator <str>
+          Disable validators by code. Use multiple times to disable more than one.
+  -h, --help
+          Print help information
+  -V, --version
+          Print version information
 ```
 
 #### Validators
@@ -238,26 +225,22 @@ For paired input, the sampling is applied to each pair.
 #### Usage
 
 ```
-fq-subsample
 Outputs a subset of records
 
-USAGE:
-    fq subsample [OPTIONS] --probability <f64> --record-count <u64> --r1-dst <path> <r1-src> [r2-src]
+Usage: fq subsample [OPTIONS] --probability <f64> --record-count <u64> --r1-dst <path> <r1-src> [r2-src]
 
-ARGS:
-    <r1-src>    Read 1 source. Accepts both raw and gzipped FASTQ inputs.
-    <r2-src>    Read 2 source. Accepts both raw and gzipped FASTQ inputs.
+Arguments:
+  <r1-src>  Read 1 source. Accepts both raw and gzipped FASTQ inputs.
+  [r2-src]  Read 2 source. Accepts both raw and gzipped FASTQ inputs.
 
-OPTIONS:
-    -h, --help                  Print help information
-    -n, --record-count <u64>    The exact number of records to keep. Cannot be used with
-                                `probability`.
-    -p, --probability <f64>     The probability a record is kept, as a percentage [0, 1]. Cannot be
-                                used with `record-count`.
-        --r1-dst <path>         Read 1 destination. Output will be gzipped if ends in `.gz`.
-        --r2-dst <path>         Read 2 destination. Output will be gzipped if ends in `.gz`.
-    -s, --seed <u64>            Seed to use for the random number generator
-    -V, --version               Print version information
+Options:
+  -p, --probability <f64>   The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with `record-count`.
+  -n, --record-count <u64>  The exact number of records to keep. Cannot be used with `probability`.
+  -s, --seed <u64>          Seed to use for the random number generator
+      --r1-dst <path>       Read 1 destination. Output will be gzipped if ends in `.gz`.
+      --r2-dst <path>       Read 2 destination. Output will be gzipped if ends in `.gz`.
+  -h, --help                Print help information
+  -V, --version             Print version information
 ```
 
 #### Examples
