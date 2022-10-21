@@ -2,12 +2,11 @@ use std::{
     fs::File,
     io::{self, BufRead, BufReader, Write},
     ops::{Bound, RangeBounds},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
 use anyhow::Context;
 use bitvec::vec::BitVec;
-use clap::ArgMatches;
 use flate2::bufread::MultiGzDecoder;
 use rand::{
     distributions::{Distribution, Uniform},
@@ -16,41 +15,44 @@ use rand::{
 };
 use tracing::{info, warn};
 
-use crate::fastq::{self, Record};
+use crate::{
+    cli::SubsampleArgs,
+    fastq::{self, Record},
+};
 
 const VALID_PROBABILITY_RANGE: (Bound<f64>, Bound<f64>) =
     (Bound::Excluded(0.0), Bound::Excluded(1.0));
 
-pub fn subsample(matches: &ArgMatches) -> anyhow::Result<()> {
-    let r1_src: &PathBuf = matches.get_one("r1-src").unwrap();
-    let r1_dst: &PathBuf = matches.get_one("r1-dst").unwrap();
+pub fn subsample(args: SubsampleArgs) -> anyhow::Result<()> {
+    let r1_src = &args.r1_src;
+    let r1_dst = &args.r1_dst;
 
-    let r2_src: Option<&PathBuf> = matches.get_one("r2-src");
-    let r2_dst: Option<&PathBuf> = matches.get_one("r2-dst");
+    let r2_src = args.r2_src.as_ref();
+    let r2_dst = args.r2_dst.as_ref();
 
     info!("fq-subsample start");
 
-    let rng = if let Some(seed) = matches.get_one("seed") {
+    let rng = if let Some(seed) = args.seed {
         info!("initializing rng from seed = {}", seed);
-        SmallRng::seed_from_u64(*seed)
+        SmallRng::seed_from_u64(seed)
     } else {
         info!("initializing rng from entropy");
         SmallRng::from_entropy()
     };
 
-    if let Some(probability) = matches.get_one("probability") {
+    if let Some(probability) = args.probability {
         subsample_approximate(
             (r1_src, r1_dst),
             (r2_src.map(|p| &**p), r2_dst.map(|p| &**p)),
             rng,
-            *probability,
+            probability,
         )?;
-    } else if let Some(record_count) = matches.get_one("record-count") {
+    } else if let Some(record_count) = args.record_count {
         subsample_exact(
             (r1_src, r1_dst),
             (r2_src.map(|p| &**p), r2_dst.map(|p| &**p)),
             rng,
-            *record_count,
+            record_count,
         )?;
     } else {
         unreachable!();

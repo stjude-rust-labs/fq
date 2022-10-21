@@ -67,7 +67,7 @@ impl fmt::Display for Error {
 
 impl error::Error for Error {}
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(clap::ValueEnum, Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LintMode {
     Panic,
     Log,

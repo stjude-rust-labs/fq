@@ -1,14 +1,14 @@
 use std::{
     io::{self, BufRead},
-    path::{Path, PathBuf},
+    path::Path,
     process,
 };
 
 use anyhow::Context;
-use clap::ArgMatches;
 use tracing::{error, info};
 
 use crate::{
+    cli::LintArgs,
     fastq::{self, Record},
     validators::{
         self, single::DuplicateNameValidator, LintMode, SingleReadValidatorMut, ValidationLevel,
@@ -241,23 +241,16 @@ fn validate_pair(
     Ok(())
 }
 
-pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
-    let lint_mode: LintMode = *matches.get_one("lint-mode").unwrap();
+pub fn lint(args: LintArgs) -> anyhow::Result<()> {
+    let lint_mode = args.lint_mode;
 
-    let r1_src: &PathBuf = matches.get_one("r1-src").unwrap();
-    let r2_src: Option<&PathBuf> = matches.get_one("r2-src");
+    let r1_src = &args.r1_src;
+    let r2_src = args.r2_src.as_ref();
 
-    let single_read_validation_level: ValidationLevel =
-        *matches.get_one("single-read-validation-level").unwrap();
+    let single_read_validation_level = args.single_read_validation_level;
+    let paired_read_validation_level = args.paired_read_validation_level;
 
-    let paired_read_validation_level: ValidationLevel =
-        *matches.get_one("paired-read-validation-level").unwrap();
-
-    let disabled_validators: Vec<String> = matches
-        .get_many("disable-validator")
-        .unwrap()
-        .cloned()
-        .collect();
+    let disabled_validators = &args.disable_validator;
 
     info!("fq-lint start");
 
@@ -275,7 +268,7 @@ pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
             r2,
             single_read_validation_level,
             paired_read_validation_level,
-            &disabled_validators,
+            disabled_validators,
             lint_mode,
             r1_src,
             r2_src,
@@ -286,7 +279,7 @@ pub fn lint(matches: &ArgMatches) -> anyhow::Result<()> {
         validate_single(
             r1,
             single_read_validation_level,
-            &disabled_validators,
+            disabled_validators,
             lint_mode,
             r1_src,
         )?;

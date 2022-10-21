@@ -2,14 +2,12 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufRead, BufReader, BufWriter, Write},
-    path::PathBuf,
 };
 
 use anyhow::Context;
-use clap::ArgMatches;
 use tracing::info;
 
-use crate::fastq;
+use crate::{cli::FilterArgs, fastq};
 
 fn copy_filtered<R, W>(
     mut reader: fastq::Reader<R>,
@@ -64,9 +62,9 @@ fn name_id(name: &[u8]) -> &[u8] {
     }
 }
 
-pub fn filter(matches: &ArgMatches) -> anyhow::Result<()> {
-    let src: &PathBuf = matches.get_one("src").unwrap();
-    let names_src: &PathBuf = matches.get_one("names").unwrap();
+pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
+    let src = &args.src;
+    let names_src = &args.names;
 
     info!("fq-filter start");
 
