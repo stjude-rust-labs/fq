@@ -1,5 +1,3 @@
-#![deny(bare_trait_objects)]
-
 pub mod cli;
 pub mod commands;
 pub mod distributions;
