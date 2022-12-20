@@ -123,7 +123,7 @@ fn filter_single_read_validators(
     let single_read_validators: Vec<Box<dyn SingleReadValidator>> = vec![
         Box::new(NameValidator),
         Box::new(CompleteValidator),
-        Box::new(AlphabetValidator::default()),
+        Box::<AlphabetValidator>::default(),
         Box::new(PlusLineValidator),
         Box::new(ConsistentSeqQualValidator),
         Box::new(QualityStringValidator),

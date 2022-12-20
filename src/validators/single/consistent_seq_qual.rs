@@ -30,7 +30,7 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
             Err(Error::new(
                 self.code(),
                 self.name(),
-                &message,
+                message,
                 LineType::Sequence,
                 Some(1),
             ))
