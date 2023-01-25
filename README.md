@@ -86,8 +86,8 @@ Arguments:
 
 Options:
       --names <NAMES>  Allowlist of record names
-  -h, --help           Print help information
-  -V, --version        Print version information
+  -h, --help           Print help
+  -V, --version        Print version
 ```
 
 #### Examples
@@ -122,8 +122,8 @@ Options:
   -s, --seed <SEED>                  Seed to use for the random number generator
   -n, --record-count <RECORD_COUNT>  Number of records to generate [default: 10000]
       --read-length <READ_LENGTH>    Number of bases in the sequence [default: 101]
-  -h, --help                         Print help information
-  -V, --version                      Print version information
+  -h, --help                         Print help
+  -V, --version                      Print version
 ```
 
 #### Examples
@@ -143,8 +143,6 @@ $ fq generate --record-count 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 #### Usage
 
 ```
-Validates a FASTQ file pair
-
 Usage: fq lint [OPTIONS] <R1_SRC> [R2_SRC]
 
 Arguments:
@@ -161,9 +159,9 @@ Options:
       --disable-validator <DISABLE_VALIDATOR>
           Disable validators by code. Use multiple times to disable more than one
   -h, --help
-          Print help information
+          Print help
   -V, --version
-          Print version information
+          Print version
 ```
 
 #### Validators
@@ -234,20 +232,13 @@ Arguments:
   [R2_SRC]  Read 2 source. Accepts both raw and gzipped FASTQ inputs
 
 Options:
-  -p, --probability <PROBABILITY>
-          The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with `record-count`
-  -n, --record-count <RECORD_COUNT>
-          The exact number of records to keep. Cannot be used with `probability`
-  -s, --seed <SEED>
-          Seed to use for the random number generator
-      --r1-dst <R1_DST>
-          Read 1 destination. Output will be gzipped if ends in `.gz`
-      --r2-dst <R2_DST>
-          Read 2 destination. Output will be gzipped if ends in `.gz`
-  -h, --help
-          Print help information
-  -V, --version
-          Print version information
+  -p, --probability <PROBABILITY>    The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with `record-count`
+  -n, --record-count <RECORD_COUNT>  The exact number of records to keep. Cannot be used with `probability`
+  -s, --seed <SEED>                  Seed to use for the random number generator
+      --r1-dst <R1_DST>              Read 1 destination. Output will be gzipped if ends in `.gz`
+      --r2-dst <R2_DST>              Read 2 destination. Output will be gzipped if ends in `.gz`
+  -h, --help                         Print help
+  -V, --version                      Print version
 ```
 
 #### Examples
