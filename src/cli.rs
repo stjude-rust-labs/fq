@@ -98,7 +98,7 @@ pub struct SubsampleArgs {
     pub probability: Option<f64>,
 
     /// The exact number of records to keep. Cannot be used with `probability`.
-    #[arg(short, long)]
+    #[arg(short = 'n', long)]
     pub record_count: Option<u64>,
 
     /// Seed to use for the random number generator.
