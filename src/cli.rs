@@ -33,7 +33,7 @@ pub enum Command {
 pub struct FilterArgs {
     /// Allowlist of record names.
     #[arg(long)]
-    pub names: PathBuf,
+    pub names: Option<PathBuf>,
 
     /// Source FASTQ.
     pub src: PathBuf,

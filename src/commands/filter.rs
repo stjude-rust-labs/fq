@@ -2,6 +2,7 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufRead, BufReader, BufWriter, Write},
+    path::Path,
 };
 
 use anyhow::Context;
@@ -64,11 +65,42 @@ fn name_id(name: &[u8]) -> &[u8] {
 
 pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
     let src = &args.src;
-    let names_src = &args.names;
 
     info!("fq-filter start");
 
+    if let Some(names_src) = args.names {
+        filter_by_names(src, names_src)?;
+    } else {
+        cat(src)?;
+    }
+
+    info!("fq-filter end");
+
+    Ok(())
+}
+
+fn cat<P>(src: P) -> io::Result<()>
+where
+    P: AsRef<Path>,
+{
+    let mut reader = File::open(src)?;
+
+    let stdout = io::stdout();
+    let mut handle = stdout.lock();
+    io::copy(&mut reader, &mut handle)?;
+
+    Ok(())
+}
+
+fn filter_by_names<P, Q>(src: P, names_src: Q) -> anyhow::Result<()>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+{
     info!("reading names");
+
+    let src = src.as_ref();
+    let names_src = names_src.as_ref();
 
     let file = File::open(names_src)
         .with_context(|| format!("Could not open file: {}", names_src.display()))?;
@@ -92,8 +124,6 @@ pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
 
     copy_filtered(reader, &names, writer)
         .with_context(|| format!("Could not copy record from {} to stdout", src.display()))?;
-
-    info!("fq-filter end");
 
     Ok(())
 }
