@@ -3,7 +3,7 @@ name = "fq"
 version = "0.9.1"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.64.0"
 license = "MIT"
 publish = false
 
