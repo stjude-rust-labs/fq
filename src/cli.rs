@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use clap::{ArgGroup, Parser, Subcommand};
 use git_testament::{git_testament, render_testament};
+use regex::bytes::Regex;
 
 use crate::{validators::LintMode, ValidationLevel};
 
@@ -19,7 +20,7 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
-    /// Filters a FASTQ from an allowlist of names.
+    /// Filters a FASTQ file.
     Filter(FilterArgs),
     /// Generates a random FASTQ file pair.
     Generate(GenerateArgs),
@@ -30,10 +31,15 @@ pub enum Command {
 }
 
 #[derive(Parser)]
+#[command(group(ArgGroup::new("filter").args(["names", "sequence_pattern"])))]
 pub struct FilterArgs {
     /// Allowlist of record names.
     #[arg(long)]
     pub names: Option<PathBuf>,
+
+    /// Keep records that have sequences that match the given regular expression.
+    #[arg(long)]
+    pub sequence_pattern: Option<Regex>,
 
     /// Source FASTQ.
     pub src: PathBuf,

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+  * commands/filter: Add filter by sequence pattern ([#27]).
+
+    Records can be filtered by their sequence using a regular expression: `fq
+    filter --sequence-pattern <regex> <src>`. It cannot be combined with name
+    filtering.
+
+[#27]: https://github.com/stjude-rust-labs/fq/issues/27
+
 ### Changed
 
   * commands/subsample: Disallow 0% and 100% as probabilities.

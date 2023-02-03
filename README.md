@@ -71,23 +71,28 @@ validating FASTQ files.
 
 ### filter
 
-**fq filter** takes an allowlist of record names and filters a given FASTQ
-file. The result includes only the records in the allowlist.
+**fq filter** filters a given FASTQ file by a set of names or a sequence
+pattern. The result includes only the records that match the given options.
 
 #### Usage
 
 ```
 Filters a FASTQ from an allowlist of names
 
-Usage: fq filter --names <NAMES> <SRC>
+Usage: fq filter [OPTIONS] <SRC>
 
 Arguments:
   <SRC>  Source FASTQ
 
 Options:
-      --names <NAMES>  Allowlist of record names
-  -h, --help           Print help
-  -V, --version        Print version
+      --names <NAMES>
+          Allowlist of record names
+      --sequence-pattern <SEQUENCE_PATTERN>
+          Keep records that have sequences that match the given regular expression
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 ```
 
 #### Examples

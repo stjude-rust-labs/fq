@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::Context;
+use regex::bytes::Regex;
 use tracing::info;
 
 use crate::{cli::FilterArgs, fastq};
@@ -70,6 +71,8 @@ pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
 
     if let Some(names_src) = args.names {
         filter_by_names(src, names_src)?;
+    } else if let Some(sequence_pattern) = args.sequence_pattern {
+        filter_by_sequence_pattern(src, sequence_pattern)?;
     } else {
         cat(src)?;
     }
@@ -126,21 +129,66 @@ where
     Ok(())
 }
 
+fn copy_filtered_by_sequence_pattern<R, W>(
+    reader: &mut fastq::Reader<R>,
+    sequence_pattern: Regex,
+    writer: &mut fastq::Writer<W>,
+) -> io::Result<()>
+where
+    R: BufRead,
+    W: Write,
+{
+    let mut record = fastq::Record::default();
+
+    loop {
+        let bytes_read = reader.read_record(&mut record)?;
+
+        if bytes_read == 0 {
+            break;
+        }
+
+        if sequence_pattern.is_match(record.sequence()) {
+            writer.write_record(&record)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn filter_by_sequence_pattern<P>(src: P, sequence_pattern: Regex) -> anyhow::Result<()>
+where
+    P: AsRef<Path>,
+{
+    let src = src.as_ref();
+
+    let mut reader = crate::fastq::open(src)
+        .with_context(|| format!("Could not open file: {}", src.display()))?;
+
+    let stdout = io::stdout().lock();
+    let mut writer = fastq::Writer::new(stdout);
+
+    info!("filtering fastq where sequence matches `{sequence_pattern}`");
+
+    copy_filtered_by_sequence_pattern(&mut reader, sequence_pattern, &mut writer)?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_copy_filtered() {
-        let names = [b"fqlib:2".to_vec()].iter().cloned().collect();
-
-        let data = "\
+    static DATA: &[u8] = b"\
 @fqlib:1/1\nAGCT\n+\nabcd
 @fqlib:2/1\nTCGA\n+\ndcba
 @fqlib:3/1\nGCCA\n+\ngcca
 ";
 
-        let reader = fastq::Reader::new(data.as_bytes());
+    #[test]
+    fn test_copy_filtered() {
+        let names = [b"fqlib:2".to_vec()].iter().cloned().collect();
+
+        let reader = fastq::Reader::new(DATA);
 
         let mut buf = Vec::new();
         let writer = fastq::Writer::new(&mut buf);
@@ -168,5 +216,18 @@ mod tests {
         assert_eq!(name_id("@fqlib:1/1".as_bytes()), b"fqlib:1");
         assert_eq!(name_id("@fqlib:1 1".as_bytes()), b"fqlib:1");
         assert_eq!(name_id("@fqlib:1".as_bytes()), b"fqlib:1");
+    }
+
+    #[test]
+    fn test_copy_filtered_by_sequence_pattern() -> io::Result<()> {
+        let mut reader = fastq::Reader::new(DATA);
+        let pattern = Regex::new("^TC").unwrap();
+        let mut writer = fastq::Writer::new(Vec::new());
+        copy_filtered_by_sequence_pattern(&mut reader, pattern, &mut writer)?;
+
+        let expected = b"@fqlib:2/1\nTCGA\n+\ndcba\n";
+        assert_eq!(writer.get_ref(), expected);
+
+        Ok(())
     }
 }
