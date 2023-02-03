@@ -80,7 +80,7 @@ impl FromStr for LintMode {
         match s {
             "panic" => Ok(Self::Panic),
             "log" => Ok(Self::Log),
-            _ => Err(format!("invalid lint mode: {}", s)),
+            _ => Err(format!("invalid lint mode: {s}")),
         }
     }
 }

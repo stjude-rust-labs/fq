@@ -30,7 +30,7 @@ where
     let _ = write!(message, "{}:{}:", path.display(), line_no);
 
     if let Some(col_no) = error.col_no {
-        let _ = write!(message, "{}:", col_no);
+        let _ = write!(message, "{col_no}:");
     }
 
     let _ = write!(
@@ -47,7 +47,7 @@ where
     P: AsRef<Path>,
 {
     let message = build_error_message(error, pathname, record_counter);
-    eprintln!("{}", message);
+    eprintln!("{message}");
     process::exit(1);
 }
 
@@ -137,7 +137,7 @@ fn validate_pair(
     let use_special_validator = !disabled_validators.contains(&code.to_string());
 
     let validators = if use_special_validator {
-        format!(r#""[{}] {}""#, code, name)
+        format!(r#""[{code}] {name}""#)
     } else {
         String::new()
     };

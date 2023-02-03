@@ -74,10 +74,7 @@ where
 {
     if !VALID_PROBABILITY_RANGE.contains(&probability) {
         return Err(io::Error::from(io::ErrorKind::InvalidInput)).with_context(|| {
-            format!(
-                "invalid probability: expected (0.0, 1.0), got {}",
-                probability
-            )
+            format!("invalid probability: expected (0.0, 1.0), got {probability}")
         });
     }
 
