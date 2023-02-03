@@ -85,9 +85,8 @@ where
 {
     let mut reader = File::open(src)?;
 
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-    io::copy(&mut reader, &mut handle)?;
+    let mut stdout = io::stdout().lock();
+    io::copy(&mut reader, &mut stdout)?;
 
     Ok(())
 }
@@ -112,9 +111,8 @@ where
 
     info!("read {} names", names.len());
 
-    let stdout = io::stdout();
-    let handle = stdout.lock();
-    let buf = BufWriter::new(handle);
+    let stdout = io::stdout().lock();
+    let buf = BufWriter::new(stdout);
     let writer = fastq::Writer::new(buf);
 
     info!("filtering fastq");
