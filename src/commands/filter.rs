@@ -11,14 +11,15 @@ use tracing::info;
 
 use crate::{cli::FilterArgs, fastq};
 
-fn copy_filtered<R, W>(
+fn _filter<R, W, F>(
     readers: &mut [fastq::Reader<R>],
-    names: &HashSet<Vec<u8>>,
     writers: &mut [fastq::Writer<W>],
+    filter: F,
 ) -> io::Result<()>
 where
     R: BufRead,
     W: Write,
+    F: Fn(&fastq::Record) -> bool,
 {
     let mut record = fastq::Record::default();
     let mut is_match = false;
@@ -32,8 +33,7 @@ where
                     break;
                 }
 
-                let id = name_id(record.name());
-                is_match = names.contains(id);
+                is_match = filter(&record);
             } else if reader.read_record(&mut record)? == 0 {
                 return Err(io::Error::from(io::ErrorKind::UnexpectedEof));
             }
@@ -45,6 +45,21 @@ where
     }
 
     Ok(())
+}
+
+fn copy_filtered<R, W>(
+    readers: &mut [fastq::Reader<R>],
+    names: &HashSet<Vec<u8>>,
+    writers: &mut [fastq::Writer<W>],
+) -> io::Result<()>
+where
+    R: BufRead,
+    W: Write,
+{
+    _filter(readers, writers, |record| {
+        let id = name_id(record.name());
+        names.contains(id)
+    })
 }
 
 fn read_names<R>(reader: R) -> io::Result<HashSet<Vec<u8>>>
@@ -158,30 +173,9 @@ where
     R: BufRead,
     W: Write,
 {
-    let mut record = fastq::Record::default();
-    let mut is_match = false;
-    let mut is_eof = false;
-
-    while !is_eof {
-        for (i, (reader, writer)) in readers.iter_mut().zip(writers.iter_mut()).enumerate() {
-            if i == 0 {
-                if reader.read_record(&mut record)? == 0 {
-                    is_eof = true;
-                    break;
-                }
-
-                is_match = sequence_pattern.is_match(record.sequence());
-            } else if reader.read_record(&mut record)? == 0 {
-                return Err(io::Error::from(io::ErrorKind::UnexpectedEof));
-            }
-
-            if is_match {
-                writer.write_record(&record)?;
-            }
-        }
-    }
-
-    Ok(())
+    _filter(readers, writers, |record| {
+        sequence_pattern.is_match(record.sequence())
+    })
 }
 
 fn filter_by_sequence_pattern<P, Q>(
