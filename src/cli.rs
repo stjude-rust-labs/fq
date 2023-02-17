@@ -41,8 +41,12 @@ pub struct FilterArgs {
     #[arg(long)]
     pub sequence_pattern: Option<Regex>,
 
-    /// Source FASTQ.
-    pub src: PathBuf,
+    /// Filtered FASTQ destinations.
+    #[arg(long, required = true)]
+    pub dsts: Vec<PathBuf>,
+
+    /// FASTQ sources.
+    pub srcs: Vec<PathBuf>,
 }
 
 #[derive(Parser)]

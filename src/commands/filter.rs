@@ -1,7 +1,7 @@
 use std::{
     collections::HashSet,
     fs::File,
-    io::{self, BufRead, BufReader, BufWriter, Write},
+    io::{self, BufRead, BufReader, Write},
     path::Path,
 };
 
@@ -12,27 +12,35 @@ use tracing::info;
 use crate::{cli::FilterArgs, fastq};
 
 fn copy_filtered<R, W>(
-    mut reader: fastq::Reader<R>,
+    readers: &mut [fastq::Reader<R>],
     names: &HashSet<Vec<u8>>,
-    mut writer: fastq::Writer<W>,
+    writers: &mut [fastq::Writer<W>],
 ) -> io::Result<()>
 where
     R: BufRead,
     W: Write,
 {
     let mut record = fastq::Record::default();
+    let mut is_match = false;
+    let mut is_eof = false;
 
-    loop {
-        let bytes_read = reader.read_record(&mut record)?;
+    while !is_eof {
+        for (i, (reader, writer)) in readers.iter_mut().zip(writers.iter_mut()).enumerate() {
+            if i == 0 {
+                if reader.read_record(&mut record)? == 0 {
+                    is_eof = true;
+                    break;
+                }
 
-        if bytes_read == 0 {
-            break;
-        }
+                let id = name_id(record.name());
+                is_match = names.contains(id);
+            } else if reader.read_record(&mut record)? == 0 {
+                return Err(io::Error::from(io::ErrorKind::UnexpectedEof));
+            }
 
-        let id = name_id(record.name());
-
-        if names.contains(id) {
-            writer.write_record(&record)?;
+            if is_match {
+                writer.write_record(&record)?;
+            }
         }
     }
 
@@ -65,16 +73,17 @@ fn name_id(name: &[u8]) -> &[u8] {
 }
 
 pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
-    let src = &args.src;
+    let srcs = &args.srcs;
+    let dsts = &args.dsts;
 
     info!("fq-filter start");
 
-    if let Some(names_src) = args.names {
-        filter_by_names(src, names_src)?;
-    } else if let Some(sequence_pattern) = args.sequence_pattern {
-        filter_by_sequence_pattern(src, sequence_pattern)?;
+    if let Some(names_src) = args.names.as_ref() {
+        filter_by_names(srcs, dsts, names_src)?;
+    } else if let Some(sequence_pattern) = args.sequence_pattern.as_ref() {
+        filter_by_sequence_pattern(srcs, dsts, sequence_pattern)?;
     } else {
-        cat(src)?;
+        cat(srcs, dsts)?;
     }
 
     info!("fq-filter end");
@@ -82,94 +91,127 @@ pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn cat<P>(src: P) -> io::Result<()>
-where
-    P: AsRef<Path>,
-{
-    let mut reader = File::open(src)?;
-
-    let mut stdout = io::stdout().lock();
-    io::copy(&mut reader, &mut stdout)?;
-
-    Ok(())
-}
-
-fn filter_by_names<P, Q>(src: P, names_src: Q) -> anyhow::Result<()>
+fn cat<P, Q>(srcs: &[P], dsts: &[Q]) -> io::Result<()>
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
 {
+    for (src, dst) in srcs.iter().zip(dsts) {
+        let (src, dst) = (src.as_ref(), dst.as_ref());
+
+        let mut reader = File::open(src)?;
+
+        let mut writer = File::create(dst)?;
+        io::copy(&mut reader, &mut writer)?;
+    }
+
+    Ok(())
+}
+
+fn filter_by_names<P, Q, R>(srcs: &[P], dsts: &[Q], names_src: R) -> anyhow::Result<()>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    R: AsRef<Path>,
+{
     info!("reading names");
 
-    let src = src.as_ref();
     let names_src = names_src.as_ref();
 
     let file = File::open(names_src)
         .with_context(|| format!("Could not open file: {}", names_src.display()))?;
 
     let reader = BufReader::new(file);
-
     let names = read_names(reader)
         .with_context(|| format!("Could not read file: {}", names_src.display()))?;
 
     info!("read {} names", names.len());
-
-    let stdout = io::stdout().lock();
-    let buf = BufWriter::new(stdout);
-    let writer = fastq::Writer::new(buf);
-
     info!("filtering fastq");
 
-    let reader = crate::fastq::open(src)
-        .with_context(|| format!("Could not open file: {}", src.display()))?;
+    let mut readers: Vec<_> = srcs
+        .iter()
+        .map(|src| {
+            crate::fastq::open(src)
+                .with_context(|| format!("Could not open file: {}", src.as_ref().display()))
+        })
+        .collect::<Result<_, _>>()?;
 
-    copy_filtered(reader, &names, writer)
-        .with_context(|| format!("Could not copy record from {} to stdout", src.display()))?;
+    let mut writers: Vec<_> = dsts
+        .iter()
+        .map(|dst| {
+            crate::fastq::create(dst)
+                .with_context(|| format!("Could not create file: {}", dst.as_ref().display()))
+        })
+        .collect::<Result<_, _>>()?;
+
+    copy_filtered(&mut readers, &names, &mut writers)?;
 
     Ok(())
 }
 
 fn copy_filtered_by_sequence_pattern<R, W>(
-    reader: &mut fastq::Reader<R>,
-    sequence_pattern: Regex,
-    writer: &mut fastq::Writer<W>,
+    readers: &mut [fastq::Reader<R>],
+    sequence_pattern: &Regex,
+    writers: &mut [fastq::Writer<W>],
 ) -> io::Result<()>
 where
     R: BufRead,
     W: Write,
 {
     let mut record = fastq::Record::default();
+    let mut is_match = false;
+    let mut is_eof = false;
 
-    loop {
-        let bytes_read = reader.read_record(&mut record)?;
+    while !is_eof {
+        for (i, (reader, writer)) in readers.iter_mut().zip(writers.iter_mut()).enumerate() {
+            if i == 0 {
+                if reader.read_record(&mut record)? == 0 {
+                    is_eof = true;
+                    break;
+                }
 
-        if bytes_read == 0 {
-            break;
-        }
+                is_match = sequence_pattern.is_match(record.sequence());
+            } else if reader.read_record(&mut record)? == 0 {
+                return Err(io::Error::from(io::ErrorKind::UnexpectedEof));
+            }
 
-        if sequence_pattern.is_match(record.sequence()) {
-            writer.write_record(&record)?;
+            if is_match {
+                writer.write_record(&record)?;
+            }
         }
     }
 
     Ok(())
 }
 
-fn filter_by_sequence_pattern<P>(src: P, sequence_pattern: Regex) -> anyhow::Result<()>
+fn filter_by_sequence_pattern<P, Q>(
+    srcs: &[P],
+    dsts: &[Q],
+    sequence_pattern: &Regex,
+) -> anyhow::Result<()>
 where
     P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
-    let src = src.as_ref();
+    let mut readers: Vec<_> = srcs
+        .iter()
+        .map(|src| {
+            crate::fastq::open(src)
+                .with_context(|| format!("Could not open file: {}", src.as_ref().display()))
+        })
+        .collect::<Result<_, _>>()?;
 
-    let mut reader = crate::fastq::open(src)
-        .with_context(|| format!("Could not open file: {}", src.display()))?;
-
-    let stdout = io::stdout().lock();
-    let mut writer = fastq::Writer::new(stdout);
+    let mut writers: Vec<_> = dsts
+        .iter()
+        .map(|dst| {
+            crate::fastq::create(dst)
+                .with_context(|| format!("Could not create file: {}", dst.as_ref().display()))
+        })
+        .collect::<Result<_, _>>()?;
 
     info!("filtering fastq where sequence matches `{sequence_pattern}`");
 
-    copy_filtered_by_sequence_pattern(&mut reader, sequence_pattern, &mut writer)?;
+    copy_filtered_by_sequence_pattern(&mut readers, sequence_pattern, &mut writers)?;
 
     Ok(())
 }
@@ -189,11 +231,13 @@ mod tests {
         let names = [b"fqlib:2".to_vec()].iter().cloned().collect();
 
         let reader = fastq::Reader::new(DATA);
+        let mut readers = [reader];
 
         let mut buf = Vec::new();
         let writer = fastq::Writer::new(&mut buf);
+        let mut writers = [writer];
 
-        copy_filtered(reader, &names, writer).unwrap();
+        copy_filtered(&mut readers, &names, &mut writers).unwrap();
 
         let expected = b"@fqlib:2/1\nTCGA\n+\ndcba\n";
         assert_eq!(buf, expected);
@@ -220,13 +264,18 @@ mod tests {
 
     #[test]
     fn test_copy_filtered_by_sequence_pattern() -> io::Result<()> {
-        let mut reader = fastq::Reader::new(DATA);
+        let reader = fastq::Reader::new(DATA);
+        let mut readers = [reader];
+
         let pattern = Regex::new("^TC").unwrap();
-        let mut writer = fastq::Writer::new(Vec::new());
-        copy_filtered_by_sequence_pattern(&mut reader, pattern, &mut writer)?;
+
+        let writer = fastq::Writer::new(Vec::new());
+        let mut writers = [writer];
+
+        copy_filtered_by_sequence_pattern(&mut readers, &pattern, &mut writers)?;
 
         let expected = b"@fqlib:2/1\nTCGA\n+\ndcba\n";
-        assert_eq!(writer.get_ref(), expected);
+        assert_eq!(writers[0].get_ref(), expected);
 
         Ok(())
     }

@@ -7,16 +7,25 @@
   * commands/filter: Add filter by sequence pattern ([#27]).
 
     Records can be filtered by their sequence using a regular expression: `fq
-    filter --sequence-pattern <regex> <src>`. It cannot be combined with name
-    filtering.
+    filter --sequence-pattern <regex> --dsts <dst> <src>`. It cannot be
+    combined with name filtering.
 
 [#27]: https://github.com/stjude-rust-labs/fq/issues/27
 
 ### Changed
 
+  * commands/filter: Support multiple segments ([#30]).
+
+    The `filter` command now supports multiple segments. Each source is paired
+    with a destination (i.e., the output is no longer written to stdout by
+    default), which is filtered by whether the record in the first segment is
+    matched.
+
   * commands/subsample: Disallow 0% and 100% as probabilities.
 
     At these extremes, use `touch` and `cp`, respectively, instead.
+
+[#30]: https://github.com/stjude-rust-labs/fq/issues/30
 
 ## 0.9.1 - 2022-02-15
 

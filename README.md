@@ -77,18 +77,20 @@ pattern. The result includes only the records that match the given options.
 #### Usage
 
 ```
-Filters a FASTQ from an allowlist of names
+Filters a FASTQ file
 
-Usage: fq filter [OPTIONS] <SRC>
+Usage: fq filter [OPTIONS] --dsts <DSTS> [SRCS]...
 
 Arguments:
-  <SRC>  Source FASTQ
+  [SRCS]...  FASTQ sources
 
 Options:
       --names <NAMES>
           Allowlist of record names
       --sequence-pattern <SEQUENCE_PATTERN>
           Keep records that have sequences that match the given regular expression
+      --dsts <DSTS>
+          Filtered FASTQ destinations
   -h, --help
           Print help
   -V, --version
