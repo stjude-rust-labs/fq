@@ -101,7 +101,7 @@ Options:
 
 ```sh
 # Filters an input FASTQ using the given allowlist.
-$ fq filter --names allowlist.txt in.fastq
+$ fq filter --names allowlist.txt --dsts /dev/stdout in.fastq
 ```
 
 ### generate
