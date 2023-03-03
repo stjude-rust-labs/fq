@@ -102,6 +102,10 @@ Options:
 ```sh
 # Filters an input FASTQ using the given allowlist.
 $ fq filter --names allowlist.txt --dsts /dev/stdout in.fastq
+
+# Filters FASTQ files by matching a sequence pattern in the first input's
+# records and applying the match to all inputs.
+$ fq filter --sequence-pattern ^TC --dsts out.1.fq --dsts out.2.fq in.1.fq in.2.fq
 ```
 
 ### generate
