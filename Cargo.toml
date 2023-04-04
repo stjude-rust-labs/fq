@@ -1,6 +1,6 @@
 [package]
 name = "fq"
-version = "0.9.1"
+version = "0.10.0"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 edition = "2021"
 rust-version = "1.64.0"
