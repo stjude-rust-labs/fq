@@ -142,7 +142,7 @@ where
         .iter()
         .map(|src| {
             let src = src.as_ref();
-            crate::fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
+            fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
         })
         .collect::<Result<_, _>>()?;
 
@@ -150,7 +150,7 @@ where
         .iter()
         .map(|dst| {
             let dst = dst.as_ref();
-            crate::fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
+            fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
         })
         .collect::<Result<_, _>>()?;
 
@@ -186,7 +186,7 @@ where
         .iter()
         .map(|src| {
             let src = src.as_ref();
-            crate::fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
+            fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
         })
         .collect::<Result<_, _>>()?;
 
@@ -194,7 +194,7 @@ where
         .iter()
         .map(|dst| {
             let dst = dst.as_ref();
-            crate::fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
+            fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
         })
         .collect::<Result<_, _>>()?;
 
