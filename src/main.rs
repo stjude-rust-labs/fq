@@ -17,7 +17,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     match cli.command {
-        Command::Filter(args) => filter(args),
+        Command::Filter(args) => filter(args).map_err(|e| e.into()),
         Command::Generate(args) => generate(args),
         Command::Lint(args) => lint(args),
         Command::Subsample(args) => subsample(args),

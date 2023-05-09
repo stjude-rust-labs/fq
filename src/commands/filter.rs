@@ -2,11 +2,11 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufRead, BufReader, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
-use anyhow::Context;
 use regex::bytes::Regex;
+use thiserror::Error;
 use tracing::info;
 
 use crate::{cli::FilterArgs, fastq};
@@ -87,7 +87,7 @@ fn name_id(name: &[u8]) -> &[u8] {
     }
 }
 
-pub fn filter(args: FilterArgs) -> anyhow::Result<()> {
+pub fn filter(args: FilterArgs) -> Result<(), FilterError> {
     let srcs = &args.srcs;
     let dsts = &args.dsts;
 
@@ -120,7 +120,7 @@ where
     Ok(())
 }
 
-fn filter_by_names<P, Q, R>(srcs: &[P], dsts: &[Q], names_src: R) -> anyhow::Result<()>
+fn filter_by_names<P, Q, R>(srcs: &[P], dsts: &[Q], names_src: R) -> Result<(), FilterError>
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
@@ -130,12 +130,10 @@ where
 
     let names_src = names_src.as_ref();
 
-    let file = File::open(names_src)
-        .with_context(|| format!("Could not open file: {}", names_src.display()))?;
-
-    let reader = BufReader::new(file);
-    let names = read_names(reader)
-        .with_context(|| format!("Could not read file: {}", names_src.display()))?;
+    let reader = File::open(names_src)
+        .map(BufReader::new)
+        .map_err(|e| FilterError::OpenFile(e, names_src.into()))?;
+    let names = read_names(reader).map_err(FilterError::ReadNames)?;
 
     info!("read {} names", names.len());
     info!("filtering fastq");
@@ -143,16 +141,16 @@ where
     let mut readers: Vec<_> = srcs
         .iter()
         .map(|src| {
-            crate::fastq::open(src)
-                .with_context(|| format!("Could not open file: {}", src.as_ref().display()))
+            let src = src.as_ref();
+            crate::fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
         })
         .collect::<Result<_, _>>()?;
 
     let mut writers: Vec<_> = dsts
         .iter()
         .map(|dst| {
-            crate::fastq::create(dst)
-                .with_context(|| format!("Could not create file: {}", dst.as_ref().display()))
+            let dst = dst.as_ref();
+            crate::fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
         })
         .collect::<Result<_, _>>()?;
 
@@ -179,7 +177,7 @@ fn filter_by_sequence_pattern<P, Q>(
     srcs: &[P],
     dsts: &[Q],
     sequence_pattern: &Regex,
-) -> anyhow::Result<()>
+) -> Result<(), FilterError>
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
@@ -187,16 +185,16 @@ where
     let mut readers: Vec<_> = srcs
         .iter()
         .map(|src| {
-            crate::fastq::open(src)
-                .with_context(|| format!("Could not open file: {}", src.as_ref().display()))
+            let src = src.as_ref();
+            crate::fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
         })
         .collect::<Result<_, _>>()?;
 
     let mut writers: Vec<_> = dsts
         .iter()
         .map(|dst| {
-            crate::fastq::create(dst)
-                .with_context(|| format!("Could not create file: {}", dst.as_ref().display()))
+            let dst = dst.as_ref();
+            crate::fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
         })
         .collect::<Result<_, _>>()?;
 
@@ -205,6 +203,18 @@ where
     copy_filtered_by_sequence_pattern(&mut readers, sequence_pattern, &mut writers)?;
 
     Ok(())
+}
+
+#[derive(Debug, Error)]
+pub enum FilterError {
+    #[error("I/O error")]
+    Io(#[from] io::Error),
+    #[error("could not open file: {1}")]
+    OpenFile(#[source] io::Error, PathBuf),
+    #[error("could not create file: {1}")]
+    CreateFile(#[source] io::Error, PathBuf),
+    #[error("could not read read names")]
+    ReadNames(#[source] io::Error),
 }
 
 #[cfg(test)]
