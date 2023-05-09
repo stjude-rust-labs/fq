@@ -138,13 +138,7 @@ where
     info!("read {} names", names.len());
     info!("filtering fastq");
 
-    let mut readers: Vec<_> = srcs
-        .iter()
-        .map(|src| {
-            let src = src.as_ref();
-            fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
-        })
-        .collect::<Result<_, _>>()?;
+    let mut readers = build_readers(srcs)?;
 
     let mut writers: Vec<_> = dsts
         .iter()
@@ -182,13 +176,7 @@ where
     P: AsRef<Path>,
     Q: AsRef<Path>,
 {
-    let mut readers: Vec<_> = srcs
-        .iter()
-        .map(|src| {
-            let src = src.as_ref();
-            fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
-        })
-        .collect::<Result<_, _>>()?;
+    let mut readers = build_readers(srcs)?;
 
     let mut writers: Vec<_> = dsts
         .iter()
@@ -203,6 +191,18 @@ where
     copy_filtered_by_sequence_pattern(&mut readers, sequence_pattern, &mut writers)?;
 
     Ok(())
+}
+
+fn build_readers<P>(srcs: &[P]) -> Result<Vec<fastq::Reader<Box<dyn BufRead>>>, FilterError>
+where
+    P: AsRef<Path>,
+{
+    srcs.iter()
+        .map(|src| {
+            let src = src.as_ref();
+            fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
+        })
+        .collect()
 }
 
 #[derive(Debug, Error)]
