@@ -112,10 +112,7 @@ where
     Q: AsRef<Path>,
 {
     for (src, dst) in srcs.iter().zip(dsts) {
-        let (src, dst) = (src.as_ref(), dst.as_ref());
-
         let mut reader = File::open(src)?;
-
         let mut writer = File::create(dst)?;
         io::copy(&mut reader, &mut writer)?;
     }
