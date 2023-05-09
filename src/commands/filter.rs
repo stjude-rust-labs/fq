@@ -139,14 +139,7 @@ where
     info!("filtering fastq");
 
     let mut readers = build_readers(srcs)?;
-
-    let mut writers: Vec<_> = dsts
-        .iter()
-        .map(|dst| {
-            let dst = dst.as_ref();
-            fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
-        })
-        .collect::<Result<_, _>>()?;
+    let mut writers = build_writers(dsts)?;
 
     copy_filtered(&mut readers, &names, &mut writers)?;
 
@@ -177,14 +170,7 @@ where
     Q: AsRef<Path>,
 {
     let mut readers = build_readers(srcs)?;
-
-    let mut writers: Vec<_> = dsts
-        .iter()
-        .map(|dst| {
-            let dst = dst.as_ref();
-            fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
-        })
-        .collect::<Result<_, _>>()?;
+    let mut writers = build_writers(dsts)?;
 
     info!("filtering fastq where sequence matches `{sequence_pattern}`");
 
@@ -201,6 +187,18 @@ where
         .map(|src| {
             let src = src.as_ref();
             fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
+        })
+        .collect()
+}
+
+fn build_writers<P>(dsts: &[P]) -> Result<Vec<fastq::Writer<Box<dyn Write>>>, FilterError>
+where
+    P: AsRef<Path>,
+{
+    dsts.iter()
+        .map(|dst| {
+            let dst = dst.as_ref();
+            fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
         })
         .collect()
 }
