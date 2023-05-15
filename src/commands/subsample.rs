@@ -137,20 +137,15 @@ where
     let mut n = 0;
     let mut total = 0;
 
-    loop {
-        match reader.read_record(&mut record)? {
-            0 => break,
-            _ => {
-                let q: f64 = rng.gen();
+    while reader.read_record(&mut record)? != 0 {
+        let q: f64 = rng.gen();
 
-                if q <= p {
-                    writer.write_record(&record)?;
-                    n += 1;
-                }
-
-                total += 1;
-            }
+        if q <= p {
+            writer.write_record(&record)?;
+            n += 1;
         }
+
+        total += 1;
     }
 
     Ok((n, total))
@@ -350,11 +345,7 @@ where
     let mut record = Record::default();
     let mut i = 0;
 
-    loop {
-        if reader.read_record(&mut record)? == 0 {
-            break;
-        }
-
+    while reader.read_record(&mut record)? != 0 {
         if bitmap[i] {
             writer.write_record(&record)?;
         }
