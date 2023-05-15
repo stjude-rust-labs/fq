@@ -284,18 +284,15 @@ where
     let mut n = 0;
 
     loop {
-        let len = {
-            let buf = reader.fill_buf()?;
+        let buf = reader.fill_buf()?;
 
-            if buf.is_empty() {
-                break;
-            }
+        if buf.is_empty() {
+            break;
+        }
 
-            n += bytecount::count(buf, LINE_FEED);
+        n += bytecount::count(buf, LINE_FEED);
 
-            buf.len()
-        };
-
+        let len = buf.len();
         reader.consume(len);
     }
 
