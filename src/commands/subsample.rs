@@ -2,7 +2,7 @@ use std::{
     fs::File,
     io::{self, BufRead, BufReader, Write},
     ops::{Bound, RangeBounds},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use anyhow::Context;
@@ -13,6 +13,7 @@ use rand::{
     rngs::SmallRng,
     SeedableRng,
 };
+use thiserror::Error;
 use tracing::{info, warn};
 
 use crate::{
@@ -68,20 +69,16 @@ fn subsample_approximate<Rng>(
     (r2_src, r2_dst): (Option<&Path>, Option<&Path>),
     mut rng: Rng,
     probability: f64,
-) -> anyhow::Result<()>
+) -> Result<(), SubsampleError>
 where
     Rng: rand::Rng,
 {
     if !VALID_PROBABILITY_RANGE.contains(&probability) {
-        return Err(io::Error::from(io::ErrorKind::InvalidInput)).with_context(|| {
-            format!("invalid probability: expected (0.0, 1.0), got {probability}")
-        });
+        return Err(SubsampleError::InvalidProbability(probability));
     }
 
-    let mut r1 = fastq::open(r1_src)
-        .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
-    let mut w1 = fastq::create(r1_dst)
-        .with_context(|| format!("Could not create file: {}", r1_dst.display()))?;
+    let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
+    let mut w1 = fastq::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
 
     info!("probability (p) = {}", probability);
 
@@ -89,10 +86,10 @@ where
         (Some(r2_src), Some(r2_dst)) => {
             info!("sampling paired end reads");
 
-            let mut r2 = fastq::open(r2_src)
-                .with_context(|| format!("Could not open file: {}", r2_src.display()))?;
-            let mut w2 = fastq::create(r2_dst)
-                .with_context(|| format!("Could not create file: {}", r2_dst.display()))?;
+            let mut r2 =
+                fastq::open(r2_src).map_err(|e| SubsampleError::OpenFile(e, r2_src.into()))?;
+            let mut w2 =
+                fastq::create(r2_dst).map_err(|e| SubsampleError::CreateFile(e, r2_dst.into()))?;
 
             subsample_paired(
                 (&mut r1, &mut w1),
@@ -101,14 +98,8 @@ where
                 probability,
             )?
         }
-        (Some(r2_src), None) => {
-            return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-dst for {}", r2_src.display()));
-        }
-        (None, Some(r2_dst)) => {
-            return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-src for {}", r2_dst.display()));
-        }
+        (Some(_), None) => return Err(SubsampleError::MissingDestination("r2-dst")),
+        (None, Some(_)) => return Err(SubsampleError::MissingSource("r2-src")),
         _ => {
             info!("sampling single end reads");
             subsample_single(&mut r1, &mut w1, &mut rng, probability)?
@@ -126,7 +117,7 @@ fn subsample_single<R, W, Rng>(
     writer: &mut fastq::Writer<W>,
     rng: &mut Rng,
     p: f64,
-) -> anyhow::Result<(u64, u64)>
+) -> Result<(u64, u64), SubsampleError>
 where
     R: BufRead,
     W: Write,
@@ -156,7 +147,7 @@ fn subsample_paired<R, S, W, X, Rng>(
     (r2, w2): (&mut fastq::Reader<S>, &mut fastq::Writer<X>),
     rng: &mut Rng,
     p: f64,
-) -> anyhow::Result<(u64, u64)>
+) -> Result<(u64, u64), SubsampleError>
 where
     R: BufRead,
     S: BufRead,
@@ -173,14 +164,8 @@ where
     loop {
         match (r1.read_record(&mut s1)?, r2.read_record(&mut s2)?) {
             (0, 0) => break,
-            (0, len) if len > 0 => {
-                return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
-                    .with_context(|| "r1-src unexpectedly ended before r2-src");
-            }
-            (len, 0) if len > 0 => {
-                return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
-                    .with_context(|| "r2-src unexpectedly ended before r1-src");
-            }
+            (0, len) if len > 0 => return Err(SubsampleError::UnexpectedEof("r1-src")),
+            (len, 0) if len > 0 => return Err(SubsampleError::UnexpectedEof("r2-src")),
             (_, _) => {
                 let q: f64 = rng.gen();
 
@@ -397,12 +382,30 @@ where
     Ok(())
 }
 
+#[derive(Debug, Error)]
+pub enum SubsampleError {
+    #[error("I/O error")]
+    Io(#[from] io::Error),
+    #[error("could not open file: {1}")]
+    OpenFile(#[source] io::Error, PathBuf),
+    #[error("could not create file: {1}")]
+    CreateFile(#[source] io::Error, PathBuf),
+    #[error("missing pair source: {0}")]
+    MissingSource(&'static str),
+    #[error("missing pair destination: {0}")]
+    MissingDestination(&'static str),
+    #[error("invalid probability: expected (0.0, 1.0), got {0}")]
+    InvalidProbability(f64),
+    #[error("{0} unexpectedly ended")]
+    UnexpectedEof(&'static str),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_subsample_single() -> anyhow::Result<()> {
+    fn test_subsample_single() -> Result<(), SubsampleError> {
         let data = b"@r1\nACGT\n+\nFQLB
 @r2\nACGT\n+\nFQLB
 @r3\nACGT\n+\nFQLB
@@ -423,7 +426,7 @@ mod tests {
     }
 
     #[test]
-    fn test_subsample_paired() -> anyhow::Result<()> {
+    fn test_subsample_paired() -> Result<(), SubsampleError> {
         let r1_data = b"@r1\nACGT\n+\nFQLB
 @r2\nACGT\n+\nFQLB
 @r3\nACGT\n+\nFQLB
