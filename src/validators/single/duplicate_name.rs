@@ -111,7 +111,7 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
         let code = self.code();
         let name = self.name();
 
-        if let Some(count) = self.possible_duplicates.get_mut(&r.name().to_vec()) {
+        if let Some(count) = self.possible_duplicates.get_mut(r.name()) {
             if *count >= 1 {
                 return Err(Error::new(
                     code,
