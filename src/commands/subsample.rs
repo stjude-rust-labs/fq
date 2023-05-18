@@ -5,7 +5,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::Context;
 use bitvec::vec::BitVec;
 use flate2::bufread::MultiGzDecoder;
 use rand::{
@@ -24,7 +23,7 @@ use crate::{
 const VALID_PROBABILITY_RANGE: (Bound<f64>, Bound<f64>) =
     (Bound::Excluded(0.0), Bound::Excluded(1.0));
 
-pub fn subsample(args: SubsampleArgs) -> anyhow::Result<()> {
+pub fn subsample(args: SubsampleArgs) -> Result<(), SubsampleError> {
     let r1_src = &args.r1_src;
     let r1_dst = &args.r1_dst;
 
@@ -188,7 +187,7 @@ fn subsample_exact<Rng>(
     (r2_src, r2_dst): (Option<&Path>, Option<&Path>),
     rng: Rng,
     mut record_count: u64,
-) -> anyhow::Result<()>
+) -> Result<(), SubsampleError>
 where
     Rng: rand::Rng,
 {
@@ -215,30 +214,22 @@ where
 
     let bitmap = build_filter(rng, r1_src_record_count, record_count);
 
-    let mut r1 = fastq::open(r1_src)
-        .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
-    let mut w1 = fastq::create(r1_dst)
-        .with_context(|| format!("Could not create file: {}", r1_dst.display()))?;
+    let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
+    let mut w1 = fastq::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
 
     match (r2_src, r2_dst) {
         (Some(r2_src), Some(r2_dst)) => {
             info!("sampling paired end reads");
 
-            let mut r2 = fastq::open(r2_src)
-                .with_context(|| format!("Could not open file: {}", r2_src.display()))?;
-            let mut w2 = fastq::create(r2_dst)
-                .with_context(|| format!("Could not create file: {}", r2_dst.display()))?;
+            let mut r2 =
+                fastq::open(r2_src).map_err(|e| SubsampleError::OpenFile(e, r2_src.into()))?;
+            let mut w2 =
+                fastq::create(r2_dst).map_err(|e| SubsampleError::CreateFile(e, r2_dst.into()))?;
 
             subsample_exact_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &bitmap)?;
         }
-        (Some(r2_src), None) => {
-            return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-dst for {}", r2_src.display()));
-        }
-        (None, Some(r2_dst)) => {
-            return Err(io::Error::from(io::ErrorKind::InvalidInput))
-                .with_context(|| format!("Missing r2-src for {}", r2_dst.display()));
-        }
+        (Some(_), None) => return Err(SubsampleError::MissingDestination("r2-dst")),
+        (None, Some(_)) => return Err(SubsampleError::MissingSource("r2-src")),
         (None, None) => {
             info!("sampling single end reads");
             subsample_exact_single(&mut r1, &mut w1, &bitmap)?;
@@ -322,7 +313,7 @@ fn subsample_exact_single<R, W>(
     reader: &mut fastq::Reader<R>,
     writer: &mut fastq::Writer<W>,
     bitmap: &BitVec,
-) -> anyhow::Result<()>
+) -> Result<(), SubsampleError>
 where
     R: BufRead,
     W: Write,
@@ -345,7 +336,7 @@ fn subsample_exact_paired<R, S, W, X>(
     (r1, w1): (&mut fastq::Reader<R>, &mut fastq::Writer<W>),
     (r2, w2): (&mut fastq::Reader<S>, &mut fastq::Writer<X>),
     bitmap: &BitVec,
-) -> anyhow::Result<()>
+) -> Result<(), SubsampleError>
 where
     R: BufRead,
     S: BufRead,
@@ -360,14 +351,8 @@ where
     loop {
         match (r1.read_record(&mut s1)?, r2.read_record(&mut s2)?) {
             (0, 0) => break,
-            (0, len) if len > 0 => {
-                return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
-                    .with_context(|| "r1-src unexpectedly ended before r2-src");
-            }
-            (len, 0) if len > 0 => {
-                return Err(io::Error::from(io::ErrorKind::UnexpectedEof))
-                    .with_context(|| "r2-src unexpectedly ended before r1-src");
-            }
+            (0, len) if len > 0 => return Err(SubsampleError::UnexpectedEof("r1-src")),
+            (len, 0) if len > 0 => return Err(SubsampleError::UnexpectedEof("r2-src")),
             (_, _) => {
                 if bitmap[i] {
                     w1.write_record(&s1)?;
@@ -458,7 +443,7 @@ mod tests {
     }
 
     #[test]
-    fn test_subsample_exact_single() -> anyhow::Result<()> {
+    fn test_subsample_exact_single() -> Result<(), SubsampleError> {
         let data = b"@r1\nACGT\n+\nFQLB
 @r2\nACGT\n+\nFQLB
 @r3\nACGT\n+\nFQLB
@@ -479,7 +464,7 @@ mod tests {
     }
 
     #[test]
-    fn test_subsample_exact_paired() -> anyhow::Result<()> {
+    fn test_subsample_exact_paired() -> Result<(), SubsampleError> {
         let r1_data = b"@r1\nACGT\n+\nFQLB
 @r2\nACGT\n+\nFQLB
 @r3\nACGT\n+\nFQLB
