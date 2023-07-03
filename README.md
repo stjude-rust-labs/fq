@@ -179,7 +179,7 @@ Options:
 
 _validate_ includes a set of validators that run on single or paired records.
 By default, records are validated with all rules, but validators can be
-disabled using `--disable-valdiator CODE`, where `CODE` is one of validators
+disabled using `--disable-validator CODE`, where `CODE` is one of validators
 listed below.
 
 ##### Single
