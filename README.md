@@ -154,6 +154,8 @@ $ fq generate --record-count 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
 #### Usage
 
 ```
+Validates a FASTQ file pair
+
 Usage: fq lint [OPTIONS] <R1_SRC> [R2_SRC]
 
 Arguments:
