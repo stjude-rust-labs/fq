@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, PairedReadValidator, ValidationLevel},
+    validators::{self, LineType, PairedReadValidator, ValidationLevel},
 };
 
 /// [P001] (medium) Validator to check if each paired read name is the same, excluding interleave.
@@ -19,16 +21,15 @@ impl PairedReadValidator for NamesValidator {
         ValidationLevel::Medium
     }
 
-    fn validate(&self, r: &Record, s: &Record) -> Result<(), Error> {
+    fn validate(&self, r: &Record, s: &Record) -> Result<(), validators::Error> {
         if r.name() != s.name() {
-            Err(Error::new(
+            Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                format!(
-                    "Names do not match (expected '{}', got '{}')",
-                    String::from_utf8_lossy(r.name()),
-                    String::from_utf8_lossy(s.name()),
-                ),
+                ValidationError {
+                    actual: String::from_utf8_lossy(s.name()).into(),
+                    expected: String::from_utf8_lossy(r.name()).into(),
+                },
                 LineType::Name,
                 Some(1),
             ))
@@ -36,6 +37,13 @@ impl PairedReadValidator for NamesValidator {
             Ok(())
         }
     }
+}
+
+#[derive(Debug, Error)]
+#[error("names mismatch: expected '{actual}', got '{expected}'")]
+struct ValidationError {
+    actual: String,
+    expected: String,
 }
 
 #[cfg(test)]

@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+    validators::{self, LineType, SingleReadValidator, ValidationLevel},
 };
 
 /// [S005] (high) Validator to check if the sequence and quality lengths are the same.
@@ -19,18 +21,15 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
         ValidationLevel::High
     }
 
-    fn validate(&self, r: &Record) -> Result<(), Error> {
+    fn validate(&self, r: &Record) -> Result<(), validators::Error> {
         if r.sequence().len() != r.quality_scores().len() {
-            let message = format!(
-                "Name and quality lengths do not match (expected {}, got {})",
-                r.sequence().len(),
-                r.quality_scores().len(),
-            );
-
-            Err(Error::new(
+            Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                message,
+                ValidationError {
+                    actual: r.sequence().len(),
+                    expected: r.quality_scores().len(),
+                },
                 LineType::Sequence,
                 Some(1),
             ))
@@ -38,6 +37,13 @@ impl SingleReadValidator for ConsistentSeqQualValidator {
             Ok(())
         }
     }
+}
+
+#[derive(Debug, Error)]
+#[error("sequence-quality scores lengths mismatch: expected {actual}, got {expected}")]
+struct ValidationError {
+    actual: usize,
+    expected: usize,
 }
 
 #[cfg(test)]

@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
 use bbloom::ScalableBloomFilter;
+use thiserror::Error;
 
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidatorMut, ValidationLevel},
+    validators::{self, LineType, SingleReadValidatorMut, ValidationLevel},
 };
 
 const FALSE_POSITIVE_PROBABILITY: f64 = 0.0001;
@@ -107,16 +108,13 @@ impl SingleReadValidatorMut for DuplicateNameValidator {
         ValidationLevel::High
     }
 
-    fn validate(&mut self, r: &Record) -> Result<(), Error> {
-        let code = self.code();
-        let name = self.name();
-
+    fn validate(&mut self, r: &Record) -> Result<(), validators::Error> {
         if let Some(count) = self.possible_duplicates.get_mut(r.name()) {
             if *count >= 1 {
-                return Err(Error::new(
-                    code,
-                    name,
-                    format!("Duplicate found: '{}'", String::from_utf8_lossy(r.name())),
+                return Err(validators::Error::new(
+                    self.code(),
+                    self.name(),
+                    ValidationError(String::from_utf8_lossy(r.name()).into()),
                     LineType::Name,
                     Some(1),
                 ));
@@ -137,6 +135,10 @@ impl Default for DuplicateNameValidator {
         }
     }
 }
+
+#[derive(Debug, Error)]
+#[error("duplicate name: '{0}'")]
+struct ValidationError(String);
 
 #[cfg(test)]
 mod tests {

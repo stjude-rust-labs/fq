@@ -33,26 +33,26 @@ pub enum LineType {
 pub struct Error {
     pub code: String,
     pub name: String,
-    pub message: String,
+    pub error: Box<dyn std::error::Error>,
     pub line_type: LineType,
     pub col_no: Option<usize>,
 }
 
 impl Error {
-    pub fn new<I>(
+    pub fn new<E>(
         code: &str,
         name: &str,
-        message: I,
+        error: E,
         line_type: LineType,
         col_no: Option<usize>,
     ) -> Self
     where
-        I: Into<String>,
+        E: Into<Box<dyn std::error::Error>>,
     {
         Self {
             code: code.into(),
             name: name.into(),
-            message: message.into(),
+            error: error.into(),
             line_type,
             col_no,
         }
@@ -61,7 +61,7 @@ impl Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}] {}", self.code, self.message)
+        write!(f, "[{}] {}", self.code, self.error)
     }
 }
 

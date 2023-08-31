@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+    validators::{self, LineType, SingleReadValidator, ValidationLevel},
 };
 
 /// [S006] (medium) Validator to check if all the characters in the quality line are between "!" and
@@ -20,13 +22,13 @@ impl SingleReadValidator for QualityStringValidator {
         ValidationLevel::Medium
     }
 
-    fn validate(&self, r: &Record) -> Result<(), Error> {
-        for (i, b) in r.quality_scores().iter().enumerate() {
+    fn validate(&self, r: &Record) -> Result<(), validators::Error> {
+        for (i, &b) in r.quality_scores().iter().enumerate() {
             if !b.is_ascii_graphic() {
-                return Err(Error::new(
+                return Err(validators::Error::new(
                     self.code(),
                     self.name(),
-                    format!("Invalid character '{}'", *b as char),
+                    ValidationError(char::from(b)),
                     LineType::Quality,
                     Some(i + 1),
                 ));
@@ -36,6 +38,10 @@ impl SingleReadValidator for QualityStringValidator {
         Ok(())
     }
 }
+
+#[derive(Debug, Error)]
+#[error("invalid quality score character: '{0}'")]
+struct ValidationError(char);
 
 #[cfg(test)]
 mod tests {

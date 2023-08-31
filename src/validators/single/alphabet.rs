@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+    validators::{self, LineType, SingleReadValidator, ValidationLevel},
 };
 
 /// [S002] (medium) Validator to check if all the characters in the sequence line are included in a
@@ -34,13 +36,13 @@ impl SingleReadValidator for AlphabetValidator {
         ValidationLevel::Medium
     }
 
-    fn validate(&self, r: &Record) -> Result<(), Error> {
+    fn validate(&self, r: &Record) -> Result<(), validators::Error> {
         for (i, &b) in r.sequence().iter().enumerate() {
             if !self.alphabet[usize::from(b)] {
-                return Err(Error::new(
+                return Err(validators::Error::new(
                     self.code(),
                     self.name(),
-                    format!("Invalid character: {}", b as char),
+                    ValidationError(char::from(b)),
                     LineType::Sequence,
                     Some(i + 1),
                 ));
@@ -57,6 +59,10 @@ impl Default for AlphabetValidator {
         Self::new(b"ACGTNacgtn")
     }
 }
+
+#[derive(Debug, Error)]
+#[error("invalid sequence character: '{0}'")]
+struct ValidationError(char);
 
 #[cfg(test)]
 mod tests {

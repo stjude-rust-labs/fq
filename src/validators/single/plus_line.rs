@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+    validators::{self, LineType, SingleReadValidator, ValidationLevel},
 };
 
 /// [S001] (low) Validator to check if the plus line starts with a "+".
@@ -19,19 +21,23 @@ impl SingleReadValidator for PlusLineValidator {
         ValidationLevel::Low
     }
 
-    fn validate(&self, r: &Record) -> Result<(), Error> {
+    fn validate(&self, r: &Record) -> Result<(), validators::Error> {
         match r.plus_line().first() {
             Some(b'+') => Ok(()),
-            _ => Err(Error::new(
+            _ => Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                String::from("Does not start with a '+'"),
+                ValidationError,
                 LineType::PlusLine,
                 Some(1),
             )),
         }
     }
 }
+
+#[derive(Debug, Error)]
+#[error("missing + prefix")]
+struct ValidationError;
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+    validators::{self, LineType, SingleReadValidator, ValidationLevel},
 };
 
 /// [S004] (low) Validator to check if all four record lines (name, sequence, plus line, and
@@ -8,12 +10,12 @@ use crate::{
 pub struct CompleteValidator;
 
 impl CompleteValidator {
-    fn validate_name(&self, r: &Record) -> Result<(), Error> {
+    fn validate_name(&self, r: &Record) -> Result<(), validators::Error> {
         if r.name().is_empty() {
-            Err(Error::new(
+            Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                String::from("Incomplete record: name is empty"),
+                ValidationError::EmptyName,
                 LineType::Name,
                 Some(1),
             ))
@@ -22,12 +24,12 @@ impl CompleteValidator {
         }
     }
 
-    fn validate_sequence(&self, r: &Record) -> Result<(), Error> {
+    fn validate_sequence(&self, r: &Record) -> Result<(), validators::Error> {
         if r.sequence().is_empty() {
-            Err(Error::new(
+            Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                String::from("Incomplete record: sequence is empty"),
+                ValidationError::EmptySequence,
                 LineType::Sequence,
                 Some(1),
             ))
@@ -36,12 +38,12 @@ impl CompleteValidator {
         }
     }
 
-    fn validate_plus_line(&self, r: &Record) -> Result<(), Error> {
+    fn validate_plus_line(&self, r: &Record) -> Result<(), validators::Error> {
         if r.plus_line().is_empty() {
-            Err(Error::new(
+            Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                String::from("Incomplete record: plus line is empty"),
+                ValidationError::EmptyPlusLine,
                 LineType::PlusLine,
                 Some(1),
             ))
@@ -50,12 +52,12 @@ impl CompleteValidator {
         }
     }
 
-    fn validate_quality(&self, r: &Record) -> Result<(), Error> {
+    fn validate_quality(&self, r: &Record) -> Result<(), validators::Error> {
         if r.quality_scores().is_empty() {
-            Err(Error::new(
+            Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                String::from("Incomplete record: quality is empty"),
+                ValidationError::EmptyQuality,
                 LineType::Quality,
                 Some(1),
             ))
@@ -78,13 +80,26 @@ impl SingleReadValidator for CompleteValidator {
         ValidationLevel::Low
     }
 
-    fn validate(&self, r: &Record) -> Result<(), Error> {
+    fn validate(&self, r: &Record) -> Result<(), validators::Error> {
         self.validate_name(r)?;
         self.validate_sequence(r)?;
         self.validate_plus_line(r)?;
         self.validate_quality(r)?;
         Ok(())
     }
+}
+
+#[allow(clippy::enum_variant_names)]
+#[derive(Debug, Error)]
+enum ValidationError {
+    #[error("empty name")]
+    EmptyName,
+    #[error("empty sequence")]
+    EmptySequence,
+    #[error("empty plus line")]
+    EmptyPlusLine,
+    #[error("empty quality")]
+    EmptyQuality,
 }
 
 #[cfg(test)]

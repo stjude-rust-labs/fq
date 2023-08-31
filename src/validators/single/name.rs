@@ -1,6 +1,8 @@
+use thiserror::Error;
+
 use crate::{
     fastq::Record,
-    validators::{Error, LineType, SingleReadValidator, ValidationLevel},
+    validators::{self, LineType, SingleReadValidator, ValidationLevel},
 };
 
 /// [S003] (high) Validator to check if the name line starts with an "@".
@@ -19,19 +21,23 @@ impl SingleReadValidator for NameValidator {
         ValidationLevel::High
     }
 
-    fn validate(&self, r: &Record) -> Result<(), Error> {
+    fn validate(&self, r: &Record) -> Result<(), validators::Error> {
         match r.name().first() {
             Some(b'@') => Ok(()),
-            _ => Err(Error::new(
+            _ => Err(validators::Error::new(
                 self.code(),
                 self.name(),
-                String::from("Does not start with an '@'"),
+                ValidationError,
                 LineType::Name,
                 Some(1),
             )),
         }
     }
 }
+
+#[derive(Debug, Error)]
+#[error("missing @ prefix")]
+struct ValidationError;
 
 #[cfg(test)]
 mod tests {
