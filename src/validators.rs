@@ -11,7 +11,7 @@ pub use self::{
     validation_level::ValidationLevel,
 };
 
-use std::{error, fmt, str::FromStr};
+use std::{error, fmt};
 
 use tracing::info;
 
@@ -71,18 +71,6 @@ impl error::Error for Error {}
 pub enum LintMode {
     Panic,
     Log,
-}
-
-impl FromStr for LintMode {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "panic" => Ok(Self::Panic),
-            "log" => Ok(Self::Log),
-            _ => Err(format!("invalid lint mode: {s}")),
-        }
-    }
 }
 
 pub fn filter_validators(
