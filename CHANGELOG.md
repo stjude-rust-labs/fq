@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+  * commands/lint: Return a nonzero exit code if an error is logged.
+
+    When the lint mode is set to `log`, the `lint` command will now exit with a
+    nonzero status if there are any validation errors.
+
 ## 0.10.0 - 2023-04-04
 
 ### Added

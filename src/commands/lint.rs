@@ -79,7 +79,7 @@ fn validate_single(
     disabled_validators: &[String],
     lint_mode: LintMode,
     r1_src: &Path,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let (single_read_validators, _) =
         validators::filter_validators(single_read_validation_level, None, disabled_validators);
 
@@ -87,6 +87,7 @@ fn validate_single(
 
     let mut record = Record::default();
     let mut record_counter = 0;
+    let mut did_fail_validation = false;
 
     loop {
         let bytes_read = reader
@@ -100,9 +101,10 @@ fn validate_single(
         record.reset();
 
         for validator in &single_read_validators {
-            validator
-                .validate(&record)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
+            validator.validate(&record).unwrap_or_else(|e| {
+                did_fail_validation = true;
+                handle_validation_error(lint_mode, e, r1_src, record_counter)
+            });
         }
 
         record_counter += 1;
@@ -110,7 +112,7 @@ fn validate_single(
 
     info!("read {} records", record_counter);
 
-    Ok(())
+    Ok(did_fail_validation)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -123,7 +125,7 @@ fn validate_pair(
     lint_mode: LintMode,
     r1_src: &Path,
     r2_src: &Path,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
         Some(paired_read_validation_level),
@@ -149,6 +151,7 @@ fn validate_pair(
     let mut b = Record::default();
     let mut d = Record::default();
     let mut record_counter = 0;
+    let mut did_fail_validation = false;
 
     loop {
         let r1_len = reader_1
@@ -187,19 +190,22 @@ fn validate_pair(
         }
 
         for validator in &single_read_validators {
-            validator
-                .validate(&b)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
+            validator.validate(&b).unwrap_or_else(|e| {
+                did_fail_validation = true;
+                handle_validation_error(lint_mode, e, r1_src, record_counter)
+            });
 
-            validator
-                .validate(&d)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r2_src, record_counter));
+            validator.validate(&d).unwrap_or_else(|e| {
+                did_fail_validation = true;
+                handle_validation_error(lint_mode, e, r2_src, record_counter)
+            });
         }
 
         for validator in &paired_read_validators {
-            validator
-                .validate(&b, &d)
-                .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
+            validator.validate(&b, &d).unwrap_or_else(|e| {
+                did_fail_validation = true;
+                handle_validation_error(lint_mode, e, r1_src, record_counter)
+            });
         }
 
         record_counter += 1;
@@ -209,7 +215,7 @@ fn validate_pair(
     info!("starting validation (pass 2)");
 
     if !use_special_validator {
-        return Ok(());
+        return Ok(did_fail_validation);
     }
 
     let mut reader = crate::fastq::open(r1_src)
@@ -231,14 +237,17 @@ fn validate_pair(
 
         duplicate_name_validator
             .validate(&record)
-            .unwrap_or_else(|e| handle_validation_error(lint_mode, e, r1_src, record_counter));
+            .unwrap_or_else(|e| {
+                did_fail_validation = true;
+                handle_validation_error(lint_mode, e, r1_src, record_counter)
+            });
 
         record_counter += 1;
     }
 
     info!("read {} records", record_counter);
 
-    Ok(())
+    Ok(did_fail_validation)
 }
 
 pub fn lint(args: LintArgs) -> anyhow::Result<()> {
@@ -257,7 +266,7 @@ pub fn lint(args: LintArgs) -> anyhow::Result<()> {
     let r1 = crate::fastq::open(r1_src)
         .with_context(|| format!("Could not open file: {}", r1_src.display()))?;
 
-    if let Some(r2_src) = r2_src {
+    let did_fail_validation = if let Some(r2_src) = r2_src {
         info!("validating paired end reads");
 
         let r2 = crate::fastq::open(r2_src)
@@ -272,7 +281,7 @@ pub fn lint(args: LintArgs) -> anyhow::Result<()> {
             lint_mode,
             r1_src,
             r2_src,
-        )?;
+        )?
     } else {
         info!("validating single end read");
 
@@ -282,10 +291,14 @@ pub fn lint(args: LintArgs) -> anyhow::Result<()> {
             disabled_validators,
             lint_mode,
             r1_src,
-        )?;
-    }
+        )?
+    };
 
     info!("fq-lint end");
+
+    if did_fail_validation {
+        process::exit(1);
+    }
 
     Ok(())
 }
