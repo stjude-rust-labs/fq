@@ -2,7 +2,7 @@
 
 [![CI status](https://github.com/stjude-rust-labs/fq/workflows/CI/badge.svg)](https://github.com/stjude-rust-labs/fq/actions)
 
-**fq** is a library to generate and validate [FASTQ] file pairs.
+**fq** filters, generates, subsamples, and validates [FASTQ] files.
 
 [FASTQ]: https://en.wikipedia.org/wiki/FASTQ_format
 
