@@ -21,7 +21,7 @@ There are different methods to install fq.
 
 ### Conda
 
-fq is available via Bioconda.
+fq is available via [Bioconda].
 
 ```
 $ conda install fq=0.10.0
