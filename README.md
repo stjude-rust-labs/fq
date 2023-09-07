@@ -24,7 +24,7 @@ There are different methods to install fq.
 fq is available via [Bioconda].
 
 ```
-$ conda install fq=0.10.0
+$ conda install fq=0.11.0
 ```
 
 [Bioconda]: https://bioconda.github.io/recipes/fq/README.html
@@ -34,7 +34,7 @@ $ conda install fq=0.10.0
 Clone the repository and use [Cargo] to install fq.
 
 ```
-$ git clone --depth 1 --branch v0.10.0 https://github.com/stjude-rust-labs/fq.git
+$ git clone --depth 1 --branch v0.11.0 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
 $ cargo install --locked --path .
 ```
@@ -55,9 +55,9 @@ See [the repository tags] for the available tags.
 Alternatively, build the development container image:
 
 ```
-$ git clone --depth 1 --branch v0.10.0 https://github.com/stjude-rust-labs/fq.git
+$ git clone --depth 1 --branch v0.11.0 https://github.com/stjude-rust-labs/fq.git
 $ cd fq
-$ docker image build --tag fq:0.10.0 .
+$ docker image build --tag fq:0.11.0 .
 ```
 
 [Quay.io]: https://quay.io/repository/biocontainers/fq
