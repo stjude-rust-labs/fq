@@ -12,17 +12,17 @@ use std::{
 
 use flate2::{bufread::MultiGzDecoder, write::GzEncoder, Compression};
 
+const GZ_EXTENSION: &str = "gz";
+
 pub fn create<P>(dst: P) -> io::Result<Writer<Box<dyn Write>>>
 where
     P: AsRef<Path>,
 {
     let path = dst.as_ref();
-    let extension = path.extension();
-    let file = File::create(path)?;
-    let writer = BufWriter::new(file);
+    let writer = File::create(path).map(BufWriter::new)?;
 
-    match extension.and_then(|ext| ext.to_str()) {
-        Some("gz") => {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some(GZ_EXTENSION) => {
             let level = Compression::default();
             let encoder = GzEncoder::new(writer, level);
             Ok(Writer::new(Box::new(encoder)))
@@ -36,12 +36,10 @@ where
     P: AsRef<Path>,
 {
     let path = src.as_ref();
-    let extension = path.extension();
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
+    let reader = File::open(path).map(BufReader::new)?;
 
-    match extension.and_then(|ext| ext.to_str()) {
-        Some("gz") => {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some(GZ_EXTENSION) => {
             let decoder = MultiGzDecoder::new(reader);
             Ok(Reader::new(Box::new(BufReader::new(decoder))))
         }
