@@ -20,7 +20,7 @@ pub type SingleAndPairedValidators = (
     Vec<Box<dyn PairedReadValidator>>,
 );
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum LineType {
     Name,
     Sequence,
