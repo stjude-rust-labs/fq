@@ -33,7 +33,7 @@ where
         let _ = write!(message, "{col_no}:");
     }
 
-    let _ = write!(message, " [{}] {}: {}", error.code, error.name, error.error);
+    let _ = write!(message, " {}", error);
 
     message
 }
