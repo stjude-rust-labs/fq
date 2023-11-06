@@ -91,7 +91,7 @@ fn validate_single(
         for validator in &single_read_validators {
             validator.validate(&record).unwrap_or_else(|e| {
                 did_fail_validation = true;
-                handle_validation_error(lint_mode, e, r1_src, record_counter)
+                handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
         }
 
@@ -162,19 +162,19 @@ fn validate_pair(
         for validator in &single_read_validators {
             validator.validate(&b).unwrap_or_else(|e| {
                 did_fail_validation = true;
-                handle_validation_error(lint_mode, e, r1_src, record_counter)
+                handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
 
             validator.validate(&d).unwrap_or_else(|e| {
                 did_fail_validation = true;
-                handle_validation_error(lint_mode, e, r2_src, record_counter)
+                handle_validation_error(lint_mode, e, r2_src, record_counter);
             });
         }
 
         for validator in &paired_read_validators {
             validator.validate(&b, &d).unwrap_or_else(|e| {
                 did_fail_validation = true;
-                handle_validation_error(lint_mode, e, r1_src, record_counter)
+                handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
         }
 
@@ -201,7 +201,7 @@ fn validate_pair(
             .validate(&record)
             .unwrap_or_else(|e| {
                 did_fail_validation = true;
-                handle_validation_error(lint_mode, e, r1_src, record_counter)
+                handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
 
         record_counter += 1;
