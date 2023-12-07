@@ -61,33 +61,13 @@ impl Record {
         self.quality_scores.clear();
     }
 
-    /// Prepares a record after initialization.
-    ///
-    /// This should be called after clearing and directly writing to the line
-    /// buffers.
-    ///
-    /// Resetting only includes removing the interleave or meta from the name, if
-    /// either is present.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fq::fastq::Record;
-    ///
-    /// let mut r = Record::default();
-    /// r.name_mut().extend_from_slice(b"@fqlib/1");
-    /// assert_eq!(r.name(), b"@fqlib/1");
-    /// r.reset();
-    /// assert_eq!(r.name(), b"@fqlib");
-    ///
-    /// let mut r = Record::default();
-    /// r.name_mut().extend_from_slice(b"@fqlib 1");
-    /// assert_eq!(r.name(), b"@fqlib 1");
-    /// r.reset();
-    /// assert_eq!(r.name(), b"@fqlib");
-    /// ```
-    pub fn reset(&mut self) {
-        let pos = self.name.iter().rev().position(|&b| b == b'/' || b == b' ');
+    /// Removes the description from the name.
+    pub fn reset(&mut self, separator: Option<u8>) {
+        let pos = if let Some(c) = separator {
+            self.name.iter().rev().position(|&b| b == c)
+        } else {
+            self.name.iter().rev().position(|&b| b == b'/' || b == b' ')
+        };
 
         if let Some(i) = pos {
             let len = self.name.len();
@@ -110,5 +90,23 @@ mod tests {
         assert!(record.sequence().is_empty());
         assert!(record.plus_line().is_empty());
         assert!(record.quality_scores().is_empty());
+    }
+
+    #[test]
+    fn test_reset() {
+        let mut record = Record::default();
+        record.name_mut().extend_from_slice(b"@fqlib/1");
+        record.reset(None);
+        assert_eq!(record.name(), b"@fqlib");
+
+        let mut record = Record::default();
+        record.name_mut().extend_from_slice(b"@fqlib 1");
+        record.reset(None);
+        assert_eq!(record.name(), b"@fqlib");
+
+        let mut record = Record::default();
+        record.name_mut().extend_from_slice(b"@fqlib_1");
+        record.reset(Some(b'_'));
+        assert_eq!(record.name(), b"@fqlib");
     }
 }

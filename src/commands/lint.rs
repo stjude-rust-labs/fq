@@ -71,6 +71,7 @@ fn handle_validation_error<P>(
 
 fn validate_single(
     mut reader: fastq::Reader<impl BufRead>,
+    record_definition_separator: Option<u8>,
     single_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
     lint_mode: LintMode,
@@ -86,7 +87,7 @@ fn validate_single(
     let mut did_fail_validation = false;
 
     while reader.read_record(&mut record)? != 0 {
-        record.reset();
+        record.reset(record_definition_separator);
 
         for validator in &single_read_validators {
             validator.validate(&record).unwrap_or_else(|e| {
@@ -107,6 +108,7 @@ fn validate_single(
 fn validate_pair(
     mut reader_1: fastq::Reader<impl BufRead>,
     mut reader_2: fastq::Reader<impl BufRead>,
+    record_definition_separator: Option<u8>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -152,8 +154,8 @@ fn validate_pair(
             (_, _) => {}
         }
 
-        b.reset();
-        d.reset();
+        b.reset(record_definition_separator);
+        d.reset(record_definition_separator);
 
         if use_special_validator {
             duplicate_name_validator.insert(&b);
@@ -195,7 +197,7 @@ fn validate_pair(
     let mut record_counter = 0;
 
     while reader.read_record(&mut record)? != 0 {
-        record.reset();
+        record.reset(record_definition_separator);
 
         duplicate_name_validator
             .validate(&record)
@@ -223,6 +225,8 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
     let disabled_validators = &args.disable_validator;
 
+    let record_definition_separator = args.record_definition_separator.map(u8::from);
+
     info!("fq-lint start");
 
     let r1 = crate::fastq::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
@@ -235,6 +239,7 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
         validate_pair(
             r1,
             r2,
+            record_definition_separator,
             single_read_validation_level,
             paired_read_validation_level,
             disabled_validators,
@@ -247,6 +252,7 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
         validate_single(
             r1,
+            record_definition_separator,
             single_read_validation_level,
             disabled_validators,
             lint_mode,

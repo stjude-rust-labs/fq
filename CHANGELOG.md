@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+  * commands/lint: Add `--record-definition-separator` option ([#34]).
+
+    This allows a custom separator to be used to strip the description from a
+    record name. When unset, the default remains the same with '/' and ' '.
+
+[#34]: https://github.com/stjude-rust-labs/fq/issues/34
+
 ## 0.11.0 - 2023-09-07
 
 ### Changed

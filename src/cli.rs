@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use clap::{ArgGroup, Parser, Subcommand};
 use git_testament::{git_testament, render_testament};
@@ -7,6 +7,31 @@ use regex::bytes::Regex;
 use crate::{validators::LintMode, ValidationLevel};
 
 git_testament!(TESTAMENT);
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct AsciiChar(u8);
+
+impl From<AsciiChar> for u8 {
+    fn from(c: AsciiChar) -> Self {
+        c.0
+    }
+}
+
+impl FromStr for AsciiChar {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some(c) = s.chars().next() {
+            if let Ok(b) = u8::try_from(c) {
+                Ok(Self(b))
+            } else {
+                Err("invalid character found in string")
+            }
+        } else {
+            Err("cannot parse character from empty string")
+        }
+    }
+}
 
 #[derive(Parser)]
 #[command(propagate_version = true, version = render_testament!(TESTAMENT))]
@@ -87,6 +112,14 @@ pub struct LintArgs {
     /// Disable validators by code. Use multiple times to disable more than one.
     #[arg(long)]
     pub disable_validator: Vec<String>,
+
+    /// Define a record definition separator.
+    ///
+    /// This is used to strip the definition from a record name.
+    ///
+    /// [default: '/' and ' ']
+    #[arg(long)]
+    pub record_definition_separator: Option<AsciiChar>,
 
     /// Read 1 source. Accepts both raw and gzipped FASTQ inputs.
     pub r1_src: PathBuf,
