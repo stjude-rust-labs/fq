@@ -3,7 +3,7 @@ name = "fq"
 version = "0.11.0"
 authors = ["Michael Macias <michael.macias@stjude.org>"]
 edition = "2021"
-rust-version = "1.70.0"
+rust-version = "1.74.0"
 license = "MIT"
 publish = false
 
@@ -16,7 +16,7 @@ anyhow = "1.0.31"
 bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 bitvec = "1.0.0"
 bytecount = { version = "0.6.2", features = ["runtime-dispatch-simd"] }
-clap = { version = "4.0.3", features = ["derive", "string"] }
+clap = { version = "4.5.8", features = ["derive", "string"] }
 flate2 = "1.0.14"
 git-testament = "0.2.0"
 rand = { version = "0.8.1", features = ["small_rng"] }
