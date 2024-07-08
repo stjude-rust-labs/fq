@@ -20,7 +20,7 @@ main() {
 
     pushd "$staging_prefix"
 
-    if [[ $OS_NAME == "windows-latest" ]]; then
+    if [[ $OS_NAME == windows-* ]]; then
         7z a "$dst_prefix/$package_name.zip" "$package_name"
     else
         tar cfz "$dst_prefix/$package_name.tar.gz" "$package_name"
