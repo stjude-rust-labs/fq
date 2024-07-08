@@ -14,8 +14,8 @@ There are different methods to install fq.
 
 [Precompiled binaries are built][releases] for modern Linux distributions
 (`x86_64-unknown-linux-gnu`), macOS (`x86_64-apple-darwin`), and Windows
-(`x86_64-pc-windows-msvc`). The Linux binaries require glibc 2.18+ (CentOS/RHEL
-8+, Debian 8+, Ubuntu 14.04+, etc.).
+(`x86_64-pc-windows-msvc`). The Linux binaries require glibc 2.31+ (CentOS/RHEL
+9+, Debian 11+, Ubuntu 20.04+, etc.).
 
 [releases]: https://github.com/stjude-rust-labs/fq/releases
 
