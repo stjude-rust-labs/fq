@@ -1,5 +1,4 @@
 use std::{
-    fmt,
     io::{self, BufRead},
     path::{Path, PathBuf},
     process,
@@ -16,21 +15,30 @@ use crate::{
     },
 };
 
-fn exit_with_validation_error<P>(error: validators::Error, pathname: P, record_counter: usize) -> !
+fn exit_with_validation_error<P>(err: validators::Error, src: P, record_no: usize) -> !
 where
     P: AsRef<Path>,
 {
-    let err = ValidationError::new(error, pathname, record_counter);
-    eprintln!("{err}");
+    log_validation_error(err, src, record_no);
+    info!(lint_mode = debug(LintMode::Panic), "exiting");
     process::exit(1);
 }
 
-fn log_validation_error<P>(error: validators::Error, pathname: P, record_counter: usize)
+fn log_validation_error<P>(err: validators::Error, src: P, record_no: usize)
 where
     P: AsRef<Path>,
 {
-    let err = ValidationError::new(error, pathname, record_counter);
-    error!("{err}");
+    let src = src.as_ref().display();
+    let line_no = err.line_no(record_no);
+
+    error!(
+        src = display(src),
+        line_no = line_no,
+        col_no = err.col_no,
+        validator_code = err.code,
+        validator_name = err.name,
+        "{err}"
+    );
 }
 
 fn handle_validation_error<P>(
@@ -257,90 +265,4 @@ pub enum LintError {
     CreateFile(#[source] io::Error, PathBuf),
     #[error("{0} unexpectedly ended")]
     UnexpectedEof(&'static str),
-    #[error("validation error")]
-    Validation(ValidationError),
-}
-
-#[derive(Debug)]
-pub struct ValidationError {
-    err: validators::Error,
-    src: PathBuf,
-    record_counter: usize,
-}
-
-impl ValidationError {
-    fn new<P>(err: validators::Error, src: P, record_counter: usize) -> Self
-    where
-        P: AsRef<Path>,
-    {
-        Self {
-            err,
-            src: src.as_ref().into(),
-            record_counter,
-        }
-    }
-}
-
-impl std::error::Error for ValidationError {}
-
-impl fmt::Display for ValidationError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let line_no = self.err.line_no(self.record_counter);
-        write!(f, "{}:{}:", self.src.display(), line_no)?;
-
-        if let Some(col_no) = self.err.col_no {
-            write!(f, "{col_no}:")?;
-        }
-
-        write!(f, " {}", self.err)?;
-
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::validators::{self, LineType};
-
-    use super::*;
-
-    #[test]
-    fn test_validation_error_fmt() {
-        let error = ValidationError::new(
-            validators::Error::new(
-                "S002",
-                "AlphabetValidator",
-                "Invalid character: m",
-                LineType::Sequence,
-                Some(76),
-            ),
-            "in.fastq",
-            2,
-        );
-
-        assert_eq!(
-            error.to_string(),
-            "in.fastq:10:76: [S002] AlphabetValidator: Invalid character: m",
-        );
-    }
-
-    #[test]
-    fn test_validation_error_fmt_with_no_col_no() {
-        let error = ValidationError::new(
-            validators::Error::new(
-                "S002",
-                "AlphabetValidator",
-                "Invalid character: m",
-                LineType::Sequence,
-                None,
-            ),
-            "in.fastq",
-            2,
-        );
-
-        assert_eq!(
-            error.to_string(),
-            "in.fastq:10: [S002] AlphabetValidator: Invalid character: m",
-        );
-    }
 }
