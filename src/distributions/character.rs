@@ -1,25 +1,22 @@
 use rand::{
-    distributions::{Distribution, Uniform},
+    distributions::{Distribution, Slice},
     Rng,
 };
 
 /// Sample a `char`, uniformly distributed over a given character set.
-pub struct Character {
-    alphabet: &'static [u8],
-    range: Uniform<usize>,
-}
+pub struct Character(Slice<'static, u8>);
 
 impl Character {
     pub fn new(alphabet: &'static [u8]) -> Self {
-        let range = Uniform::new(0, alphabet.len());
-        Self { alphabet, range }
+        assert!(!alphabet.is_empty());
+        // SAFETY: `alphabet` is non-empty.
+        Slice::new(alphabet).map(Self).unwrap()
     }
 }
 
 impl Distribution<u8> for Character {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8 {
-        let i = self.range.sample(rng);
-        self.alphabet[i]
+        *self.0.sample(rng)
     }
 }
 
