@@ -38,9 +38,6 @@ impl FromStr for AsciiChar {
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,
-
-    #[arg(long, hide = true)]
-    pub verbose: bool,
 }
 
 #[derive(Subcommand)]

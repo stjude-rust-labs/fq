@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Removed
+
+  * Remove `--verbose` flag.
+
+    Logging is always enabled. This flag was previously deprecated in 0.8.0.
+
 ## 0.12.0 - 2024-07-08
 
 ### Added

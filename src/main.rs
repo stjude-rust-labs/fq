@@ -5,16 +5,10 @@ use fq::{
     Cli,
 };
 
-use tracing::warn;
-
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let cli = Cli::parse();
-
-    if cli.verbose {
-        warn!("`--verbose` is deprecated and will be removed in a future version. Logging is now always enabled.");
-    }
 
     match cli.command {
         Command::Filter(args) => filter(args)?,
