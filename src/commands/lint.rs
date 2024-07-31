@@ -54,7 +54,7 @@ fn validate_single(
     disabled_validators: &[String],
     lint_mode: LintMode,
     r1_src: &Path,
-) -> Result<bool, LintError> {
+) -> Result<usize, LintError> {
     let (single_read_validators, _) =
         validators::filter_validators(single_read_validation_level, None, disabled_validators);
 
@@ -62,16 +62,16 @@ fn validate_single(
 
     let mut record = Record::default();
     let mut record_counter = 0;
-    let mut did_fail_validation = false;
+    let mut failure_count = 0;
 
     while reader.read_record(&mut record)? != 0 {
         record.reset(record_definition_separator);
 
         for validator in &single_read_validators {
-            validator.validate(&record).unwrap_or_else(|e| {
-                did_fail_validation = true;
+            if let Err(e) = validator.validate(&record) {
+                failure_count += 1;
                 handle_validation_error(lint_mode, e, r1_src, record_counter);
-            });
+            }
         }
 
         record_counter += 1;
@@ -79,7 +79,7 @@ fn validate_single(
 
     info!("read {} records", record_counter);
 
-    Ok(did_fail_validation)
+    Ok(failure_count)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -93,7 +93,7 @@ fn validate_pair(
     lint_mode: LintMode,
     r1_src: &Path,
     r2_src: &Path,
-) -> Result<bool, LintError> {
+) -> Result<usize, LintError> {
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
         Some(paired_read_validation_level),
@@ -119,7 +119,7 @@ fn validate_pair(
     let mut b = Record::default();
     let mut d = Record::default();
     let mut record_counter = 0;
-    let mut did_fail_validation = false;
+    let mut failure_count = 0;
 
     loop {
         let r1_len = reader_1.read_record(&mut b)?;
@@ -141,19 +141,19 @@ fn validate_pair(
 
         for validator in &single_read_validators {
             validator.validate(&b).unwrap_or_else(|e| {
-                did_fail_validation = true;
+                failure_count += 1;
                 handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
 
             validator.validate(&d).unwrap_or_else(|e| {
-                did_fail_validation = true;
+                failure_count += 1;
                 handle_validation_error(lint_mode, e, r2_src, record_counter);
             });
         }
 
         for validator in &paired_read_validators {
             validator.validate(&b, &d).unwrap_or_else(|e| {
-                did_fail_validation = true;
+                failure_count += 1;
                 handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
         }
@@ -165,7 +165,7 @@ fn validate_pair(
     info!("starting validation (pass 2)");
 
     if !use_special_validator {
-        return Ok(did_fail_validation);
+        return Ok(failure_count);
     }
 
     let mut reader =
@@ -180,7 +180,7 @@ fn validate_pair(
         duplicate_name_validator
             .validate(&record)
             .unwrap_or_else(|e| {
-                did_fail_validation = true;
+                failure_count += 1;
                 handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
 
@@ -189,7 +189,7 @@ fn validate_pair(
 
     info!("read {} records", record_counter);
 
-    Ok(did_fail_validation)
+    Ok(failure_count)
 }
 
 pub fn lint(args: LintArgs) -> Result<(), LintError> {
@@ -209,7 +209,7 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
     let r1 = crate::fastq::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
 
-    let did_fail_validation = if let Some(r2_src) = r2_src {
+    let failure_count = if let Some(r2_src) = r2_src {
         info!("validating paired end reads");
 
         let r2 = crate::fastq::open(r2_src).map_err(|e| LintError::OpenFile(e, r2_src.into()))?;
@@ -240,7 +240,7 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
     info!("fq-lint end");
 
-    if did_fail_validation {
+    if failure_count > 0 {
         process::exit(1);
     }
 
