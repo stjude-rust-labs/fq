@@ -66,7 +66,7 @@ impl Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}] {}: {}", self.code, self.name, self.error)
+        self.error.fmt(f)
     }
 }
 
