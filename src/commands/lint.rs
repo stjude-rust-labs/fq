@@ -285,8 +285,7 @@ impl std::error::Error for ValidationError {}
 
 impl fmt::Display for ValidationError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let line_offset = self.err.line_type as usize;
-        let line_no = self.record_counter * 4 + line_offset + 1;
+        let line_no = self.err.line_no(self.record_counter);
         write!(f, "{}:{}:", self.src.display(), line_no)?;
 
         if let Some(col_no) = self.err.col_no {

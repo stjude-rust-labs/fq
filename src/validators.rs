@@ -57,6 +57,11 @@ impl Error {
             col_no,
         }
     }
+
+    pub fn line_no(&self, record_no: usize) -> usize {
+        let offset = self.line_type as usize;
+        record_no * 4 + offset + 1
+    }
 }
 
 impl fmt::Display for Error {
