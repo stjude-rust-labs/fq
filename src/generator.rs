@@ -49,13 +49,6 @@ impl Generator<SmallRng> {
     }
 
     /// Creates a `Generator<SmallRng>` seeded by the system.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fq::Generator;
-    /// let _ = Generator::new();
-    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -77,15 +70,6 @@ where
     R: Rng,
 {
     /// Creates a new `Generator` with a given `Rng` and read length.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use rand::{SeedableRng, rngs::SmallRng};
-    /// use fq::Generator;
-    /// let rng = SmallRng::from_entropy();
-    /// let _ = Generator::from_rng(rng, 101);
-    /// ```
     pub fn from_rng(mut rng: R, read_length: usize) -> Self {
         let instrument = format!("fqlib{}", rng.gen_range(1..=10));
         let run_number = rng.gen_range(1..=1000);
@@ -117,16 +101,6 @@ where
     }
 
     /// Returns a freshly generated record.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fq::{fastq::Record, Generator};
-    ///
-    /// let mut generator = Generator::new();
-    /// let mut record = Record::default();
-    /// generator.next_record(&mut record);
-    /// ```
     pub fn next_record(&mut self, record: &mut Record) {
         clear_record(record);
 
@@ -136,17 +110,6 @@ where
     }
 
     /// Returns a freshly generated record, setting the name to the given input.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use fq::{fastq::Record, Generator};
-    ///
-    /// let mut generator = Generator::new();
-    /// let mut record = Record::default();
-    /// generator.next_record_with_name(b"@fqlib", &mut record);
-    /// assert_eq!(record.name(), b"@fqlib");
-    /// ```
     pub fn next_record_with_name(&mut self, name: &[u8], record: &mut Record) {
         clear_record(record);
 
@@ -242,5 +205,17 @@ mod tests {
 
         assert_eq!(record.sequence().len(), READ_LENGTH);
         assert_eq!(record.quality_scores().len(), READ_LENGTH);
+    }
+
+    #[test]
+    fn test_next_record_with_name() {
+        let mut generator = Generator::seed_from_u64(0);
+
+        let mut record = Record::default();
+
+        let name = b"@fqlib";
+        generator.next_record_with_name(name, &mut record);
+
+        assert_eq!(record.name(), name);
     }
 }
