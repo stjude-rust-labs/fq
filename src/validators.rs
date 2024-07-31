@@ -33,7 +33,7 @@ pub enum LineType {
 pub struct Error {
     pub code: String,
     pub name: String,
-    pub error: Box<dyn std::error::Error>,
+    pub error: Box<dyn std::error::Error + Send + Sync>,
     pub line_type: LineType,
     pub col_no: Option<usize>,
 }
@@ -47,7 +47,7 @@ impl Error {
         col_no: Option<usize>,
     ) -> Self
     where
-        E: Into<Box<dyn std::error::Error>>,
+        E: Into<Box<dyn std::error::Error + Send + Sync>>,
     {
         Self {
             code: code.into(),

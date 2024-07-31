@@ -1,4 +1,5 @@
 use std::{
+    fmt,
     io::{self, BufRead},
     path::{Path, PathBuf},
     process,
@@ -15,35 +16,12 @@ use crate::{
     },
 };
 
-fn build_error_message<P>(error: validators::Error, pathname: P, record_counter: usize) -> String
-where
-    P: AsRef<Path>,
-{
-    use std::fmt::Write;
-
-    let path = pathname.as_ref();
-
-    let mut message = String::new();
-
-    let line_offset = error.line_type as usize;
-    let line_no = record_counter * 4 + line_offset + 1;
-    let _ = write!(message, "{}:{}:", path.display(), line_no);
-
-    if let Some(col_no) = error.col_no {
-        let _ = write!(message, "{col_no}:");
-    }
-
-    let _ = write!(message, " {}", error);
-
-    message
-}
-
 fn exit_with_validation_error<P>(error: validators::Error, pathname: P, record_counter: usize) -> !
 where
     P: AsRef<Path>,
 {
-    let message = build_error_message(error, pathname, record_counter);
-    eprintln!("{message}");
+    let err = ValidationError::new(error, pathname, record_counter);
+    eprintln!("{err}");
     process::exit(1);
 }
 
@@ -51,8 +29,8 @@ fn log_validation_error<P>(error: validators::Error, pathname: P, record_counter
 where
     P: AsRef<Path>,
 {
-    let message = build_error_message(error, pathname, record_counter);
-    error!("{}", message);
+    let err = ValidationError::new(error, pathname, record_counter);
+    error!("{err}");
 }
 
 fn handle_validation_error<P>(
@@ -279,6 +257,46 @@ pub enum LintError {
     CreateFile(#[source] io::Error, PathBuf),
     #[error("{0} unexpectedly ended")]
     UnexpectedEof(&'static str),
+    #[error("validation error")]
+    Validation(ValidationError),
+}
+
+#[derive(Debug)]
+pub struct ValidationError {
+    err: validators::Error,
+    src: PathBuf,
+    record_counter: usize,
+}
+
+impl ValidationError {
+    fn new<P>(err: validators::Error, src: P, record_counter: usize) -> Self
+    where
+        P: AsRef<Path>,
+    {
+        Self {
+            err,
+            src: src.as_ref().into(),
+            record_counter,
+        }
+    }
+}
+
+impl std::error::Error for ValidationError {}
+
+impl fmt::Display for ValidationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let line_offset = self.err.line_type as usize;
+        let line_no = self.record_counter * 4 + line_offset + 1;
+        write!(f, "{}:{}:", self.src.display(), line_no)?;
+
+        if let Some(col_no) = self.err.col_no {
+            write!(f, "{col_no}:")?;
+        }
+
+        write!(f, " {}", self.err)?;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -288,33 +306,41 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_build_error_message() {
-        let error = validators::Error::new(
-            "S002",
-            "AlphabetValidator",
-            "Invalid character: m",
-            LineType::Sequence,
-            Some(76),
+    fn test_validation_error_fmt() {
+        let error = ValidationError::new(
+            validators::Error::new(
+                "S002",
+                "AlphabetValidator",
+                "Invalid character: m",
+                LineType::Sequence,
+                Some(76),
+            ),
+            "in.fastq",
+            2,
         );
 
         assert_eq!(
-            build_error_message(error, "in.fastq", 2),
+            error.to_string(),
             "in.fastq:10:76: [S002] AlphabetValidator: Invalid character: m",
         );
     }
 
     #[test]
-    fn test_build_error_message_with_no_col_no() {
-        let error = validators::Error::new(
-            "S002",
-            "AlphabetValidator",
-            "Invalid character: m",
-            LineType::Sequence,
-            None,
+    fn test_validation_error_fmt_with_no_col_no() {
+        let error = ValidationError::new(
+            validators::Error::new(
+                "S002",
+                "AlphabetValidator",
+                "Invalid character: m",
+                LineType::Sequence,
+                None,
+            ),
+            "in.fastq",
+            2,
         );
 
         assert_eq!(
-            build_error_message(error, "in.fastq", 2),
+            error.to_string(),
             "in.fastq:10: [S002] AlphabetValidator: Invalid character: m",
         );
     }
