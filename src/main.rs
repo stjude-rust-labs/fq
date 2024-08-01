@@ -1,3 +1,5 @@
+use std::io;
+
 use clap::Parser;
 use fq::{
     cli::Command,
@@ -6,7 +8,7 @@ use fq::{
 };
 
 fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt().with_writer(io::stderr).init();
 
     let cli = Cli::parse();
 

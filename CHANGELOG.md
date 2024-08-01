@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+  * Log messages are written to `stderr` rather than `stdout`.
+
 ### Removed
 
   * Remove `--verbose` flag.
