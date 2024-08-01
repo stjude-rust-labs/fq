@@ -13,7 +13,7 @@ use rand::{
     SeedableRng,
 };
 use thiserror::Error;
-use tracing::{info, warn};
+use tracing::{info, info_span, warn};
 
 use crate::{
     cli::SubsampleArgs,
@@ -79,7 +79,8 @@ where
     let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
     let mut w1 = fastq::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
 
-    info!("probability (p) = {}", probability);
+    let span = info_span!("subsample_approximate", probability = probability);
+    let _span_ctx = span.enter();
 
     let (n, total) = match (r2_src, r2_dst) {
         (Some(r2_src), Some(r2_dst)) => {
@@ -191,14 +192,17 @@ fn subsample_exact<Rng>(
 where
     Rng: rand::Rng,
 {
+    let span = info_span!("subsample_exact", record_count = record_count);
+    let _span_ctx = span.enter();
+
     info!("counting records");
 
     let line_count = count_lines(r1_src)?;
-    let r1_src_record_count = line_count / 4;
+    let actual_record_count = line_count / 4;
 
-    info!("r1-src record count = {}", r1_src_record_count);
+    info!(actual_record_count = actual_record_count, "counted records");
 
-    let n = u64::try_from(r1_src_record_count)
+    let n = u64::try_from(actual_record_count)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
     if record_count > n {
@@ -211,8 +215,8 @@ where
     }
 
     info!("building filter");
-
-    let bitmap = build_filter(rng, r1_src_record_count, record_count);
+    let bitmap = build_filter(rng, actual_record_count, record_count);
+    info!("built filter");
 
     let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
     let mut w1 = fastq::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
@@ -236,10 +240,10 @@ where
         }
     }
 
-    let percentage = (record_count as f64) / (r1_src_record_count as f64) * 100.0;
+    let percentage = (record_count as f64) / (actual_record_count as f64) * 100.0;
     info!(
         "sampled {}/{} ({:.1}%) records",
-        record_count, r1_src_record_count, percentage
+        record_count, actual_record_count, percentage
     );
 
     Ok(())
