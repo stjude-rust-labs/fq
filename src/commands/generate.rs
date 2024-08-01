@@ -7,7 +7,7 @@ use tracing::info;
 use crate::{cli::GenerateArgs, generator::Builder, Generator, PairWriter};
 
 pub fn generate(args: GenerateArgs) -> Result<(), GenerateError> {
-    info!("fq-generate start");
+    info!(command = "generate", "fq");
 
     let builder = if let Some(seed) = args.seed {
         let rng = SmallRng::seed_from_u64(seed);
@@ -30,10 +30,12 @@ pub fn generate(args: GenerateArgs) -> Result<(), GenerateError> {
 
     let record_count = args.record_count;
 
+    info!("start");
+
     writer.write(generator, record_count)?;
 
-    info!("generated {} records", record_count);
-    info!("fq-generate end");
+    info!(record_count = record_count, "end");
+    info!("done");
 
     Ok(())
 }

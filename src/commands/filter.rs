@@ -91,7 +91,7 @@ pub fn filter(args: FilterArgs) -> Result<(), FilterError> {
     let srcs = &args.srcs;
     let dsts = &args.dsts;
 
-    info!("fq-filter start");
+    info!(command = "filter", "fq");
 
     if let Some(names_src) = args.names.as_ref() {
         filter_by_names(srcs, dsts, names_src)?;
@@ -101,7 +101,7 @@ pub fn filter(args: FilterArgs) -> Result<(), FilterError> {
         cat(srcs, dsts)?;
     }
 
-    info!("fq-filter end");
+    info!("done");
 
     Ok(())
 }

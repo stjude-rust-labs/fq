@@ -30,10 +30,10 @@ pub fn subsample(args: SubsampleArgs) -> Result<(), SubsampleError> {
     let r2_src = args.r2_src.as_ref();
     let r2_dst = args.r2_dst.as_ref();
 
-    info!("fq-subsample start");
+    info!(command = "subsample", "fq");
 
     let rng = if let Some(seed) = args.seed {
-        info!("initializing rng from seed = {}", seed);
+        info!(seed = seed, "initializing rng from seed");
         SmallRng::seed_from_u64(seed)
     } else {
         info!("initializing rng from entropy");
@@ -58,7 +58,7 @@ pub fn subsample(args: SubsampleArgs) -> Result<(), SubsampleError> {
         unreachable!();
     }
 
-    info!("fq-subsample end");
+    info!("done");
 
     Ok(())
 }
