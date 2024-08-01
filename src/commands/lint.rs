@@ -5,7 +5,7 @@ use std::{
 };
 
 use thiserror::Error;
-use tracing::{error, info};
+use tracing::{error, info, info_span};
 
 use crate::{
     cli::LintArgs,
@@ -66,7 +66,10 @@ fn validate_single(
     let (single_read_validators, _) =
         validators::filter_validators(single_read_validation_level, None, disabled_validators);
 
-    info!("starting validation");
+    let span = info_span!("validate_single");
+    let _span_ctx = span.enter();
+
+    info!("start");
 
     let mut record = Record::default();
     let mut record_counter = 0;
@@ -85,7 +88,7 @@ fn validate_single(
         record_counter += 1;
     }
 
-    info!("read {} records", record_counter);
+    info!(record_count = record_counter, "end");
 
     Ok(failure_count)
 }
@@ -122,7 +125,10 @@ fn validate_pair(
 
     info!("enabled special validators: [{}]", validators);
 
-    info!("starting validation (pass 1)");
+    let span = info_span!("validate_pair", pass = 1);
+    let span_ctx = span.enter();
+
+    info!("start");
 
     let mut b = Record::default();
     let mut d = Record::default();
@@ -169,8 +175,13 @@ fn validate_pair(
         record_counter += 1;
     }
 
-    info!("read {} * 2 records", record_counter);
-    info!("starting validation (pass 2)");
+    info!(record_count = record_counter, "end");
+    drop(span_ctx);
+
+    let span = info_span!("validate_pair", pass = 2);
+    let _span_ctx = span.enter();
+
+    info!("start");
 
     if !use_special_validator {
         return Ok(failure_count);
@@ -195,7 +206,7 @@ fn validate_pair(
         record_counter += 1;
     }
 
-    info!("read {} records", record_counter);
+    info!(record_count = record_counter, "end");
 
     Ok(failure_count)
 }
@@ -213,13 +224,11 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
     let record_definition_separator = args.record_definition_separator.map(u8::from);
 
-    info!("fq-lint start");
+    info!(command = "lint", "fq");
 
     let r1 = crate::fastq::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
 
     let failure_count = if let Some(r2_src) = r2_src {
-        info!("validating paired end reads");
-
         let r2 = crate::fastq::open(r2_src).map_err(|e| LintError::OpenFile(e, r2_src.into()))?;
 
         validate_pair(
@@ -234,8 +243,6 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
             r2_src,
         )?
     } else {
-        info!("validating single end read");
-
         validate_single(
             r1,
             record_definition_separator,
@@ -246,7 +253,7 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
         )?
     };
 
-    info!("fq-lint end");
+    info!("done");
 
     if failure_count > 0 {
         process::exit(1);
