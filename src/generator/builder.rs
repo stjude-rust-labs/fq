@@ -1,6 +1,6 @@
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
-use super::{Generator, READ_LEN};
+use super::{Generator, DEFAULT_READ_LENGTH};
 
 pub struct Builder<R> {
     rng: R,
@@ -14,7 +14,7 @@ where
     pub fn from_rng(rng: R) -> Self {
         Self {
             rng,
-            read_length: READ_LEN,
+            read_length: DEFAULT_READ_LENGTH,
         }
     }
 
@@ -32,7 +32,7 @@ impl Default for Builder<SmallRng> {
     fn default() -> Self {
         Self {
             rng: SmallRng::from_entropy(),
-            read_length: READ_LEN,
+            read_length: DEFAULT_READ_LENGTH,
         }
     }
 }

@@ -18,9 +18,9 @@ use super::{
 static UPPER_ALPHA_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static NUCLEOBASE_CHARSET: &[u8] = b"AGTC";
 
-const READ_LEN: usize = 101;
-const FLOW_CELL_ID_LEN: usize = 7;
+const DEFAULT_READ_LENGTH: usize = 101;
 
+const FLOW_CELL_ID_LEN: usize = 7;
 const LANES: u32 = 8;
 const TILES: u32 = 60;
 const MAX_X: u32 = 10000;
@@ -55,7 +55,7 @@ impl Generator<SmallRng> {
 
     pub fn seed_from_u64(seed: u64) -> Self {
         let rng = SmallRng::seed_from_u64(seed);
-        Self::from_rng(rng, READ_LEN)
+        Self::from_rng(rng, DEFAULT_READ_LENGTH)
     }
 }
 
