@@ -3,7 +3,7 @@ use std::io;
 use clap::Parser;
 use fq::{
     cli::Command,
-    commands::{filter, generate, lint, subsample},
+    commands::{describe, filter, generate, lint, subsample},
     Cli,
 };
 
@@ -13,6 +13,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Command::Describe(args) => describe(args)?,
         Command::Filter(args) => filter(args)?,
         Command::Generate(args) => generate(args)?,
         Command::Lint(args) => lint(args)?,

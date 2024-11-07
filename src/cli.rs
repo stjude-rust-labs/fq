@@ -42,6 +42,8 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
+    /// Collect FASTQ metrics.
+    Describe(DescribeArgs),
     /// Filters a FASTQ file.
     Filter(FilterArgs),
     /// Generates a random FASTQ file pair.
@@ -50,6 +52,12 @@ pub enum Command {
     Lint(LintArgs),
     /// Outputs a subset of records.
     Subsample(SubsampleArgs),
+}
+
+#[derive(Parser)]
+pub struct DescribeArgs {
+    /// FASTQ source.
+    pub src: PathBuf,
 }
 
 #[derive(Parser)]
