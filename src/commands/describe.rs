@@ -15,9 +15,7 @@ pub fn describe(args: DescribeArgs) -> io::Result<()> {
         visit(&mut metrics, &record);
     }
 
-    println!("record_count\t{}", metrics.record_count);
-    println!("min_sequence_length\t{}", metrics.min_sequence_length);
-    println!("max_sequence_length\t{}", metrics.max_sequence_length);
+    print_metrics(&metrics);
 
     Ok(())
 }
@@ -40,4 +38,10 @@ impl Default for Metrics {
 
 fn visit(metrics: &mut Metrics, _: &Record) {
     metrics.record_count += 1;
+}
+
+fn print_metrics(metrics: &Metrics) {
+    println!("record_count\t{}", metrics.record_count);
+    println!("min_sequence_length\t{}", metrics.min_sequence_length);
+    println!("max_sequence_length\t{}", metrics.max_sequence_length);
 }
