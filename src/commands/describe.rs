@@ -41,7 +41,23 @@ fn visit(metrics: &mut Metrics, _: &Record) {
 }
 
 fn print_metrics(metrics: &Metrics) {
-    println!("record_count\t{}", metrics.record_count);
-    println!("min_sequence_length\t{}", metrics.min_sequence_length);
-    println!("max_sequence_length\t{}", metrics.max_sequence_length);
+    let record_count = metrics.record_count;
+
+    println!("record_count\t{record_count}");
+
+    let min_sequence_length = if record_count == 0 {
+        0
+    } else {
+        metrics.min_sequence_length
+    };
+
+    println!("min_sequence_length\t{min_sequence_length}");
+
+    let max_sequence_length = if record_count == 0 {
+        0
+    } else {
+        metrics.max_sequence_length
+    };
+
+    println!("max_sequence_length\t{max_sequence_length}");
 }
