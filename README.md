@@ -272,3 +272,9 @@ $ fq subsample --probability 0.1 --r1-dst r1.10pct.fastq.gz r1.fastq.gz
 # Sample exactly 10000 records from a single FASTQ file
 $ fq subsample --record-count 10000 -r1-dst r1.10k.fastq r1.fastq
 ```
+
+## Legal
+
+Please see [the disclaimer](https://github.com/stjude-rust-labs#disclaimer) that
+applies to all crates and command line tools made available by St. Jude Rust
+Labs.
