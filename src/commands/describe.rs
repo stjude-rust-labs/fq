@@ -36,8 +36,13 @@ impl Default for Metrics {
     }
 }
 
-fn visit(metrics: &mut Metrics, _: &Record) {
+fn visit(metrics: &mut Metrics, record: &Record) {
     metrics.record_count += 1;
+
+    let read_length = record.sequence().len();
+
+    metrics.min_sequence_length = metrics.min_sequence_length.min(read_length);
+    metrics.max_sequence_length = metrics.max_sequence_length.max(read_length);
 }
 
 fn print_metrics(metrics: &Metrics) {
