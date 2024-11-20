@@ -3,6 +3,7 @@ pub mod commands;
 pub mod distributions;
 pub mod fastq;
 pub mod generator;
+mod metrics;
 pub mod pair_writer;
 pub mod validators;
 
