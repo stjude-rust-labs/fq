@@ -1,11 +1,15 @@
 use std::io;
 
+use tracing::info;
+
 use crate::{
     cli::DescribeArgs,
     fastq::{self, Record},
 };
 
 pub fn describe(args: DescribeArgs) -> io::Result<()> {
+    info!(command = "describe", "fq");
+
     let mut reader = fastq::open(args.src)?;
     let mut record = Record::default();
 
@@ -16,6 +20,8 @@ pub fn describe(args: DescribeArgs) -> io::Result<()> {
     }
 
     print_metrics(&metrics);
+
+    info!("done");
 
     Ok(())
 }
