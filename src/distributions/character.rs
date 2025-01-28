@@ -1,16 +1,16 @@
 use rand::{
-    distributions::{Distribution, Slice},
+    distr::{slice::Choose, Distribution},
     Rng,
 };
 
 /// Sample a `char`, uniformly distributed over a given character set.
-pub struct Character(Slice<'static, u8>);
+pub struct Character(Choose<'static, u8>);
 
 impl Character {
     pub fn new(alphabet: &'static [u8]) -> Self {
         assert!(!alphabet.is_empty());
         // SAFETY: `alphabet` is non-empty.
-        Slice::new(alphabet).map(Self).unwrap()
+        Choose::new(alphabet).map(Self).unwrap()
     }
 }
 

@@ -5,7 +5,7 @@ pub use self::builder::Builder;
 use std::io::Write;
 
 use rand::{
-    distributions::{Distribution, Uniform},
+    distr::{Distribution, Uniform},
     rngs::SmallRng,
     Rng, SeedableRng,
 };
@@ -71,14 +71,15 @@ where
 {
     /// Creates a new `Generator` with a given `Rng` and read length.
     pub fn from_rng(mut rng: R, read_length: usize) -> Self {
-        let instrument = format!("fqlib{}", rng.gen_range(1..=10));
-        let run_number = rng.gen_range(1..=1000);
+        let instrument = format!("fqlib{}", rng.random_range(1..=10));
+        let run_number = rng.random_range(1..=1000);
         let flow_cell_id = gen_flow_cell_id(&mut rng, FLOW_CELL_ID_LEN);
 
-        let lane_range = Uniform::new(1, LANES + 1);
-        let tile_range = Uniform::new(1, TILES + 1);
-        let x_pos_range = Uniform::new(1, MAX_X + 1);
-        let y_pos_range = Uniform::new(1, MAX_Y + 1);
+        // SAFETY: [low, high] is nonempty and finite.
+        let lane_range = Uniform::new_inclusive(1, LANES).unwrap();
+        let tile_range = Uniform::new_inclusive(1, TILES).unwrap();
+        let x_pos_range = Uniform::new_inclusive(1, MAX_X).unwrap();
+        let y_pos_range = Uniform::new_inclusive(1, MAX_Y).unwrap();
 
         let sequence_distribution = Character::new(NUCLEOBASE_CHARSET);
         let quality_distribution = QualityScores::default();
@@ -185,12 +186,9 @@ mod tests {
         let mut record = Record::default();
         generator.next_record(&mut record);
 
-        assert_eq!(
-            record.name(),
-            "@fqlib5:440:ZMXYPLK:7:15:9764:6446".as_bytes()
-        );
-        assert_eq!(record.sequence(), "ACAAGCTTAGCGCCACGCAGCGGGTGATCGAGTGGGCTAACAATTAAACTTTGAAGTACCGGCCCCTCCTGATGCATCCGGCGGTCCTTGTAGAATGACCC".as_bytes());
-        assert_eq!(record.quality_scores(), "6547759627579>3111:817:585;87246;6;425;773656:857836434354769:6574745887;74348774:7358566335664964387".as_bytes());
+        assert_eq!(record.name(), b"@fqlib4:383:JAMAWVH:1:19:661:1043");
+        assert_eq!(record.sequence(), b"AAGTAGGGAAGGGATCAGGGCCATATATGGAAAAAAGTTCAACTGGTTCAGCCGGTCCACTCGTCTTTGTAACTCACTCGTCCGATTCAATCGATAGTCAA");
+        assert_eq!(record.quality_scores(), b"2/30;69687674575248496:1162627218578748695516441542576651755464;64:666341/32;486488796663165932475154");
     }
 
     #[test]

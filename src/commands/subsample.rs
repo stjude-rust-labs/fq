@@ -8,7 +8,7 @@ use std::{
 use bitvec::vec::BitVec;
 use flate2::bufread::MultiGzDecoder;
 use rand::{
-    distributions::{Distribution, Uniform},
+    distr::{Distribution, Uniform},
     rngs::SmallRng,
     SeedableRng,
 };
@@ -37,7 +37,7 @@ pub fn subsample(args: SubsampleArgs) -> Result<(), SubsampleError> {
         SmallRng::seed_from_u64(seed)
     } else {
         info!("initializing rng from entropy");
-        SmallRng::from_entropy()
+        SmallRng::from_os_rng()
     };
 
     if let Some(probability) = args.probability {
@@ -129,7 +129,7 @@ where
     let mut total = 0;
 
     while reader.read_record(&mut record)? != 0 {
-        let q: f64 = rng.gen();
+        let q: f64 = rng.random();
 
         if q <= p {
             writer.write_record(&record)?;
@@ -167,7 +167,7 @@ where
             (0, len) if len > 0 => return Err(SubsampleError::UnexpectedEof("r1-src")),
             (len, 0) if len > 0 => return Err(SubsampleError::UnexpectedEof("r2-src")),
             (_, _) => {
-                let q: f64 = rng.gen();
+                let q: f64 = rng.random();
 
                 if q <= p {
                     w1.write_record(&s1)?;
@@ -215,7 +215,7 @@ where
     }
 
     info!("building filter");
-    let bitmap = build_filter(rng, actual_record_count, record_count);
+    let bitmap = build_filter(rng, actual_record_count, record_count)?;
     info!("built filter");
 
     let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
@@ -291,14 +291,20 @@ where
     }
 }
 
-fn build_filter<Rng>(mut rng: Rng, src_record_count: usize, dst_record_count: u64) -> BitVec
+fn build_filter<Rng>(
+    mut rng: Rng,
+    src_record_count: usize,
+    dst_record_count: u64,
+) -> Result<BitVec, SubsampleError>
 where
     Rng: rand::Rng,
 {
     let mut bitmap = BitVec::new();
     bitmap.resize(src_record_count, false);
 
-    let distribution = Uniform::from(0..src_record_count);
+    let distribution =
+        Uniform::new(0, src_record_count).map_err(SubsampleError::InvalidUniformRange)?;
+
     let mut n = 0;
 
     while n < dst_record_count {
@@ -310,7 +316,7 @@ where
         }
     }
 
-    bitmap
+    Ok(bitmap)
 }
 
 fn subsample_exact_single<R, W>(
@@ -387,6 +393,8 @@ pub enum SubsampleError {
     InvalidProbability(f64),
     #[error("{0} unexpectedly ended")]
     UnexpectedEof(&'static str),
+    #[error("invalid uniform range")]
+    InvalidUniformRange(rand::distr::uniform::Error),
 }
 
 #[cfg(test)]
@@ -406,9 +414,9 @@ mod tests {
 
         let mut rng = SmallRng::seed_from_u64(0);
 
-        subsample_single(&mut reader, &mut writer, &mut rng, 0.45)?;
+        subsample_single(&mut reader, &mut writer, &mut rng, 0.33)?;
 
-        let expected = b"@r1\nACGT\n+\nFQLB\n@r2\nACGT\n+\nFQLB\n";
+        let expected = b"@r1\nACGT\n+\nFQLB\n@r4\nACGT\n+\nFQLB\n";
         assert_eq!(writer.get_ref(), expected);
 
         Ok(())
@@ -435,12 +443,12 @@ mod tests {
 
         let mut rng = SmallRng::seed_from_u64(0);
 
-        subsample_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &mut rng, 0.45)?;
+        subsample_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &mut rng, 0.33)?;
 
-        let w1_expected = b"@r1\nACGT\n+\nFQLB\n@r2\nACGT\n+\nFQLB\n";
+        let w1_expected = b"@r1\nACGT\n+\nFQLB\n@r4\nACGT\n+\nFQLB\n";
         assert_eq!(w1.get_ref(), w1_expected);
 
-        let w2_expected = b"@r1\nTGCA\n+\nBLQF\n@r2\nTGCA\n+\nBLQF\n";
+        let w2_expected = b"@r1\nTGCA\n+\nBLQF\n@r4\nTGCA\n+\nBLQF\n";
         assert_eq!(w2.get_ref(), w2_expected);
 
         Ok(())

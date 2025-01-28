@@ -31,7 +31,7 @@ where
 impl Default for Builder<SmallRng> {
     fn default() -> Self {
         Self {
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
             read_length: DEFAULT_READ_LENGTH,
         }
     }
