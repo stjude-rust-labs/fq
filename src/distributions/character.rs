@@ -1,6 +1,6 @@
 use rand::{
-    distr::{slice::Choose, Distribution},
     Rng,
+    distr::{Distribution, slice::Choose},
 };
 
 /// Sample a `char`, uniformly distributed over a given character set.

@@ -2,9 +2,9 @@ use std::io;
 
 use clap::Parser;
 use fq::{
+    Cli,
     cli::Command,
     commands::{describe, filter, generate, lint, subsample},
-    Cli,
 };
 
 fn main() -> anyhow::Result<()> {

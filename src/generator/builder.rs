@@ -1,6 +1,6 @@
-use rand::{rngs::SmallRng, Rng, SeedableRng};
+use rand::{Rng, SeedableRng, rngs::SmallRng};
 
-use super::{Generator, DEFAULT_READ_LENGTH};
+use super::{DEFAULT_READ_LENGTH, Generator};
 
 pub struct Builder<R> {
     rng: R,

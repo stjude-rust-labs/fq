@@ -4,7 +4,7 @@ use clap::{ArgGroup, Parser, Subcommand};
 use git_testament::{git_testament, render_testament};
 use regex::bytes::Regex;
 
-use crate::{validators::LintMode, ValidationLevel};
+use crate::{ValidationLevel, validators::LintMode};
 
 git_testament!(TESTAMENT);
 

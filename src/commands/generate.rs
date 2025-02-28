@@ -1,10 +1,10 @@
 use std::{io, path::PathBuf};
 
-use rand::{rngs::SmallRng, SeedableRng};
+use rand::{SeedableRng, rngs::SmallRng};
 use thiserror::Error;
 use tracing::info;
 
-use crate::{cli::GenerateArgs, generator::Builder, Generator, PairWriter};
+use crate::{Generator, PairWriter, cli::GenerateArgs, generator::Builder};
 
 pub fn generate(args: GenerateArgs) -> Result<(), GenerateError> {
     info!(command = "generate", "fq");

@@ -5,9 +5,9 @@ pub use self::builder::Builder;
 use std::io::Write;
 
 use rand::{
+    Rng, SeedableRng,
     distr::{Distribution, Uniform},
     rngs::SmallRng,
-    Rng, SeedableRng,
 };
 
 use super::{

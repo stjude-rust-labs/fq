@@ -11,7 +11,7 @@ use crate::{
     cli::LintArgs,
     fastq::{self, Record},
     validators::{
-        self, single::DuplicateNameValidator, LintMode, SingleReadValidatorMut, ValidationLevel,
+        self, LintMode, SingleReadValidatorMut, ValidationLevel, single::DuplicateNameValidator,
     },
 };
 

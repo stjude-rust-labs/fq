@@ -10,7 +10,7 @@ use std::{
     path::Path,
 };
 
-use flate2::{bufread::MultiGzDecoder, write::GzEncoder, Compression};
+use flate2::{Compression, bufread::MultiGzDecoder, write::GzEncoder};
 
 const GZ_EXTENSION: &str = "gz";
 

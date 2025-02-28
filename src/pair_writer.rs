@@ -3,8 +3,8 @@ use std::io::{self, Write};
 use rand::Rng;
 
 use super::{
-    fastq::{self, Record},
     Generator,
+    fastq::{self, Record},
 };
 
 static PLUS_LINE: &[u8] = b"+";

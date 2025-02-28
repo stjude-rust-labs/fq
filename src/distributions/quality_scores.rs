@@ -1,4 +1,4 @@
-use rand::{distr::Distribution, Rng};
+use rand::{Rng, distr::Distribution};
 use rand_distr::Normal;
 
 const MIN: f64 = 0.0;

@@ -8,9 +8,9 @@ use std::{
 use bitvec::vec::BitVec;
 use flate2::bufread::MultiGzDecoder;
 use rand::{
+    SeedableRng,
     distr::{Distribution, Uniform},
     rngs::SmallRng,
-    SeedableRng,
 };
 use thiserror::Error;
 use tracing::{info, info_span, warn};
