@@ -2,24 +2,24 @@ use std::io::{self, Write};
 
 use rand::Rng;
 
-use super::{
+use crate::{
     Generator,
     fastq::{self, Record},
 };
 
 static PLUS_LINE: &[u8] = b"+";
 
-pub struct PairWriter<W: Write, X: Write> {
-    writer_1: fastq::Writer<W>,
-    writer_2: fastq::Writer<X>,
+pub struct PairedWriter<W: Write, X: Write> {
+    writer_1: fastq::io::Writer<W>,
+    writer_2: fastq::io::Writer<X>,
 }
 
-impl<W, X> PairWriter<W, X>
+impl<W, X> PairedWriter<W, X>
 where
     W: Write,
     X: Write,
 {
-    pub fn new(writer_1: fastq::Writer<W>, writer_2: fastq::Writer<X>) -> Self {
+    pub fn new(writer_1: fastq::io::Writer<W>, writer_2: fastq::io::Writer<X>) -> Self {
         Self { writer_1, writer_2 }
     }
 

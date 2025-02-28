@@ -1,6 +1,6 @@
 use std::io::{self, BufRead};
 
-use super::Record;
+use crate::fastq::Record;
 
 const LINE_FEED: u8 = b'\n';
 const CARRIAGE_RETURN: u8 = b'\r';

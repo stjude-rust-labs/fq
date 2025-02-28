@@ -11,7 +11,7 @@ use crate::{
 pub fn describe(args: DescribeArgs) -> io::Result<()> {
     info!(command = "describe", "fq");
 
-    let mut reader = fastq::open(args.src)?;
+    let mut reader = fastq::fs::open(args.src)?;
     let mut record = Record::default();
 
     let mut metrics = metrics::default();

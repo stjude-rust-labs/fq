@@ -76,8 +76,9 @@ where
         return Err(SubsampleError::InvalidProbability(probability));
     }
 
-    let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
-    let mut w1 = fastq::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
+    let mut r1 = fastq::fs::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
+    let mut w1 =
+        fastq::fs::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
 
     let span = info_span!("subsample_approximate", probability = probability);
     let _span_ctx = span.enter();
@@ -87,9 +88,9 @@ where
             info!("sampling paired end reads");
 
             let mut r2 =
-                fastq::open(r2_src).map_err(|e| SubsampleError::OpenFile(e, r2_src.into()))?;
-            let mut w2 =
-                fastq::create(r2_dst).map_err(|e| SubsampleError::CreateFile(e, r2_dst.into()))?;
+                fastq::fs::open(r2_src).map_err(|e| SubsampleError::OpenFile(e, r2_src.into()))?;
+            let mut w2 = fastq::fs::create(r2_dst)
+                .map_err(|e| SubsampleError::CreateFile(e, r2_dst.into()))?;
 
             subsample_paired(
                 (&mut r1, &mut w1),
@@ -113,8 +114,8 @@ where
 }
 
 fn subsample_single<R, W, Rng>(
-    reader: &mut fastq::Reader<R>,
-    writer: &mut fastq::Writer<W>,
+    reader: &mut fastq::io::Reader<R>,
+    writer: &mut fastq::io::Writer<W>,
     rng: &mut Rng,
     p: f64,
 ) -> Result<(u64, u64), SubsampleError>
@@ -143,8 +144,8 @@ where
 }
 
 fn subsample_paired<R, S, W, X, Rng>(
-    (r1, w1): (&mut fastq::Reader<R>, &mut fastq::Writer<W>),
-    (r2, w2): (&mut fastq::Reader<S>, &mut fastq::Writer<X>),
+    (r1, w1): (&mut fastq::io::Reader<R>, &mut fastq::io::Writer<W>),
+    (r2, w2): (&mut fastq::io::Reader<S>, &mut fastq::io::Writer<X>),
     rng: &mut Rng,
     p: f64,
 ) -> Result<(u64, u64), SubsampleError>
@@ -218,17 +219,18 @@ where
     let bitmap = build_filter(rng, actual_record_count, record_count)?;
     info!("built filter");
 
-    let mut r1 = fastq::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
-    let mut w1 = fastq::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
+    let mut r1 = fastq::fs::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
+    let mut w1 =
+        fastq::fs::create(r1_dst).map_err(|e| SubsampleError::CreateFile(e, r1_dst.into()))?;
 
     match (r2_src, r2_dst) {
         (Some(r2_src), Some(r2_dst)) => {
             info!("sampling paired end reads");
 
             let mut r2 =
-                fastq::open(r2_src).map_err(|e| SubsampleError::OpenFile(e, r2_src.into()))?;
-            let mut w2 =
-                fastq::create(r2_dst).map_err(|e| SubsampleError::CreateFile(e, r2_dst.into()))?;
+                fastq::fs::open(r2_src).map_err(|e| SubsampleError::OpenFile(e, r2_src.into()))?;
+            let mut w2 = fastq::fs::create(r2_dst)
+                .map_err(|e| SubsampleError::CreateFile(e, r2_dst.into()))?;
 
             subsample_exact_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &bitmap)?;
         }
@@ -320,8 +322,8 @@ where
 }
 
 fn subsample_exact_single<R, W>(
-    reader: &mut fastq::Reader<R>,
-    writer: &mut fastq::Writer<W>,
+    reader: &mut fastq::io::Reader<R>,
+    writer: &mut fastq::io::Writer<W>,
     bitmap: &BitVec,
 ) -> Result<(), SubsampleError>
 where
@@ -343,8 +345,8 @@ where
 }
 
 fn subsample_exact_paired<R, S, W, X>(
-    (r1, w1): (&mut fastq::Reader<R>, &mut fastq::Writer<W>),
-    (r2, w2): (&mut fastq::Reader<S>, &mut fastq::Writer<X>),
+    (r1, w1): (&mut fastq::io::Reader<R>, &mut fastq::io::Writer<W>),
+    (r2, w2): (&mut fastq::io::Reader<S>, &mut fastq::io::Writer<X>),
     bitmap: &BitVec,
 ) -> Result<(), SubsampleError>
 where
@@ -409,8 +411,8 @@ mod tests {
 @r4\nACGT\n+\nFQLB
 ";
 
-        let mut reader = fastq::Reader::new(&data[..]);
-        let mut writer = fastq::Writer::new(Vec::new());
+        let mut reader = fastq::io::Reader::new(&data[..]);
+        let mut writer = fastq::io::Writer::new(Vec::new());
 
         let mut rng = SmallRng::seed_from_u64(0);
 
@@ -436,10 +438,10 @@ mod tests {
 @r4\nTGCA\n+\nBLQF
 ";
 
-        let mut r1 = fastq::Reader::new(&r1_data[..]);
-        let mut w1 = fastq::Writer::new(Vec::new());
-        let mut r2 = fastq::Reader::new(&r2_data[..]);
-        let mut w2 = fastq::Writer::new(Vec::new());
+        let mut r1 = fastq::io::Reader::new(&r1_data[..]);
+        let mut w1 = fastq::io::Writer::new(Vec::new());
+        let mut r2 = fastq::io::Reader::new(&r2_data[..]);
+        let mut w2 = fastq::io::Writer::new(Vec::new());
 
         let mut rng = SmallRng::seed_from_u64(0);
 
@@ -462,8 +464,8 @@ mod tests {
 @r4\nACGT\n+\nFQLB
 ";
 
-        let mut reader = fastq::Reader::new(&data[..]);
-        let mut writer = fastq::Writer::new(Vec::new());
+        let mut reader = fastq::io::Reader::new(&data[..]);
+        let mut writer = fastq::io::Writer::new(Vec::new());
 
         let bitmap = BitVec::from_element(0b00000011);
 
@@ -489,10 +491,10 @@ mod tests {
 @r4\nTGCA\n+\nBLQF
 ";
 
-        let mut r1 = fastq::Reader::new(&r1_data[..]);
-        let mut w1 = fastq::Writer::new(Vec::new());
-        let mut r2 = fastq::Reader::new(&r2_data[..]);
-        let mut w2 = fastq::Writer::new(Vec::new());
+        let mut r1 = fastq::io::Reader::new(&r1_data[..]);
+        let mut w1 = fastq::io::Writer::new(Vec::new());
+        let mut r2 = fastq::io::Reader::new(&r2_data[..]);
+        let mut w2 = fastq::io::Writer::new(Vec::new());
 
         let bitmap = BitVec::from_element(0b00000011);
 

@@ -12,8 +12,8 @@ use tracing::info;
 use crate::{cli::FilterArgs, fastq};
 
 fn _filter<R, W, F>(
-    readers: &mut [fastq::Reader<R>],
-    writers: &mut [fastq::Writer<W>],
+    readers: &mut [fastq::io::Reader<R>],
+    writers: &mut [fastq::io::Writer<W>],
     filter: F,
 ) -> io::Result<()>
 where
@@ -48,9 +48,9 @@ where
 }
 
 fn copy_filtered<R, W>(
-    readers: &mut [fastq::Reader<R>],
+    readers: &mut [fastq::io::Reader<R>],
     names: &HashSet<Vec<u8>>,
-    writers: &mut [fastq::Writer<W>],
+    writers: &mut [fastq::io::Writer<W>],
 ) -> io::Result<()>
 where
     R: BufRead,
@@ -147,9 +147,9 @@ where
 }
 
 fn copy_filtered_by_sequence_pattern<R, W>(
-    readers: &mut [fastq::Reader<R>],
+    readers: &mut [fastq::io::Reader<R>],
     sequence_pattern: &Regex,
-    writers: &mut [fastq::Writer<W>],
+    writers: &mut [fastq::io::Writer<W>],
 ) -> io::Result<()>
 where
     R: BufRead,
@@ -179,26 +179,26 @@ where
     Ok(())
 }
 
-fn build_readers<P>(srcs: &[P]) -> Result<Vec<fastq::Reader<Box<dyn BufRead>>>, FilterError>
+fn build_readers<P>(srcs: &[P]) -> Result<Vec<fastq::io::Reader<Box<dyn BufRead>>>, FilterError>
 where
     P: AsRef<Path>,
 {
     srcs.iter()
         .map(|src| {
             let src = src.as_ref();
-            fastq::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
+            fastq::fs::open(src).map_err(|e| FilterError::OpenFile(e, src.into()))
         })
         .collect()
 }
 
-fn build_writers<P>(dsts: &[P]) -> Result<Vec<fastq::Writer<Box<dyn Write>>>, FilterError>
+fn build_writers<P>(dsts: &[P]) -> Result<Vec<fastq::io::Writer<Box<dyn Write>>>, FilterError>
 where
     P: AsRef<Path>,
 {
     dsts.iter()
         .map(|dst| {
             let dst = dst.as_ref();
-            fastq::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
+            fastq::fs::create(dst).map_err(|e| FilterError::CreateFile(e, dst.into()))
         })
         .collect()
 }
@@ -229,11 +229,11 @@ mod tests {
     fn test_copy_filtered() {
         let names = [b"fqlib:2".to_vec()].iter().cloned().collect();
 
-        let reader = fastq::Reader::new(DATA);
+        let reader = fastq::io::Reader::new(DATA);
         let mut readers = [reader];
 
         let mut buf = Vec::new();
-        let writer = fastq::Writer::new(&mut buf);
+        let writer = fastq::io::Writer::new(&mut buf);
         let mut writers = [writer];
 
         copy_filtered(&mut readers, &names, &mut writers).unwrap();
@@ -263,12 +263,12 @@ mod tests {
 
     #[test]
     fn test_copy_filtered_by_sequence_pattern() -> io::Result<()> {
-        let reader = fastq::Reader::new(DATA);
+        let reader = fastq::io::Reader::new(DATA);
         let mut readers = [reader];
 
         let pattern = Regex::new("^TC").unwrap();
 
-        let writer = fastq::Writer::new(Vec::new());
+        let writer = fastq::io::Writer::new(Vec::new());
         let mut writers = [writer];
 
         copy_filtered_by_sequence_pattern(&mut readers, &pattern, &mut writers)?;

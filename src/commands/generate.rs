@@ -4,7 +4,7 @@ use rand::{SeedableRng, rngs::SmallRng};
 use thiserror::Error;
 use tracing::info;
 
-use crate::{Generator, PairWriter, cli::GenerateArgs, generator::Builder};
+use crate::{Generator, cli::GenerateArgs, fastq, generator::Builder};
 
 pub fn generate(args: GenerateArgs) -> Result<(), GenerateError> {
     info!(command = "generate", "fq");
@@ -21,12 +21,10 @@ pub fn generate(args: GenerateArgs) -> Result<(), GenerateError> {
 
     let generator = builder.set_read_length(args.read_length).build();
 
-    let w1 =
-        crate::fastq::create(r1_dst).map_err(|e| GenerateError::CreateFile(e, r1_dst.clone()))?;
-    let w2 =
-        crate::fastq::create(r2_dst).map_err(|e| GenerateError::CreateFile(e, r2_dst.clone()))?;
+    let w1 = fastq::fs::create(r1_dst).map_err(|e| GenerateError::CreateFile(e, r1_dst.clone()))?;
+    let w2 = fastq::fs::create(r2_dst).map_err(|e| GenerateError::CreateFile(e, r2_dst.clone()))?;
 
-    let mut writer = PairWriter::new(w1, w2);
+    let mut writer = fastq::io::PairedWriter::new(w1, w2);
 
     let record_count = args.record_count;
 

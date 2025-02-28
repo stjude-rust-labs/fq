@@ -56,7 +56,7 @@ fn handle_validation_error<P>(
 }
 
 fn validate_single(
-    mut reader: fastq::Reader<impl BufRead>,
+    mut reader: fastq::io::Reader<impl BufRead>,
     record_definition_separator: Option<u8>,
     single_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -95,8 +95,8 @@ fn validate_single(
 
 #[allow(clippy::too_many_arguments)]
 fn validate_pair(
-    mut reader_1: fastq::Reader<impl BufRead>,
-    mut reader_2: fastq::Reader<impl BufRead>,
+    mut reader_1: fastq::io::Reader<impl BufRead>,
+    mut reader_2: fastq::io::Reader<impl BufRead>,
     record_definition_separator: Option<u8>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
@@ -187,8 +187,7 @@ fn validate_pair(
         return Ok(failure_count);
     }
 
-    let mut reader =
-        crate::fastq::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
+    let mut reader = fastq::fs::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
 
     let mut record = Record::default();
     let mut record_counter = 0;
@@ -226,10 +225,10 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
     info!(command = "lint", "fq");
 
-    let r1 = crate::fastq::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
+    let r1 = fastq::fs::open(r1_src).map_err(|e| LintError::OpenFile(e, r1_src.into()))?;
 
     let failure_count = if let Some(r2_src) = r2_src {
-        let r2 = crate::fastq::open(r2_src).map_err(|e| LintError::OpenFile(e, r2_src.into()))?;
+        let r2 = fastq::fs::open(r2_src).map_err(|e| LintError::OpenFile(e, r2_src.into()))?;
 
         validate_pair(
             r1,

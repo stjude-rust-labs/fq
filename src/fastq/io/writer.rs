@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use super::Record;
+use crate::fastq::Record;
 
 pub struct Writer<W> {
     inner: W,
