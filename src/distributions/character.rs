@@ -22,19 +22,19 @@ impl Distribution<u8> for Character {
 
 #[cfg(test)]
 mod tests {
-    use rand::rngs::mock::StepRng;
+    use rand::{SeedableRng, rngs::SmallRng};
 
     use super::*;
 
     #[test]
     fn test_sample() {
-        let mut rng = StepRng::new(0, 1);
+        let mut rng = SmallRng::seed_from_u64(0);
         let distribution = Character::new(b"ACGT");
 
         let c = rng.sample(&distribution);
-        assert_eq!(c, b'A');
+        assert_eq!(c, b'C');
 
         let buf: Vec<u8> = rng.sample_iter(&distribution).take(3).collect();
-        assert_eq!(buf, b"AAA");
+        assert_eq!(buf, b"CCA");
     }
 }
