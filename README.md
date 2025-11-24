@@ -270,7 +270,7 @@ $ fq subsample --probability 0.25 --r1-dst r1.25pct.fastq --r2-dst r2.25pct.fast
 $ fq subsample --probability 0.1 --r1-dst r1.10pct.fastq.gz r1.fastq.gz
 
 # Sample exactly 10000 records from a single FASTQ file
-$ fq subsample --record-count 10000 -r1-dst r1.10k.fastq r1.fastq
+$ fq subsample --record-count 10000 --r1-dst r1.10k.fastq r1.fastq
 ```
 
 ## Legal
