@@ -16,9 +16,11 @@ anyhow = "1.0.31"
 bbloom = { git = "https://github.com/zaeleus/bbloom.git", tag = "v0.1.0" }
 bitvec = "1.0.0"
 bytecount = { version = "0.6.2", features = ["runtime-dispatch-simd"] }
+bytes = "1.11.0"
 clap = { version = "4.5.8", features = ["derive", "string"] }
 flate2 = { version = "1.0.35", default-features = false, features = ["zlib-rs"] }
 git-testament = "0.2.0"
+memchr = "2.7.6"
 rand = "0.9.0"
 regex = "1.7.1"
 thiserror = "2.0.0"

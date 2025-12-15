@@ -1,79 +1,114 @@
+use bytes::Bytes;
+
 #[derive(Clone, Default, Debug, Eq, PartialEq)]
 pub struct Record {
-    name: Vec<u8>,
-    sequence: Vec<u8>,
-    plus_line: Vec<u8>,
-    quality_scores: Vec<u8>,
+    pub buf: Bytes,
+    pub definition_end: usize,
+    pub name_end: usize,
+    pub sequence_end: usize,
+    pub plus_line_end: usize,
 }
+
+const LINE_FEED: u8 = b'\n';
+const CARRIAGE_RETURN: u8 = b'\r';
 
 impl Record {
     pub fn new<S, T, U, V>(name: S, sequence: T, plus_line: U, quality_scores: V) -> Self
     where
-        S: Into<Vec<u8>>,
-        T: Into<Vec<u8>>,
-        U: Into<Vec<u8>>,
-        V: Into<Vec<u8>>,
+        S: AsRef<[u8]>,
+        T: AsRef<[u8]>,
+        U: AsRef<[u8]>,
+        V: AsRef<[u8]>,
     {
+        let mut buf = Vec::new();
+
+        buf.extend(name.as_ref());
+        buf.push(LINE_FEED);
+        let definition_end = buf.len();
+
+        buf.extend(sequence.as_ref());
+        buf.push(LINE_FEED);
+        let sequence_end = buf.len();
+
+        buf.extend(plus_line.as_ref());
+        buf.push(LINE_FEED);
+        let plus_line_end = buf.len();
+
+        buf.extend(quality_scores.as_ref());
+        buf.push(LINE_FEED);
+
         Self {
-            name: name.into(),
-            sequence: sequence.into(),
-            plus_line: plus_line.into(),
-            quality_scores: quality_scores.into(),
+            buf: Bytes::from(buf),
+            definition_end,
+            name_end: definition_end,
+            sequence_end,
+            plus_line_end,
         }
     }
 
-    pub fn name(&self) -> &[u8] {
-        &self.name
+    fn definition(&self) -> &[u8] {
+        trim_newline_end(&self.buf[0..self.definition_end])
     }
 
-    pub fn name_mut(&mut self) -> &mut Vec<u8> {
-        &mut self.name
+    pub fn name(&self) -> &[u8] {
+        trim_newline_end(&self.buf[0..self.name_end])
     }
 
     pub fn sequence(&self) -> &[u8] {
-        &self.sequence
-    }
-
-    pub fn sequence_mut(&mut self) -> &mut Vec<u8> {
-        &mut self.sequence
+        trim_newline_end(&self.buf[self.definition_end..self.sequence_end])
     }
 
     pub fn plus_line(&self) -> &[u8] {
-        &self.plus_line
-    }
-
-    pub fn plus_line_mut(&mut self) -> &mut Vec<u8> {
-        &mut self.plus_line
+        trim_newline_end(&self.buf[self.sequence_end..self.plus_line_end])
     }
 
     pub fn quality_scores(&self) -> &[u8] {
-        &self.quality_scores
-    }
-
-    pub fn quality_scores_mut(&mut self) -> &mut Vec<u8> {
-        &mut self.quality_scores
+        trim_newline_end(&self.buf[self.plus_line_end..])
     }
 
     pub fn clear(&mut self) {
-        self.name.clear();
-        self.sequence.clear();
-        self.plus_line.clear();
-        self.quality_scores.clear();
+        self.buf.clear();
+        self.definition_end = 0;
+        self.name_end = 0;
+        self.sequence_end = 0;
+        self.plus_line_end = 0;
     }
 
     /// Removes the description from the name.
     pub fn reset(&mut self, separator: Option<u8>) {
+        let definition = self.definition();
+
         let pos = if let Some(c) = separator {
-            self.name.iter().rev().position(|&b| b == c)
+            definition.iter().rev().position(|&b| b == c)
         } else {
-            self.name.iter().rev().position(|&b| b == b'/' || b == b' ')
+            definition
+                .iter()
+                .rev()
+                .position(|&b| b == b'/' || b == b' ')
         };
 
         if let Some(i) = pos {
-            let len = self.name.len();
-            self.name.truncate(len - i - 1);
+            self.name_end = definition.len() - i - 1;
         }
     }
+}
+
+impl AsRef<[u8]> for Record {
+    fn as_ref(&self) -> &[u8] {
+        &self.buf
+    }
+}
+
+fn trim_newline_end(mut buf: &[u8]) -> &[u8] {
+    if buf.ends_with(&[LINE_FEED]) {
+        buf = &buf[..buf.len() - 1];
+
+        if buf.ends_with(&[CARRIAGE_RETURN]) {
+            buf = &buf[..buf.len() - 1];
+        }
+    }
+
+    buf
 }
 
 #[cfg(test)]
@@ -94,18 +129,15 @@ mod tests {
 
     #[test]
     fn test_reset() {
-        let mut record = Record::default();
-        record.name_mut().extend_from_slice(b"@fqlib/1");
+        let mut record = Record::new("@fqlib/1", "", "", "");
         record.reset(None);
         assert_eq!(record.name(), b"@fqlib");
 
-        let mut record = Record::default();
-        record.name_mut().extend_from_slice(b"@fqlib 1");
+        let mut record = Record::new("@fqlib 1", "", "", "");
         record.reset(None);
         assert_eq!(record.name(), b"@fqlib");
 
-        let mut record = Record::default();
-        record.name_mut().extend_from_slice(b"@fqlib_1");
+        let mut record = Record::new("@fqlib_1", "", "", "");
         record.reset(Some(b'_'));
         assert_eq!(record.name(), b"@fqlib");
     }
