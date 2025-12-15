@@ -1,4 +1,5 @@
 mod reader;
+mod split_reader;
 mod writer;
 
-pub use self::{reader::Reader, writer::Writer};
+pub use self::{reader::Reader, split_reader::SplitReader, writer::Writer};

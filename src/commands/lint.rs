@@ -9,7 +9,7 @@ use tracing::{error, info, info_span};
 
 use crate::{
     cli::LintArgs,
-    fastq::{self, Record},
+    fastq::{self, Record, io::SplitReader},
     validators::{
         self, LintMode, SingleReadValidatorMut, ValidationLevel, single::DuplicateNameValidator,
     },
@@ -94,9 +94,8 @@ fn validate_single(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn validate_pair(
-    mut reader_1: fastq::io::Reader<impl BufRead>,
-    mut reader_2: fastq::io::Reader<impl BufRead>,
+fn validate_pair<R>(
+    mut reader: SplitReader<R>,
     record_definition_separator: Option<u8>,
     single_read_validation_level: ValidationLevel,
     paired_read_validation_level: ValidationLevel,
@@ -104,7 +103,10 @@ fn validate_pair(
     lint_mode: LintMode,
     r1_src: &Path,
     r2_src: &Path,
-) -> Result<usize, LintError> {
+) -> Result<usize, LintError>
+where
+    R: BufRead,
+{
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,
         Some(paired_read_validation_level),
@@ -130,46 +132,45 @@ fn validate_pair(
 
     info!("start");
 
-    let mut b = Record::default();
-    let mut d = Record::default();
+    let mut records = [Record::default(), Record::default()];
+
     let mut record_counter = 0;
     let mut failure_count = 0;
 
     loop {
-        let r1_len = reader_1.read_record(&mut b)?;
-        let r2_len = reader_2.read_record(&mut d)?;
-
-        match (r1_len, r2_len) {
-            (0, 0) => break,
-            (0, len) if len > 0 => return Err(LintError::UnexpectedEof("r1-src")),
-            (len, 0) if len > 0 => return Err(LintError::UnexpectedEof("r2-src")),
-            (_, _) => {}
+        match reader.read_records(&mut records)? {
+            [0, 0] => break,
+            [0, len] if len > 0 => return Err(LintError::UnexpectedEof("r1-src")),
+            [len, 0] if len > 0 => return Err(LintError::UnexpectedEof("r2-src")),
+            [_, _] => {}
         }
 
-        b.reset(record_definition_separator);
-        d.reset(record_definition_separator);
+        records[0].reset(record_definition_separator);
+        records[1].reset(record_definition_separator);
 
         if use_special_validator {
-            duplicate_name_validator.insert(&b);
+            duplicate_name_validator.insert(&records[0]);
         }
 
         for validator in &single_read_validators {
-            validator.validate(&b).unwrap_or_else(|e| {
+            validator.validate(&records[0]).unwrap_or_else(|e| {
                 failure_count += 1;
                 handle_validation_error(lint_mode, e, r1_src, record_counter);
             });
 
-            validator.validate(&d).unwrap_or_else(|e| {
+            validator.validate(&records[1]).unwrap_or_else(|e| {
                 failure_count += 1;
                 handle_validation_error(lint_mode, e, r2_src, record_counter);
             });
         }
 
         for validator in &paired_read_validators {
-            validator.validate(&b, &d).unwrap_or_else(|e| {
-                failure_count += 1;
-                handle_validation_error(lint_mode, e, r1_src, record_counter);
-            });
+            validator
+                .validate(&records[0], &records[1])
+                .unwrap_or_else(|e| {
+                    failure_count += 1;
+                    handle_validation_error(lint_mode, e, r1_src, record_counter);
+                });
         }
 
         record_counter += 1;
@@ -229,10 +230,10 @@ pub fn lint(args: LintArgs) -> Result<(), LintError> {
 
     let failure_count = if let Some(r2_src) = r2_src {
         let r2 = fastq::fs::open(r2_src).map_err(|e| LintError::OpenFile(e, r2_src.into()))?;
+        let reader = SplitReader::new([r1, r2]);
 
         validate_pair(
-            r1,
-            r2,
+            reader,
             record_definition_separator,
             single_read_validation_level,
             paired_read_validation_level,

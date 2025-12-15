@@ -7,10 +7,7 @@ use crate::fastq::Record;
 
 const DEFAULT_BUF_SIZE: usize = 1024 * 128;
 
-pub struct Reader<R>
-where
-    R: Read,
-{
+pub struct Reader<R> {
     inner: R,
     buf: BytesMut,
 }
