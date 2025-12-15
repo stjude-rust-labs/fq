@@ -108,45 +108,6 @@ $ fq filter --names allowlist.txt --dsts /dev/stdout in.fastq
 $ fq filter --sequence-pattern ^TC --dsts out.1.fq --dsts out.2.fq in.1.fq in.2.fq
 ```
 
-### generate
-
-**fq generate** is a FASTQ file pair generator. It creates two reads, formatting
-names as [described by Illumina][1].
-
-While _generate_ creates "valid" FASTQ reads, the content of the files are
-completely random. The sequences do not align to any genome.
-
-[1]: https://help.basespace.illumina.com/articles/descriptive/fastq-files/
-
-#### Usage
-
-```
-Generates a random FASTQ file pair
-
-Usage: fq generate [OPTIONS] <R1_DST> <R2_DST>
-
-Arguments:
-  <R1_DST>  Read 1 destination. Output will be gzipped if ends in `.gz`
-  <R2_DST>  Read 2 destination. Output will be gzipped if ends in `.gz`
-
-Options:
-  -s, --seed <SEED>                  Seed to use for the random number generator
-  -n, --record-count <RECORD_COUNT>  Number of records to generate [default: 10000]
-      --read-length <READ_LENGTH>    Number of bases in the sequence [default: 101]
-  -h, --help                         Print help
-  -V, --version                      Print version
-```
-
-#### Examples
-
-```sh
-# Generates the default number of records, written to uncompressed files.
-$ fq generate /tmp/r1.fastq /tmp/r2.fastq
-
-# Generates FASTQ paired reads with 32 records, written to gzipped outputs.
-$ fq generate --record-count 32 /tmp/r1.fastq.gz /tmp/r2.fastq.gz
-```
-
 ### lint
 
 **fq lint** is a FASTQ file pair validator.

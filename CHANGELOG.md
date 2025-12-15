@@ -12,6 +12,12 @@
 
     Logging is always enabled. This flag was previously deprecated in 0.8.0.
 
+  * commands: Remove `generate` command.
+
+    The `generate` command created completely random paired reads. The
+    descriptors tended to overlap when N was large, so while the outputs were
+    parsable, they weren't practically useful for anything.
+
 ## 0.12.0 - 2024-07-08
 
 ### Added

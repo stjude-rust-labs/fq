@@ -4,7 +4,7 @@ use clap::Parser;
 use fq::{
     Cli,
     cli::Command,
-    commands::{describe, filter, generate, lint, subsample},
+    commands::{describe, filter, lint, subsample},
 };
 
 fn main() -> anyhow::Result<()> {
@@ -15,7 +15,6 @@ fn main() -> anyhow::Result<()> {
     match cli.command {
         Command::Describe(args) => describe(args)?,
         Command::Filter(args) => filter(args)?,
-        Command::Generate(args) => generate(args)?,
         Command::Lint(args) => lint(args)?,
         Command::Subsample(args) => subsample(args)?,
     }

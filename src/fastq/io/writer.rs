@@ -18,10 +18,6 @@ where
         &self.inner
     }
 
-    pub fn get_mut(&mut self) -> &mut W {
-        &mut self.inner
-    }
-
     pub fn write_record(&mut self, record: &Record) -> io::Result<()> {
         self.inner.write_all(record.name())?;
         self.inner.write_all(b"\n")?;

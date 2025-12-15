@@ -46,8 +46,6 @@ pub enum Command {
     Describe(DescribeArgs),
     /// Filters a FASTQ file.
     Filter(FilterArgs),
-    /// Generates a random FASTQ file pair.
-    Generate(GenerateArgs),
     /// Validates a FASTQ file pair.
     Lint(LintArgs),
     /// Outputs a subset of records.
@@ -77,27 +75,6 @@ pub struct FilterArgs {
 
     /// FASTQ sources.
     pub srcs: Vec<PathBuf>,
-}
-
-#[derive(Parser)]
-pub struct GenerateArgs {
-    /// Seed to use for the random number generator.
-    #[arg(short, long)]
-    pub seed: Option<u64>,
-
-    /// Number of records to generate.
-    #[arg(short = 'n', long, default_value_t = 10000)]
-    pub record_count: u64,
-
-    /// Number of bases in the sequence.
-    #[arg(long, default_value_t = 101)]
-    pub read_length: usize,
-
-    /// Read 1 destination. Output will be gzipped if ends in `.gz`.
-    pub r1_dst: PathBuf,
-
-    /// Read 2 destination. Output will be gzipped if ends in `.gz`.
-    pub r2_dst: PathBuf,
 }
 
 #[derive(Parser)]
