@@ -8,4 +8,4 @@ mod scalable_bloom_filter;
 pub use self::scalable_bloom_filter::ScalableBloomFilter;
 use self::{bloom_filter::BloomFilter, double_hasher::DoubleHasher};
 
-type DefaultHashBuilder = std::collections::hash_map::RandomState;
+type DefaultHashBuilder = rapidhash::fast::RandomState;
