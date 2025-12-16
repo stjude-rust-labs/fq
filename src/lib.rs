@@ -1,4 +1,5 @@
 pub mod cli;
+pub mod collections;
 pub mod commands;
 pub mod fastq;
 mod metrics;

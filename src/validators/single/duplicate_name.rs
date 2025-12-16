@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use bbloom::ScalableBloomFilter;
 use thiserror::Error;
 
 use crate::{
+    collections::ScalableBloomFilter,
     fastq::Record,
     validators::{self, LineType, SingleReadValidatorMut, ValidationLevel},
 };

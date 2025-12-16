@@ -74,19 +74,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
-name = "bbloom"
-version = "0.1.0"
-source = "git+https://github.com/zaeleus/bbloom.git?tag=v0.1.0#2c9f61637cfa1a5ea456045a5811f1d5ec601ba1"
-dependencies = [
- "bit-vec",
- "libc",
-]
-
-[[package]]
 name = "bit-vec"
-version = "0.5.1"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f59bbe95d4e52a6398ec21238d31577f2b28a9d86807f06ca59d191d8440d0bb"
+checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
 name = "bitvec"
@@ -198,7 +189,7 @@ name = "fq"
 version = "0.12.0"
 dependencies = [
  "anyhow",
- "bbloom",
+ "bit-vec",
  "bitvec",
  "bytecount",
  "bytes",
