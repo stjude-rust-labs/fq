@@ -79,16 +79,13 @@ impl Record {
         let definition = self.definition();
 
         let pos = if let Some(c) = separator {
-            definition.iter().rev().position(|&b| b == c)
+            definition.iter().position(|&b| b == c)
         } else {
-            definition
-                .iter()
-                .rev()
-                .position(|&b| b == b'/' || b == b' ')
+            definition.iter().position(|&b| b == b'/' || b == b' ')
         };
 
         if let Some(i) = pos {
-            self.name_end = definition.len() - i - 1;
+            self.name_end = i;
         }
     }
 }
@@ -129,16 +126,15 @@ mod tests {
 
     #[test]
     fn test_reset() {
-        let mut record = Record::new("@fqlib/1", "", "", "");
-        record.reset(None);
-        assert_eq!(record.name(), b"@fqlib");
+        fn t(definition: &str, separator: Option<u8>, expected: &[u8]) {
+            let mut record = Record::new(definition, "", "", "");
+            record.reset(separator);
+            assert_eq!(record.name(), expected);
+        }
 
-        let mut record = Record::new("@fqlib 1", "", "", "");
-        record.reset(None);
-        assert_eq!(record.name(), b"@fqlib");
-
-        let mut record = Record::new("@fqlib_1", "", "", "");
-        record.reset(Some(b'_'));
-        assert_eq!(record.name(), b"@fqlib");
+        t("@fqlib/1", None, b"@fqlib");
+        t("@fqlib 1", None, b"@fqlib");
+        t("@fqlib/1 RG:rg0", None, b"@fqlib");
+        t("@fqlib_1", Some(b'_'), b"@fqlib");
     }
 }

@@ -6,6 +6,12 @@
 
   * Log messages are written to `stderr` rather than `stdout`.
 
+  * fastq/record: Split name from definition on first separator.
+
+    This previously searched for the separator from the end of the definition,
+    which may contain part of the description if the separator appears multiple
+    times. It now searches from the beginning of the definition.
+
 ### Removed
 
   * Remove `--verbose` flag.
