@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG RUST_VERSION=1.91.1
+ARG RUST_VERSION=1.92.0
 ARG DEBIAN_CODENAME=bookworm
 
 FROM rust:${RUST_VERSION}-${DEBIAN_CODENAME} AS builder
