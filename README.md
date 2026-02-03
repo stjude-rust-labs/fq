@@ -132,8 +132,10 @@ Options:
           Only use paired read validators up to a given level [default: high] [possible values: low, medium, high]
       --disable-validator <DISABLE_VALIDATOR>
           Disable validators by code. Use multiple times to disable more than one
+      --record-definition-separator <RECORD_DEFINITION_SEPARATOR>
+          Define a record definition separator
   -h, --help
-          Print help
+          Print help (see more with '--help')
   -V, --version
           Print version
 ```
