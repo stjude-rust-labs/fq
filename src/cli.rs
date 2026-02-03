@@ -97,7 +97,7 @@ pub struct LintArgs {
 
     /// Define a record definition separator.
     ///
-    /// This is used to strip the definition from a record name.
+    /// This is used to strip the description from a record name.
     ///
     /// [default: '/' and ' ']
     #[arg(long)]
