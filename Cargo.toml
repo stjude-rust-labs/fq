@@ -16,7 +16,7 @@ anyhow = "1.0.31"
 bit-vec = "0.8.0"
 bitvec = "1.0.0"
 bytecount = { version = "0.6.2", features = ["runtime-dispatch-simd"] }
-bytes = "1.11.0"
+bytes = "1.11.1"
 clap = { version = "4.5.8", features = ["derive", "string"] }
 flate2 = { version = "1.0.35", default-features = false, features = ["zlib-rs"] }
 git-testament = "0.2.0"
