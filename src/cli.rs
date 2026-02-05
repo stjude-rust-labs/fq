@@ -73,7 +73,7 @@ pub struct FilterArgs {
     #[arg(long, required = true)]
     pub dsts: Vec<PathBuf>,
 
-    /// FASTQ sources.
+    /// FASTQ sources. Accepts both raw and gzipped FASTQ inputs.
     pub srcs: Vec<PathBuf>,
 }
 

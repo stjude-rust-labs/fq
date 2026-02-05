@@ -82,7 +82,7 @@ Filters a FASTQ file
 Usage: fq filter [OPTIONS] --dsts <DSTS> [SRCS]...
 
 Arguments:
-  [SRCS]...  FASTQ sources
+  [SRCS]...  FASTQ sources. Accepts both raw and gzipped FASTQ inputs
 
 Options:
       --names <NAMES>
