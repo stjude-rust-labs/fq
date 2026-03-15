@@ -114,17 +114,57 @@ pub struct LintArgs {
 #[command(group(
     ArgGroup::new("quantity")
         .required(true)
-        .args(["probability", "record_count"])
+        .args(["probability", "record_count", "record_count_per_tile"])
 ))]
 pub struct SubsampleArgs {
     /// The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with
-    /// `record-count`.
+    /// `record-count` or `record-count-per-tile`. When combined with `--bin-by-tile`, the
+    /// per-tile count is computed as floor(probability * total_records / num_bins).
     #[arg(short, long)]
     pub probability: Option<f64>,
 
-    /// The exact number of records to keep. Cannot be used with `probability`.
+    /// The exact number of records to keep. Cannot be used with `probability` or
+    /// `record-count-per-tile`. When combined with `--bin-by-tile`, the per-tile count is
+    /// computed as record_count / num_bins.
     #[arg(short = 'n', long)]
     pub record_count: Option<u64>,
+
+    /// The exact number of records to keep per tile. Reads are binned by their lane and tile
+    /// extracted from the Illumina read header. Bins with fewer than this many records are
+    /// discarded, and exactly this many records are randomly sampled from each retained bin.
+    /// Cannot be used with `probability` or `record-count`.
+    #[arg(long)]
+    pub record_count_per_tile: Option<u64>,
+
+    /// Enable per-tile binning. Reads are binned by lane and tile from the Illumina read
+    /// header. Can be combined with `--record-count` or `--probability` to automatically
+    /// compute the per-tile count, or use `--record-count-per-tile` to set it explicitly.
+    #[arg(long)]
+    pub bin_by_tile: bool,
+
+    /// Use faster skip-ahead sampling instead of the default exact method. Skip-ahead uses
+    /// exponential byte jumps and produces approximately (not exactly) the requested number
+    /// of records, but avoids reading the entire file.
+    #[arg(long)]
+    pub fast: bool,
+
+    /// Keep tile bins in memory instead of writing to temporary files. Uses more memory but
+    /// avoids temporary disk I/O. Only used with tile binning.
+    #[arg(long)]
+    pub in_memory: bool,
+
+    /// Directory for temporary tile files. Defaults to the system temp directory. Only used
+    /// with tile binning when --in-memory is not set.
+    #[arg(long)]
+    pub temp_dir: Option<PathBuf>,
+
+    /// Number of threads for parallel tile sampling. Only used with tile binning.
+    #[arg(long, default_value_t = 1)]
+    pub sampling_threads: usize,
+
+    /// Number of threads for output compression. Only used when output is gzipped.
+    #[arg(long, default_value_t = 1)]
+    pub compression_threads: usize,
 
     /// Seed to use for the random number generator.
     #[arg(short, long)]
