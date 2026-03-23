@@ -21,14 +21,19 @@ impl FromStr for AsciiChar {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some(c) = s.chars().next() {
-            if let Ok(b) = u8::try_from(c) {
-                Ok(Self(b))
-            } else {
-                Err("invalid character found in string")
-            }
-        } else {
+        let bytes = s.as_bytes();
+        if bytes.is_empty() {
             Err("cannot parse character from empty string")
+        } else {
+            if bytes.len() == 1 {
+                if bytes[0].is_ascii() {
+                    Ok(Self(bytes[0]))
+                } else {
+                    Err("invalid character found in string")
+                }
+            } else {
+                Err("string must be exactly one ASCII character")
+            }
         }
     }
 }
