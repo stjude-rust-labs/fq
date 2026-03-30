@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use bitvec::vec::BitVec;
+use bit_vec::BitVec;
 use flate2::bufread::MultiGzDecoder;
 use rand::{
     RngExt, SeedableRng,
@@ -301,8 +301,7 @@ fn build_filter<Rng>(
 where
     Rng: rand::Rng,
 {
-    let mut bitmap = BitVec::new();
-    bitmap.resize(src_record_count, false);
+    let mut bitmap = BitVec::from_elem(src_record_count, false);
 
     let distribution =
         Uniform::new(0, src_record_count).map_err(SubsampleError::InvalidUniformRange)?;
@@ -467,7 +466,7 @@ mod tests {
         let mut reader = fastq::io::Reader::new(&data[..]);
         let mut writer = fastq::io::Writer::new(Vec::new());
 
-        let bitmap = BitVec::from_element(0b00000011);
+        let bitmap = BitVec::from_bytes(&[0b11000000]);
 
         subsample_exact_single(&mut reader, &mut writer, &bitmap)?;
 
@@ -496,7 +495,7 @@ mod tests {
         let mut r2 = fastq::io::Reader::new(&r2_data[..]);
         let mut w2 = fastq::io::Writer::new(Vec::new());
 
-        let bitmap = BitVec::from_element(0b00000011);
+        let bitmap = BitVec::from_bytes(&[0b11000000]);
 
         subsample_exact_paired((&mut r1, &mut w1), (&mut r2, &mut w2), &bitmap)?;
 
