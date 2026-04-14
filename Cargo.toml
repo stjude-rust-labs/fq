@@ -21,7 +21,7 @@ clap = { version = "4.5.8", features = ["derive", "string"] }
 flate2 = { version = "1.0.35", default-features = false, features = ["zlib-rs"] }
 git-testament = "0.2.0"
 memchr = "2.7.6"
-rand = "0.10.0"
+rand = "0.10.1"
 rapidhash = "4.1.1"
 regex = "1.7.1"
 thiserror = "2.0.0"
