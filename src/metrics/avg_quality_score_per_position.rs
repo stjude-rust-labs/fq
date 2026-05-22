@@ -1,4 +1,4 @@
-use std::io;
+use std::{array, io, sync::LazyLock};
 
 use super::Metric;
 use crate::fastq::Record;
@@ -66,7 +66,10 @@ const BASE: f64 = 10.0;
 const FACTOR: f64 = 10.0;
 
 fn phred_score_to_error_probability(n: u8) -> f64 {
-    BASE.powf(-f64::from(n) / FACTOR)
+    static LUT: LazyLock<[f64; 256]> =
+        LazyLock::new(|| array::from_fn(|i| BASE.powf(-(i as f64) / FACTOR)));
+
+    LUT[usize::from(n)]
 }
 
 fn error_probability_to_phred_score(p: f64) -> f64 {
