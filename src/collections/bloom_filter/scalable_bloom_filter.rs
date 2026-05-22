@@ -88,13 +88,9 @@ where
     ///
     /// Returns whether the value is (maybe) in the filter or not.
     pub fn contains_or_insert<H: Hash + ?Sized>(&mut self, key: &H) -> bool {
-        let n = if self.filters.len() == 1 {
-            1
-        } else {
-            self.filters.len() - 1
-        };
+        let len = self.filters.len();
 
-        if self.filters.iter().take(n).any(|f| f.contains(key)) {
+        if len > 1 && self.filters.iter().take(len - 1).any(|f| f.contains(key)) {
             true
         } else {
             !self.insert(key)
