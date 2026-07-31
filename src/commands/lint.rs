@@ -223,6 +223,11 @@ where
         return Ok(failure_count);
     }
 
+    if duplicate_name_validator.is_empty() {
+        info!("no possible duplicate names; skipping pass 2");
+        return Ok(failure_count);
+    }
+
     let span = info_span!("validate_pair", pass = 2);
     let _span_ctx = span.enter();
 
