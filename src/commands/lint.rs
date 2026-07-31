@@ -338,8 +338,6 @@ pub enum LintError {
     Io(#[from] io::Error),
     #[error("could not open file: {1}")]
     OpenFile(#[source] io::Error, PathBuf),
-    #[error("could not create file: {1}")]
-    CreateFile(#[source] io::Error, PathBuf),
     #[error("{0} unexpectedly ended")]
     UnexpectedEof(&'static str),
 }
