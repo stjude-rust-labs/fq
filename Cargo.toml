@@ -13,7 +13,7 @@ codegen-units = 1
 
 [dependencies]
 anyhow = "1.0.31"
-bit-vec = "0.9.1"
+bit-vec = "0.10.1"
 bytecount = { version = "0.6.2", features = ["runtime-dispatch-simd"] }
 bytes = "1.11.0"
 clap = { version = "4.5.8", features = ["derive", "string"] }
