@@ -521,4 +521,12 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_count_lines_inner() -> io::Result<()> {
+        assert_eq!(count_lines_inner(&mut &b""[..])?, 0);
+        assert_eq!(count_lines_inner(&mut &b"0\n"[..])?, 1);
+        assert_eq!(count_lines_inner(&mut &b"0\n1\n"[..])?, 2);
+        Ok(())
+    }
 }
