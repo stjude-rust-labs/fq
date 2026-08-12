@@ -199,6 +199,11 @@ where
     info!("counting records");
 
     let line_count = count_lines(r1_src)?;
+
+    if !line_count.is_multiple_of(4) {
+        return Err(SubsampleError::InvalidLineCount(line_count));
+    }
+
     let actual_record_count = line_count / 4;
 
     info!(actual_record_count = actual_record_count, "counted records");
@@ -394,6 +399,8 @@ pub enum SubsampleError {
     InvalidProbability(f64),
     #[error("{0} unexpectedly ended")]
     UnexpectedEof(&'static str),
+    #[error("invalid line count: {0}")]
+    InvalidLineCount(usize),
     #[error("invalid uniform range")]
     InvalidUniformRange(rand::distr::uniform::Error),
 }

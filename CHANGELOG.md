@@ -35,6 +35,11 @@
   * commands/lint: Support the duplicate name validator for single inputs
     ([#47]).
 
+  * commands/subsample: Validate line count.
+
+    The number of lines in the input must be a multiple of 4; otherwise, it
+    cannot be valid FASTQ.
+
   * fastq/record: Split name from definition on first separator.
 
     This previously searched for the separator from the end of the definition,
