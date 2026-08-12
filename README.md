@@ -223,7 +223,7 @@ Options:
 $ fq subsample --probability 0.5 --r1-dst r1.50pct.fastq r1.fastq
 
 # Sample ~50% of records from a single FASTQ file and seed the RNG
-$ fq subsample --probability --seed 13 --r1-dst r1.50pct.fastq r1.fastq
+$ fq subsample --probability 0.5 --seed 13 --r1-dst r1.50pct.fastq r1.fastq
 
 # Sample ~25% of records from paired FASTQ files
 $ fq subsample --probability 0.25 --r1-dst r1.25pct.fastq --r2-dst r2.25pct.fastq r1.fastq r2.fastq
