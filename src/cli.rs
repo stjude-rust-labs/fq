@@ -41,6 +41,7 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Command {
     /// Collect FASTQ metrics.
+    #[command(hide = true)]
     Describe(DescribeArgs),
     /// Filters a FASTQ file.
     Filter(FilterArgs),
