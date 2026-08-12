@@ -260,9 +260,16 @@ fn count_lines<P>(src: P) -> io::Result<usize>
 where
     P: AsRef<Path>,
 {
+    let mut reader = open(src)?;
+    count_lines_inner(&mut reader)
+}
+
+fn count_lines_inner<R>(reader: &mut R) -> io::Result<usize>
+where
+    R: BufRead,
+{
     const LINE_FEED: u8 = b'\n';
 
-    let mut reader = open(src)?;
     let mut n = 0;
 
     loop {
