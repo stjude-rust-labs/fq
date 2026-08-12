@@ -271,6 +271,7 @@ where
     const LINE_FEED: u8 = b'\n';
 
     let mut n = 0;
+    let mut last_byte = None;
 
     loop {
         let buf = reader.fill_buf()?;
@@ -281,8 +282,16 @@ where
 
         n += bytecount::count(buf, LINE_FEED);
 
+        last_byte = buf.last().copied();
+
         let len = buf.len();
         reader.consume(len);
+    }
+
+    if let Some(b) = last_byte
+        && b != LINE_FEED
+    {
+        n += 1;
     }
 
     Ok(n)
@@ -527,6 +536,7 @@ mod tests {
         assert_eq!(count_lines_inner(&mut &b""[..])?, 0);
         assert_eq!(count_lines_inner(&mut &b"0\n"[..])?, 1);
         assert_eq!(count_lines_inner(&mut &b"0\n1\n"[..])?, 2);
+        assert_eq!(count_lines_inner(&mut &b"0\n1"[..])?, 2);
         Ok(())
     }
 }
