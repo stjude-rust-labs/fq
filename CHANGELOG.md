@@ -14,7 +14,7 @@
 
   * commands/filter: Require source count to match destination count ([#52]).
 
-  * commands/filter: Normalized names input ([#49]).
+  * commands/filter: Normalize names input ([#49]).
 
     The record names to filter now follow the same normalization rules as FASTQ
     record names, i.e., removal of the `@` prefix and description.
