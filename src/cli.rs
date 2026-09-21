@@ -116,8 +116,7 @@ pub struct LintArgs {
         .args(["probability", "record_count"])
 ))]
 pub struct SubsampleArgs {
-    /// The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with
-    /// `record-count`.
+    /// The probability a record is kept, within (0.0, 1.0). Cannot be used with `record-count`.
     #[arg(short, long)]
     pub probability: Option<f64>,
 

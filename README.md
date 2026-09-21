@@ -207,7 +207,7 @@ Arguments:
   [R2_SRC]  Read 2 source. Accepts both raw and gzipped FASTQ inputs
 
 Options:
-  -p, --probability <PROBABILITY>    The probability a record is kept, as a percentage (0.0, 1.0). Cannot be used with `record-count`
+  -p, --probability <PROBABILITY>    The probability a record is kept, within (0.0, 1.0). Cannot be used with `record-count`
   -n, --record-count <RECORD_COUNT>  The exact number of records to keep. Cannot be used with `probability`
   -s, --seed <SEED>                  Seed to use for the random number generator
       --r1-dst <R1_DST>              Read 1 destination. Output will be gzipped if ends in `.gz`
