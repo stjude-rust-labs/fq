@@ -44,6 +44,8 @@
 
     This matches the behavior of the approximate subsampler rejecting 0.0.
 
+  * commands/subsample: Build empty filter when input is empty.
+
   * fastq/record: Split name from definition on first separator.
 
     This previously searched for the separator from the end of the definition,

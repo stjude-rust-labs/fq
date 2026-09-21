@@ -225,7 +225,7 @@ where
     }
 
     info!("building filter");
-    let bitmap = build_filter(rng, actual_record_count, record_count)?;
+    let bitmap = build_filter(rng, actual_record_count, record_count);
     info!("built filter");
 
     let mut r1 = fastq::fs::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
@@ -318,18 +318,18 @@ where
     }
 }
 
-fn build_filter<Rng>(
-    mut rng: Rng,
-    src_record_count: usize,
-    dst_record_count: u64,
-) -> Result<BitVec, SubsampleError>
+fn build_filter<Rng>(mut rng: Rng, src_record_count: usize, dst_record_count: u64) -> BitVec
 where
     Rng: rand::Rng,
 {
+    if src_record_count == 0 {
+        return BitVec::new();
+    }
+
     let mut bitmap = BitVec::from_elem(src_record_count, false);
 
-    let distribution =
-        Uniform::new(0, src_record_count).map_err(SubsampleError::InvalidUniformRange)?;
+    // SAFETY: `src_record_count > 0`.
+    let distribution = Uniform::new(0, src_record_count).unwrap();
 
     let mut n = 0;
 
@@ -342,7 +342,7 @@ where
         }
     }
 
-    Ok(bitmap)
+    bitmap
 }
 
 fn subsample_exact_single<R, W>(
@@ -423,8 +423,6 @@ pub enum SubsampleError {
     UnexpectedEof(&'static str),
     #[error("invalid line count: {0}")]
     InvalidLineCount(usize),
-    #[error("invalid uniform range")]
-    InvalidUniformRange(rand::distr::uniform::Error),
 }
 
 #[cfg(test)]
@@ -482,6 +480,13 @@ mod tests {
         assert_eq!(w2.get_ref(), w2_expected);
 
         Ok(())
+    }
+
+    #[test]
+    fn test_build_filter() {
+        let rng = SmallRng::seed_from_u64(0);
+        let bitmap = build_filter(rng, 0, 4);
+        assert!(bitmap.is_empty());
     }
 
     #[test]
