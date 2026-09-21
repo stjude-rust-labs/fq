@@ -83,7 +83,7 @@ where
     let span = info_span!("subsample_approximate", probability = probability);
     let _span_ctx = span.enter();
 
-    let (n, total) = match (r2_src, r2_dst) {
+    let (dst_record_count, src_record_count) = match (r2_src, r2_dst) {
         (Some(r2_src), Some(r2_dst)) => {
             info!("sampling paired end reads");
 
@@ -107,8 +107,7 @@ where
         }
     };
 
-    let percentage = (n as f64) / (total as f64) * 100.0;
-    info!("sampled {}/{} ({:.1}%) records", n, total, percentage);
+    info!(dst_record_count, src_record_count, "sampled records");
 
     Ok(())
 }
@@ -188,16 +187,16 @@ fn subsample_exact<Rng>(
     (r1_src, r1_dst): (&Path, &Path),
     (r2_src, r2_dst): (Option<&Path>, Option<&Path>),
     rng: Rng,
-    mut record_count: u64,
+    mut dst_record_count: u64,
 ) -> Result<(), SubsampleError>
 where
     Rng: rand::Rng,
 {
-    if record_count == 0 {
+    if dst_record_count == 0 {
         return Err(SubsampleError::InvalidRecordCount);
     }
 
-    let span = info_span!("subsample_exact", record_count = record_count);
+    let span = info_span!("subsample_exact", dst_record_count);
     let _span_ctx = span.enter();
 
     info!("counting records");
@@ -208,24 +207,24 @@ where
         return Err(SubsampleError::InvalidLineCount(line_count));
     }
 
-    let actual_record_count = line_count / 4;
+    let src_record_count = line_count / 4;
 
-    info!(actual_record_count = actual_record_count, "counted records");
+    info!(src_record_count, "counted records");
 
-    let n = u64::try_from(actual_record_count)
+    let n = u64::try_from(src_record_count)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
-    if record_count > n {
+    if dst_record_count > n {
         warn!(
             "record count ({}) > r1-src record count ({}). Using record-count = {} instead.",
-            record_count, n, n
+            dst_record_count, n, n
         );
 
-        record_count = n;
+        dst_record_count = n;
     }
 
     info!("building filter");
-    let bitmap = build_filter(rng, actual_record_count, record_count);
+    let bitmap = build_filter(rng, src_record_count, dst_record_count);
     info!("built filter");
 
     let mut r1 = fastq::fs::open(r1_src).map_err(|e| SubsampleError::OpenFile(e, r1_src.into()))?;
@@ -251,11 +250,7 @@ where
         }
     }
 
-    let percentage = (record_count as f64) / (actual_record_count as f64) * 100.0;
-    info!(
-        "sampled {}/{} ({:.1}%) records",
-        record_count, actual_record_count, percentage
-    );
+    info!(dst_record_count, "sampled records");
 
     Ok(())
 }
