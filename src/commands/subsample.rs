@@ -193,6 +193,10 @@ fn subsample_exact<Rng>(
 where
     Rng: rand::Rng,
 {
+    if record_count == 0 {
+        return Err(SubsampleError::InvalidRecordCount);
+    }
+
     let span = info_span!("subsample_exact", record_count = record_count);
     let _span_ctx = span.enter();
 
@@ -413,6 +417,8 @@ pub enum SubsampleError {
     MissingDestination(&'static str),
     #[error("invalid probability: expected (0.0, 1.0), got {0}")]
     InvalidProbability(f64),
+    #[error("invalid record count: expected > 0")]
+    InvalidRecordCount,
     #[error("{0} unexpectedly ended")]
     UnexpectedEof(&'static str),
     #[error("invalid line count: {0}")]

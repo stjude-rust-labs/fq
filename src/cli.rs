@@ -120,7 +120,7 @@ pub struct SubsampleArgs {
     #[arg(short, long)]
     pub probability: Option<f64>,
 
-    /// The exact number of records to keep. Cannot be used with `probability`.
+    /// The exact number of records to keep (> 0). Cannot be used with `probability`.
     #[arg(short = 'n', long)]
     pub record_count: Option<u64>,
 

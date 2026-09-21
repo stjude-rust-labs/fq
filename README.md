@@ -208,7 +208,7 @@ Arguments:
 
 Options:
   -p, --probability <PROBABILITY>    The probability a record is kept, within (0.0, 1.0). Cannot be used with `record-count`
-  -n, --record-count <RECORD_COUNT>  The exact number of records to keep. Cannot be used with `probability`
+  -n, --record-count <RECORD_COUNT>  The exact number of records to keep (> 0). Cannot be used with `probability`
   -s, --seed <SEED>                  Seed to use for the random number generator
       --r1-dst <R1_DST>              Read 1 destination. Output will be gzipped if ends in `.gz`
       --r2-dst <R2_DST>              Read 2 destination. Output will be gzipped if ends in `.gz`

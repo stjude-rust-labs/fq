@@ -40,6 +40,10 @@
     The number of lines in the input must be a multiple of 4; otherwise, it
     cannot be valid FASTQ.
 
+  * commands/subsample: Reject an exact record count of 0.
+
+    This matches the behavior of the approximate subsampler rejecting 0.0.
+
   * fastq/record: Split name from definition on first separator.
 
     This previously searched for the separator from the end of the definition,
