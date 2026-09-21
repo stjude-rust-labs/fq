@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG RUST_VERSION=1.93.0
+ARG RUST_VERSION=1.98.1
 ARG DEBIAN_CODENAME=trixie
 
 FROM rust:${RUST_VERSION}-${DEBIAN_CODENAME} AS builder
