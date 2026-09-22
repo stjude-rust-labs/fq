@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader, Write},
+    io::{self, BufRead, BufReader, Read, Write},
     ops::{Bound, RangeBounds},
     path::{Path, PathBuf},
 };
@@ -119,7 +119,7 @@ fn subsample_single<R, W, Rng>(
     p: f64,
 ) -> Result<(u64, u64), SubsampleError>
 where
-    R: BufRead,
+    R: Read,
     W: Write,
     Rng: rand::Rng,
 {
@@ -149,8 +149,8 @@ fn subsample_paired<R, S, W, X, Rng>(
     p: f64,
 ) -> Result<(u64, u64), SubsampleError>
 where
-    R: BufRead,
-    S: BufRead,
+    R: Read,
+    S: Read,
     W: Write,
     X: Write,
     Rng: rand::Rng,
@@ -346,7 +346,7 @@ fn subsample_exact_single<R, W>(
     bitmap: &BitVec,
 ) -> Result<(), SubsampleError>
 where
-    R: BufRead,
+    R: Read,
     W: Write,
 {
     let mut record = Record::default();
@@ -369,8 +369,8 @@ fn subsample_exact_paired<R, S, W, X>(
     bitmap: &BitVec,
 ) -> Result<(), SubsampleError>
 where
-    R: BufRead,
-    S: BufRead,
+    R: Read,
+    S: Read,
     W: Write,
     X: Write,
 {

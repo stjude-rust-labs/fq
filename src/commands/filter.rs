@@ -1,7 +1,7 @@
 use std::{
     collections::HashSet,
     fs::File,
-    io::{self, BufRead, BufReader, Write},
+    io::{self, BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
 };
 
@@ -17,7 +17,7 @@ fn _filter<R, W, F>(
     filter: F,
 ) -> io::Result<()>
 where
-    R: BufRead,
+    R: Read,
     W: Write,
     F: Fn(&fastq::Record) -> bool,
 {
@@ -53,7 +53,7 @@ fn copy_filtered<R, W>(
     writers: &mut [fastq::io::Writer<W>],
 ) -> io::Result<()>
 where
-    R: BufRead,
+    R: Read,
     W: Write,
 {
     _filter(readers, writers, |record| {
@@ -141,7 +141,7 @@ fn copy_filtered_by_sequence_pattern<R, W>(
     writers: &mut [fastq::io::Writer<W>],
 ) -> io::Result<()>
 where
-    R: BufRead,
+    R: Read,
     W: Write,
 {
     _filter(readers, writers, |record| {
@@ -168,7 +168,7 @@ where
     Ok(())
 }
 
-fn build_readers<P>(srcs: &[P]) -> Result<Vec<fastq::io::Reader<Box<dyn BufRead>>>, FilterError>
+fn build_readers<P>(srcs: &[P]) -> Result<Vec<fastq::io::Reader<Box<dyn Read>>>, FilterError>
 where
     P: AsRef<Path>,
 {

@@ -1,5 +1,5 @@
 use std::{
-    io::{self, BufRead},
+    io::{self, Read},
     path::{Path, PathBuf},
     process,
 };
@@ -56,7 +56,7 @@ fn handle_validation_error<P>(
 }
 
 fn validate_single(
-    mut reader: fastq::io::Reader<impl BufRead>,
+    mut reader: fastq::io::Reader<impl Read>,
     record_definition_separator: Option<u8>,
     single_read_validation_level: ValidationLevel,
     disabled_validators: &[String],
@@ -145,7 +145,7 @@ fn validate_pair<R>(
     r2_src: &Path,
 ) -> Result<usize, LintError>
 where
-    R: BufRead,
+    R: Read,
 {
     let (single_read_validators, paired_read_validators) = validators::filter_validators(
         single_read_validation_level,

@@ -1,10 +1,10 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader, BufWriter, Write},
+    io::{self, BufWriter, Read, Write},
     path::Path,
 };
 
-use flate2::{Compression, bufread::MultiGzDecoder, write::GzEncoder};
+use flate2::{Compression, read::MultiGzDecoder, write::GzEncoder};
 
 use super::io::{Reader, Writer};
 
@@ -27,17 +27,17 @@ where
     }
 }
 
-pub fn open<P>(src: P) -> io::Result<Reader<Box<dyn BufRead>>>
+pub fn open<P>(src: P) -> io::Result<Reader<Box<dyn Read>>>
 where
     P: AsRef<Path>,
 {
     let path = src.as_ref();
-    let reader = File::open(path).map(BufReader::new)?;
+    let reader = File::open(path)?;
 
     match path.extension().and_then(|ext| ext.to_str()) {
         Some(GZ_EXTENSION) => {
             let decoder = MultiGzDecoder::new(reader);
-            Ok(Reader::new(Box::new(BufReader::new(decoder))))
+            Ok(Reader::new(Box::new(decoder)))
         }
         _ => Ok(Reader::new(Box::new(reader))),
     }
