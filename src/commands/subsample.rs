@@ -1,12 +1,10 @@
 use std::{
-    fs::File,
     io::{self, BufRead, BufReader, Read, Write},
     ops::{Bound, RangeBounds},
     path::{Path, PathBuf},
 };
 
 use bit_vec::BitVec;
-use flate2::bufread::MultiGzDecoder;
 use rand::{
     RngExt, SeedableRng,
     distr::{Distribution, Uniform},
@@ -18,6 +16,7 @@ use tracing::{info, info_span, warn};
 use crate::{
     cli::SubsampleArgs,
     fastq::{self, Record},
+    fs::open_raw_or_gz,
 };
 
 const VALID_PROBABILITY_RANGE: (Bound<f64>, Bound<f64>) =
@@ -259,7 +258,7 @@ fn count_lines<P>(src: P) -> io::Result<usize>
 where
     P: AsRef<Path>,
 {
-    let mut reader = open(src)?;
+    let mut reader = open_raw_or_gz(src).map(BufReader::new)?;
     count_lines_inner(&mut reader)
 }
 
@@ -294,23 +293,6 @@ where
     }
 
     Ok(n)
-}
-
-fn open<P>(src: P) -> io::Result<Box<dyn BufRead>>
-where
-    P: AsRef<Path>,
-{
-    let path = src.as_ref();
-    let extension = path.extension();
-    let reader = File::open(path).map(BufReader::new)?;
-
-    match extension.and_then(|ext| ext.to_str()) {
-        Some("gz") => {
-            let decoder = MultiGzDecoder::new(reader);
-            Ok(Box::new(BufReader::new(decoder)))
-        }
-        _ => Ok(Box::new(reader)),
-    }
 }
 
 fn build_filter<Rng>(mut rng: Rng, src_record_count: usize, dst_record_count: u64) -> BitVec
